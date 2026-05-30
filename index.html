@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<!-- AIPOS-PRO HUB v1 · SSO landing kiểu MISA: đăng nhập 1 lần → lưới 5 app → bấm vào thẳng (phiên Supabase dùng chung, app không login lại) -->
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIPOS·PRO — Nền tảng quản lý bán lẻ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+  :root{
+    --navy:#0B2545; --navy2:#13386b; --blue:#1565C0; --gold:#C8922A; --gold-l:#E8B84B;
+    --ink:#0F1B2D; --mute:#7C8AA0; --line:#E4E9F2; --bg:#EEF2F8; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Sora',sans-serif;color:var(--ink);min-height:100vh;
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(21,101,192,.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(200,146,42,.14), transparent 55%),
+      linear-gradient(135deg,#0B2545,#13386b);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ===== LOGIN ===== */
+  #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .login-card{background:var(--card);border-radius:20px;padding:38px 34px;width:380px;max-width:92vw;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1);}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .brand{text-align:center;margin-bottom:26px;}
+  .brand .logo{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--navy);}
+  .brand .logo span{color:var(--gold);}
+  .brand .tag{font-size:12px;color:var(--mute);margin-top:5px;letter-spacing:.03em;}
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--mute);margin-bottom:6px;}
+  .field input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;font-size:14px;
+    font-family:inherit;transition:border .2s;}
+  .field input:focus{outline:none;border-color:var(--blue);}
+  .btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--blue),var(--navy));color:#fff;border:none;
+    border-radius:11px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .2s,transform .1s;}
+  .btn:hover{filter:brightness(1.08);} .btn:active{transform:scale(.98);} .btn:disabled{opacity:.6;cursor:default;}
+  .err{color:#DC2626;font-size:12.5px;margin-top:11px;text-align:center;min-height:16px;}
+
+  /* ===== HUB ===== */
+  #hub{display:none;min-height:100vh;flex-direction:column;}
+  .topbar{display:flex;align-items:center;gap:14px;padding:16px 26px;
+    background:rgba(11,37,69,.55);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);}
+  .topbar .logo{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+  .topbar .logo span{color:var(--gold-l);}
+  .topbar .company{margin-left:6px;padding-left:14px;border-left:1px solid rgba(255,255,255,.18);
+    color:#cdd9ec;font-size:13px;font-weight:600;}
+  .topbar .spacer{flex:1;}
+  .topbar .user{color:#aebfd6;font-size:12.5px;}
+  .topbar .logout{background:rgba(255,255,255,.1);color:#fff;border:none;padding:8px 14px;border-radius:9px;
+    font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s;}
+  .topbar .logout:hover{background:rgba(255,255,255,.2);}
+
+  .hub-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+  .hub-head{text-align:center;margin-bottom:38px;}
+  .hub-head h1{color:#fff;font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;}
+  .hub-head p{color:#a9bad4;font-size:14px;margin-top:8px;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,210px));gap:18px;justify-content:center;
+    width:100%;max-width:900px;}
+  .app{background:var(--card);border-radius:18px;padding:26px 20px;text-align:center;cursor:pointer;
+    text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.5);position:relative;overflow:hidden;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;
+    opacity:0;animation:pop .5s forwards;}
+  @keyframes pop{to{opacity:1;transform:none}}
+  .app{transform:translateY(14px);}
+  .app:nth-child(1){animation-delay:.05s}.app:nth-child(2){animation-delay:.12s}
+  .app:nth-child(3){animation-delay:.19s}.app:nth-child(4){animation-delay:.26s}
+  .app:nth-child(5){animation-delay:.33s}
+  .app:hover{transform:translateY(-7px);box-shadow:0 22px 44px -18px rgba(0,0,0,.45);}
+  .app::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent,var(--blue));}
+  .app .ic{font-size:42px;display:block;margin-bottom:14px;}
+  .app .nm{font-weight:700;font-size:16px;}
+  .app .ds{font-size:12px;color:var(--mute);margin-top:5px;line-height:1.4;}
+  .app .go{margin-top:14px;font-size:11.5px;font-weight:700;color:var(--accent,var(--blue));letter-spacing:.04em;text-transform:uppercase;}
+
+  .foot{text-align:center;color:#7e90ab;font-size:11px;padding:18px;}
+</style>
+</head>
+<body>
+
+<!-- ===== ĐĂNG NHẬP ===== -->
+<div id="login">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">AIPOS<span>·PRO</span></div>
+      <div class="tag">Nền tảng quản lý chuỗi bán lẻ</div>
+    </div>
+    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="email@congty.vn"></div>
+    <div class="field"><label>Mật khẩu</label><input id="pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn" id="loginBtn">Đăng nhập hệ thống</button>
+    <div class="err" id="err"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <a href="#" id="forgotLink" style="font-size:12.5px;color:var(--blue);text-decoration:none;font-weight:600;">Quên mật khẩu?</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HUB ===== -->
+<div id="hub">
+  <div class="topbar">
+    <div class="logo">AIPOS<span>·PRO</span></div>
+    <div class="company" id="companyName">—</div>
+    <div class="spacer"></div>
+    <div class="user" id="userEmail"></div>
+    <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Mời NV</button>
+    <button class="logout" id="changePwBtn" style="background:rgba(255,255,255,.1);">🔑 Đổi MK</button>
+    <button class="logout" id="resetBtn" style="background:rgba(200,146,42,.25);">🧹 Dọn demo</button>
+    <button class="logout" id="logoutBtn">Đăng xuất</button>
+  </div>
+  <div class="hub-body">
+    <div class="hub-head">
+      <h1>Chọn ứng dụng</h1>
+      <p>Hệ sinh thái quản lý bán lẻ tích hợp — dữ liệu liên thông toàn hệ</p>
+    </div>
+    <div class="grid" id="appGrid"></div>
+  </div>
+  <div class="foot">AIPOS·PRO · Nền tảng đa khách hàng · Phiên đăng nhập dùng chung cho mọi phân hệ</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ssrodnzhuydlupglvepm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcm9kbnpodXlkbHVwZ2x2ZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzAzNTgsImV4cCI6MjA5NTY0NjM1OH0.Dys8NRpgo9Cn9AucfdGmbDTVUUb_6jJlYYt_u6akwag';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Danh sách phân hệ — file deploy cùng thư mục (đường dẫn tương đối)
+const APPS = [
+  { code:'ketoan', nm:'Kế toán',  ic:'📊', ds:'Sổ sách · thuế · báo cáo TT99', url:'ketoan_aipos.html', color:'#1565C0' },
+  { code:'pos',    nm:'POS',      ic:'🛒', ds:'Bán hàng tại quầy',            url:'pos_aipos.html',    color:'#0B7A3B' },
+  { code:'kho',    nm:'Kho',      ic:'📦', ds:'Tồn kho WAC · điều chuyển',     url:'kho_aipos.html',    color:'#C8922A' },
+  { code:'ncc',    nm:'Nhà cung cấp', ic:'🤝', ds:'Đặt hàng · nhận hàng · công nợ', url:'ncc_aipos.html', color:'#7A3FB5' },
+  { code:'luong',  nm:'Lương',    ic:'💰', ds:'Tính lương · TNCN · KPI',       url:'luong_aipos.html',  color:'#B5453F' },
+];
+
+// đã đăng nhập sẵn?
+(async () => {
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session && session.user) enterHub(session.user);
+})();
+
+document.getElementById('loginBtn').onclick = doLogin;
+document.getElementById('pass').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+document.getElementById('logoutBtn').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+// ===== QUÊN MẬT KHẨU (màn login) =====
+document.getElementById('forgotLink').onclick = async (e) => {
+  e.preventDefault();
+  const email = (document.getElementById('email').value||'').trim();
+  if (!email) { document.getElementById('err').textContent = 'Nhập email rồi bấm "Quên mật khẩu".'; return; }
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href });
+    if (error) throw error;
+    document.getElementById('err').style.color = '#0B7A3B';
+    document.getElementById('err').textContent = '✓ Đã gửi link đặt lại mật khẩu tới email (kiểm tra cả hộp Spam).';
+  } catch(e) {
+    document.getElementById('err').textContent = 'Lỗi gửi email: ' + (e?.message||e);
+  }
+};
+
+// ===== XỬ LÝ KHI USER BẤM LINK RESET TRONG EMAIL (quay lại với recovery session) =====
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    const np = prompt('Đặt mật khẩu mới (tối thiểu 6 ký tự):');
+    if (np && np.length >= 6) {
+      sb.auth.updateUser({ password: np }).then(({ error }) => {
+        alert(error ? ('Lỗi: ' + error.message) : '✓ Đã đổi mật khẩu. Đăng nhập lại bằng mật khẩu mới.');
+        if (!error) sb.auth.signOut().then(() => location.reload());
+      });
+    }
+  }
+});
+
+// ===== ĐỔI MẬT KHẨU (đang đăng nhập) =====
+document.getElementById('changePwBtn').onclick = async () => {
+  const np = prompt('Nhập mật khẩu mới (tối thiểu 6 ký tự):');
+  if (!np) return;
+  if (np.length < 6) { alert('Mật khẩu phải từ 6 ký tự.'); return; }
+  try {
+    const { error } = await sb.auth.updateUser({ password: np });
+    if (error) throw error;
+    alert('✓ Đã đổi mật khẩu thành công.');
+  } catch(e) { alert('Lỗi: ' + (e?.message||e)); }
+};
+
+// ===== MỜI NHÂN VIÊN (chỉ owner) =====
+document.getElementById('inviteBtn').onclick = async () => {
+  const email = prompt('Email nhân viên mới:');
+  if (!email) return;
+  const name = prompt('Họ tên nhân viên:');
+  if (!name) return;
+  const role = (prompt('Vai trò: accountant / cashier / manager / staff', 'staff')||'staff').trim();
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/invite-employee', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ email, full_name: name, role }),
+    });
+    const j = await r.json();
+    if (j.ok) alert('✓ ' + j.message);
+    else alert('⚠️ ' + (j.error || 'Không mời được'));
+  } catch(e) { alert('Lỗi: ' + (e?.message||e)); }
+};
+
+document.getElementById('resetBtn').onclick = async () => {
+  const ok = confirm('🧹 DỌN DỮ LIỆU DEMO\n\nXóa toàn bộ giao dịch (đơn bán, bút toán, tồn, đơn NCC) để bắt đầu nhập liệu thật.\n\nGIỮ NGUYÊN: hệ thống tài khoản, quy tắc định khoản, sản phẩm, nhà cung cấp, nhân viên, chi nhánh.\n\nThao tác KHÔNG hoàn tác được. Tiếp tục?');
+  if (!ok) return;
+  if (!confirm('Xác nhận lần cuối: xóa hết giao dịch demo của công ty bạn?')) return;
+  const btn = document.getElementById('resetBtn');
+  btn.disabled = true; btn.textContent = '⏳ Đang dọn...';
+  try {
+    const { data, error } = await sb.rpc('reset_my_tenant_demo');
+    if (error) throw error;
+    if (data && data.ok) {
+      alert('✅ Đã dọn xong!\n\nĐã xóa ' + (data.rows_deleted ?? 0) + ' dòng giao dịch.\n' + (data.note || ''));
+      location.reload();
+    } else {
+      alert('⚠️ Không dọn được: ' + (data?.error || 'lỗi không rõ'));
+      btn.disabled = false; btn.textContent = '🧹 Dọn demo';
+    }
+  } catch (e) {
+    alert('⚠️ Lỗi: ' + (e?.message || e));
+    btn.disabled = false; btn.textContent = '🧹 Dọn demo';
+  }
+};
+
+async function doLogin() {
+  const email = (document.getElementById('email').value||'').trim();
+  const pass = document.getElementById('pass').value||'';
+  const err = document.getElementById('err'), btn = document.getElementById('loginBtn');
+  err.textContent=''; btn.disabled=true; btn.textContent='Đang đăng nhập...';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    await enterHub(data.user);
+  } catch(e) {
+    err.textContent='Sai email hoặc mật khẩu.'; btn.disabled=false; btn.textContent='Đăng nhập hệ thống';
+  }
+}
+
+async function enterHub(user) {
+  document.getElementById('login').style.display='none';
+  document.getElementById('hub').style.display='flex';
+  document.getElementById('userEmail').textContent = user.email;
+  // nạp tên công ty (trắng nhãn) qua RLS — chỉ ra tenant của user
+  let companyName = 'Công ty của bạn', features = null;
+  try {
+    const { data } = await sb.from('tenants').select('company_name, tenant_config(features)').limit(1).maybeSingle();
+    if (data) { companyName = data.company_name || companyName; features = data.tenant_config?.features || null; }
+  } catch(e) {}
+  document.getElementById('companyName').textContent = companyName;
+  // hiện nút "Mời NV" nếu là owner
+  try {
+    const { data: role } = await sb.rpc('current_user_role');
+    if (role === 'owner') document.getElementById('inviteBtn').style.display = 'inline-block';
+  } catch(e) {}
+  renderApps(features);
+}
+
+function renderApps(features) {
+  // features (jsonb) có thể bật/tắt app theo gói: {ketoan:true, pos:true,...}. Null = hiện hết.
+  const grid = document.getElementById('appGrid'); grid.innerHTML='';
+  APPS.forEach(a => {
+    if (features && features[a.code] === false) return; // gói không có app này
+    const el = document.createElement('a');
+    el.className='app'; el.href=a.url; el.style.setProperty('--accent', a.color);
+    el.innerHTML = `<span class="ic">${a.ic}</span><span class="nm">${a.nm}</span>
+      <span class="ds">${a.ds}</span><span class="go">Mở ứng dụng →</span>`;
+    grid.appendChild(el);
+  });
+}
+</script>
+</body>
+</html>
