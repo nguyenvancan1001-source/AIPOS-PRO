@@ -1148,6 +1148,10 @@ body.in-pos .fab-fs{display:inline-flex}
 const NCC_SUPABASE_URL = 'https://ssrodnzhuydlupglvepm.supabase.co';
 const NCC_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcm9kbnpodXlkbHVwZ2x2ZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzAzNTgsImV4cCI6MjA5NTY0NjM1OH0.Dys8NRpgo9Cn9AucfdGmbDTVUUb_6jJlYYt_u6akwag';
 
+// Alias chung cho login + auto-post (dùng cùng kết nối AIPOS-PRO)
+const SUPABASE_URL = NCC_SUPABASE_URL;
+const SUPABASE_KEY = NCC_SUPABASE_ANON_KEY;
+
 // BCTC Supabase — chứa cache sản phẩm Pancake (fms_config table)
 const BCTC_SUPABASE_URL = 'https://ssrodnzhuydlupglvepm.supabase.co';
 const BCTC_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcm9kbnpodXlkbHVwZ2x2ZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzAzNTgsImV4cCI6MjA5NTY0NjM1OH0.Dys8NRpgo9Cn9AucfdGmbDTVUUb_6jJlYYt_u6akwag';
@@ -1723,9 +1727,9 @@ function initSupabaseClient() {
   }
   if (state.supabase && state.bctcSupabase) return true; // already initialized
   try {
-    // NCC project — for orders, suppliers, branches
+    // NCC project — for orders, suppliers, branches (+ Auth đăng nhập → cần persist session cho SSO)
     state.supabase = supabase.createClient(NCC_SUPABASE_URL, NCC_SUPABASE_ANON_KEY, {
-      auth: { persistSession: false },
+      auth: { persistSession: true, autoRefreshToken: true },
       db: { schema: 'public' },
       realtime: { params: { eventsPerSecond: 5 } },
     });
@@ -2364,8 +2368,9 @@ async function setupInventoryRealtimeSubscription() {
 async function login(code, password) {
   // CÁCH A (bản thương mại AIPOS-PRO): đăng nhập Supabase Auth bằng email.
   // current_tenant_id() resolve qua auth.uid() → RLS lọc đúng dữ liệu công ty.
+  if (!state.supabase) initSupabaseClient();   // đảm bảo client sẵn sàng
   const sb = state.supabase;
-  if (!sb) throw new Error('Chưa kết nối AIPOS-PRO');
+  if (!sb) throw new Error('Chưa kết nối AIPOS-PRO — kiểm tra mạng/SDK');
   const { data, error } = await sb.auth.signInWithPassword({ email: (code || '').trim(), password });
   if (error) throw new Error('Sai email hoặc mật khẩu');
   // lấy thông tin nhân viên + tenant qua RLS (app_users: chỉ ra dòng của chính user)
