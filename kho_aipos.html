@@ -1471,6 +1471,49 @@ function getKhoSupa() {
   return khoSupa;
 }
 
+// AIPOS-PRO: điều chuyển nội bộ → ghi inventory_movements (xuất CN gửi + nhập CN nhận) → trigger đồng bộ 3 nơi
+async function aiposSyncTransfer(tf) {
+  const db = getKhoSupa(); if (!db || !tf) return;
+  try {
+    for (const it of tf.items) {
+      const sku = it.sku; const qty = Number(it.qty)||0; if (!sku || qty<=0) continue;
+      await db.from('inventory_movements').insert([
+        { product_sku: sku, branch_id: tf.fromBranch, type: 'out', qty, unit_cost: it.cost||0,
+          ref_type: 'TRANSFER_OUT', ref_id: tf.id, note: 'Điều chuyển → '+tf.toBranch },
+        { product_sku: sku, branch_id: tf.toBranch, type: 'in', qty, unit_cost: it.cost||0,
+          ref_type: 'TRANSFER_IN', ref_id: tf.id, note: 'Điều chuyển ← '+tf.fromBranch },
+      ]);
+    }
+    console.log('[KHO→HUB] ✅ điều chuyển đồng bộ', tf.id);
+  } catch(e) { console.warn('[KHO→HUB] transfer sync lỗi:', e?.message); }
+}
+
+// AIPOS-PRO: kiểm kê duyệt → ghi điều chỉnh tồn + bút toán (thừa: Nợ156/Có3381; thiếu: Nợ1381/Có156)
+async function aiposSyncStocktake(stId, branch, adjustments) {
+  const db = getKhoSupa(); if (!db || !adjustments?.length) return;
+  try {
+    for (const a of adjustments) {
+      if (!a.diff) continue;
+      await db.from('inventory_movements').insert({
+        product_sku: a.sku, branch_id: branch,
+        type: a.diff > 0 ? 'in' : 'out', qty: Math.abs(a.diff), unit_cost: a.cost||0,
+        ref_type: 'STOCKTAKE', ref_id: stId,
+        note: 'Kiểm kê điều chỉnh ' + (a.diff>0?'(dư)':'(thiếu)'),
+      });
+    }
+    // hạch toán kiểm kê qua Edge Function
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      await fetch('https://ssrodnzhuydlupglvepm.supabase.co/functions/v1/stocktake-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ stocktake_id: stId, branch, adjustments }),
+      }).then(r=>r.json()).then(j=>{ if(j&&j.ok) console.log('[KHO→KẾ TOÁN] ✅ hạch toán kiểm kê', j.voucher_no); }).catch(()=>{});
+    }
+    console.log('[KHO→HUB] ✅ kiểm kê đồng bộ', stId);
+  } catch(e) { console.warn('[KHO→HUB] stocktake sync lỗi:', e?.message); }
+}
+
 function initState() {
   return {
     activeBranch: 'ALL',
@@ -10659,6 +10702,8 @@ function saveTransfer() {
   draft.items.forEach(it => {
     S.inventory[draft.fromBranch][it.sku] = Math.max(0, (S.inventory[draft.fromBranch][it.sku] || 0) - it.qty);
   });
+  // AIPOS-PRO: ghi inventory_movements (xuất CN gửi + nhập CN nhận) → trigger đồng bộ 3 nơi
+  aiposSyncTransfer(tf);
   addAuditLog('auto', tf.id, `Tạo phiếu điều chuyển ${tf.id} · ${draft.fromBranch} → ${draft.toBranch} · ${draft.items.length} SKU · ${fmtVND(totalValue)}đ`);
   saveState();
   window._tfDraft = null;
@@ -11098,13 +11143,18 @@ function approveStocktake(stId) {
   // Cập nhật tồn kho
   if (!S.inventory[st.branch]) S.inventory[st.branch] = {};
   let lossSku = 0, gainSku = 0;
+  const adjustments = [];
   st.items.forEach(it => {
     if (it.counted !== null && it.counted !== it.system) {
+      const diff = it.counted - it.system;  // + dư, - thiếu
+      adjustments.push({ sku: it.sku, diff, cost: it.cost || 0 });
       S.inventory[st.branch][it.sku] = it.counted;
       if (it.counted < it.system) lossSku++;
       else gainSku++;
     }
   });
+  // AIPOS-PRO: ghi inventory_movements điều chỉnh + bút toán kiểm kê → đồng bộ 3 nơi
+  aiposSyncStocktake(stId, st.branch, adjustments);
 
   st.status = 'approved';
   st.approvedAt = nowISO();

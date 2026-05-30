@@ -15697,32 +15697,43 @@ async function syncKhoInventoryAfterReceive(items, branch, poNo) {
       return;
     }
 
+    // Ghi inventory_movements type=in → trigger sync_inventory tự cập nhật kho_inventory + vc_inventory + products (3 nơi)
     for (const item of items) {
       if (item.cancelled) continue;
       const sku = item.sku || item.product_code || item.code;
       const qty = Number(item.receivedQty !== undefined ? item.receivedQty : item.qty) || 0;
       if (!sku || qty <= 0) continue;
-
-      // Đọc qty hiện tại từ vc_inventory
-      const { data: cur } = await supa
-        .from('vc_inventory')
-        .select('qty')
-        .eq('branch_id', branchId)
-        .eq('sku', sku)
-        .maybeSingle();
-
-      const newQty = (cur?.qty || 0) + qty;
-      await supa.from('vc_inventory').upsert(
-        [{ branch_id: branchId, sku, qty: newQty, last_recv_at: now, updated_at: now }],
-        { onConflict: 'branch_id,sku' }
-      );
+      const unitCost = Number(item.price || item.cost || 0);
+      await supa.from('inventory_movements').insert({
+        product_sku: sku, branch_id: branchCode, type: 'in', qty: qty,
+        unit_cost: unitCost, total_value: unitCost * qty,
+        ref_type: 'NCC_RECEIVE', ref_id: poNo || null,
+        note: 'Nhập hàng NCC ' + (poNo || '') + ' (' + branchCode + ')',
+      });
     }
-    console.log('[NCC→KHO] vc_inventory synced for PO:', poNo, 'branch:', branchCode);
+    console.log('[NCC→KHO] inventory_movements ghi nhận nhập hàng (trigger đồng bộ 3 nơi) PO:', poNo, 'branch:', branchCode);
   } catch(e) {
     console.warn('[NCC→KHO] syncKhoInventory failed:', e.message);
   }
 }
-// ─────────────────────────────────────────────────────────────────────────────
+
+// AIPOS-PRO: sau khi nhận hàng → hạch toán nhập kho (Nợ 156/1331 Có 331) + ghi công nợ NCC
+async function aiposNccReceivePost(items, branch, poNo, supplierName, vatRate) {
+  if (!supa || !items || !items.length || !poNo) return;
+  try {
+    const branchMap = { 'pb':'PB','phú bài':'PB','phu bai':'PB','vt':'VT','vinh thành':'VT','vinh thanh':'VT' };
+    const branchCode = branchMap[(branch||'').toLowerCase()] || (branch||'').toUpperCase();
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session) return;
+    await fetch('https://ssrodnzhuydlupglvepm.supabase.co/functions/v1/ncc-receive-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ po_no: poNo, supplier_name: supplierName || null, branch: branchCode, items, vat_rate: vatRate != null ? vatRate : 8 }),
+    }).then(r=>r.json()).then(j => {
+      if (j && j.ok && !j.skip) console.log('[NCC→KẾ TOÁN] ✅ hạch toán nhập kho', j.voucher_no, '· hàng', j.goods, '· VAT', j.vat);
+    }).catch(e => console.warn('[NCC→KẾ TOÁN] lỗi hạch toán:', e?.message));
+  } catch(e) { console.warn('[NCC→KẾ TOÁN] lỗi:', e?.message); }
+}
 
 async function _eomPersistItems(st, historyNote, actionType) {
   try {
@@ -15793,6 +15804,7 @@ async function _eomPersistItems(st, historyNote, actionType) {
     if (actionType === 'received' || actionType === 'partial_received') {
       const branch = st.branch || st.receiving_location || '';
       syncKhoInventoryAfterReceive(st.items, branch, st.po_no);
+      aiposNccReceivePost(st.items, branch, st.po_no, st.ncc_name || st.supplier_name, st.vat_rate);
     }
 
   } catch (err) {
@@ -43043,6 +43055,7 @@ async function phUpdateStatus(poNo, newStatus, note='') {
       if (po && po.items && po.items.length) {
         const branch = po.receiving_location || po.branch || '';
         syncKhoInventoryAfterReceive(po.items, branch, poNo);
+        aiposNccReceivePost(po.items, branch, poNo, po.ncc_name || po.supplier_name, po.vat_rate);
       }
     }
 
@@ -55445,7 +55458,7 @@ console.log('[NCC App] Nhan Hang module loaded');
     
     try {
       sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false }
+        auth: { persistSession: true, autoRefreshToken: true }
       });
       isInitialized = true;
       console.log('[Receiving Bridge] ✓ Supabase client initialized');
@@ -55705,6 +55718,7 @@ console.log('[NCC App] Nhan Hang module loaded');
         const { data: ord } = await sb.from('orders').select('items,branch,order_key').eq('id', orderDbId).maybeSingle();
         if (ord && ord.items && ord.branch) {
           syncKhoInventoryAfterReceive(ord.items, ord.branch, ord.order_key || orderDbId);
+          aiposNccReceivePost(ord.items, ord.branch, ord.order_key || orderDbId, ord.supplier_name || ord.ncc_name, ord.vat_rate);
         }
       } catch(ke) { console.warn('[Receiving Bridge] kho sync skipped:', ke.message); }
 

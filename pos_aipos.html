@@ -2201,8 +2201,8 @@ function syncTxToSupabase(tx) {
         enqueuePendingTx(tx);
       } else {
         console.log('[POS-HUB] ✅ tx synced:', tx.code, tx.kind, fmt.money(tx.total));
-        // AIPOS-PRO: bán xong → tự hạch toán kế toán + trừ tồn (chỉ đơn bán, không hạch toán đơn trả ở đây)
-        if (tx.kind === 'sale') aiposAutoPost(tx.id);
+        // AIPOS-PRO: bán + trả + hủy hàng đều tự hạch toán + đồng bộ tồn (Edge Function tự phân biệt kind)
+        if (tx.kind === 'sale' || tx.kind === 'return' || tx.kind === 'writeoff') aiposAutoPost(tx.id);
       }
     })
     .catch(err => {
@@ -6712,6 +6712,7 @@ const MGMT_TABS = [
   { id: 'inventory', label: '📦 Tồn kho' },
   { id: 'customers', label: '👥 Khách hàng' },
   { id: 'returns', label: '↺ Trả hàng' },
+  { id: 'writeoff', label: '🗑️ Hủy hàng' },
   { id: 'promos-active', label: '🎁 KM đang chạy' },
 ];
 let _mgmtTab = 'sales-today';
@@ -6759,6 +6760,7 @@ function renderMgmtTab(tab) {
   }
   if (tab === 'customers') return renderCustomersTab();
   if (tab === 'returns') return renderReturnsTab();
+  if (tab === 'writeoff') return renderWriteoffTab();
   if (tab === 'promos-active') return renderActivePromosTab();
   return '';
 }
@@ -8030,6 +8032,79 @@ function confirmReturn(originalTxId) {
       <button class="btn btn-primary" onclick="doPrint()">🖨 In phiếu trả</button>
     </div>
   `, {size:'sm'});
+}
+
+// ===== HỦY HÀNG (xuất hủy tại cửa hàng: hàng hỏng/hết hạn) =====
+let _writeoffSel = {};
+function renderWriteoffTab() {
+  _writeoffSel = {};
+  const prods = (state.products||[]).filter(p => (p.stock||0) > 0);
+  const rows = prods.map(p => `
+    <tr>
+      <td class="tc"><input type="checkbox" onchange="toggleWriteoff('${p.sku}')"></td>
+      <td><div style="font-weight:500;font-size:12px">${escapeHtml(p.name)}</div>
+          <div style="font-size:10px;color:var(--gray-500)">${escapeHtml(p.sku)}</div></td>
+      <td class="tr num">${p.stock}</td>
+      <td class="tc"><input type="number" id="wo-qty-${p.sku}" min="1" max="${p.stock}" value="1"
+            style="width:60px;padding:4px;border:1px solid var(--gray-300);border-radius:5px;text-align:center" disabled></td>
+    </tr>`).join('');
+  return `
+    <div style="padding:4px 0 12px">
+      <div style="background:var(--orange-light);color:var(--orange);padding:9px 12px;border-radius:8px;font-size:12px;margin-bottom:12px">
+        ⚠️ Xuất hủy hàng hỏng/hết hạn. Hàng hủy sẽ trừ tồn + ghi vào kế toán (Nợ 632 / Có 156). Không hoàn tác được.
+      </div>
+      <div class="mgmt-table-wrap">
+        <table class="mgmt-table">
+          <thead><tr><th class="tc">Chọn</th><th>Sản phẩm</th><th class="tr">Tồn</th><th class="tc">SL hủy</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400)">Không có hàng tồn</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px">Lý do hủy</label>
+        <select id="woReason" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:7px;font-size:12px">
+          <option value="Hết hạn sử dụng">Hết hạn sử dụng</option>
+          <option value="Hư hỏng/dập nát">Hư hỏng/dập nát</option>
+          <option value="Lỗi nhà sản xuất">Lỗi nhà sản xuất</option>
+          <option value="Khác">Khác</option>
+        </select>
+      </div>
+      <button class="btn btn-danger btn-block" style="margin-top:14px" onclick="confirmWriteoff()">🗑️ Xác nhận hủy hàng</button>
+    </div>`;
+}
+function toggleWriteoff(sku) {
+  const qtyEl = document.getElementById('wo-qty-'+sku);
+  if (_writeoffSel[sku]) { delete _writeoffSel[sku]; if(qtyEl) qtyEl.disabled = true; }
+  else { _writeoffSel[sku] = true; if(qtyEl) qtyEl.disabled = false; }
+}
+async function confirmWriteoff() {
+  const skus = Object.keys(_writeoffSel);
+  if (!skus.length) { toast('Chưa chọn hàng nào', 'warning'); return; }
+  const reason = document.getElementById('woReason')?.value || 'Hủy hàng';
+  const items = [];
+  for (const sku of skus) {
+    const qty = parseInt(document.getElementById('wo-qty-'+sku)?.value || '0');
+    const p = state.products.find(x => x.sku === sku);
+    if (qty > 0 && p) items.push({ sku, name: p.name, qty, cost: p.cost || 0 });
+  }
+  if (!items.length) { toast('Số lượng không hợp lệ', 'warning'); return; }
+  if (!confirm(`Xác nhận HỦY ${items.length} mặt hàng?\nLý do: ${reason}\nThao tác không hoàn tác.`)) return;
+  try {
+    if (!state.supabase) initSupabaseClient();
+    const branch = state.shift?.branch || 'PB';
+    const woTotal = items.reduce((s,it)=> s + (it.cost||0)*it.qty, 0);
+    // tạo giao dịch kind='writeoff' → sync pos_transactions → pos-autopost (Nợ 811/Có 1561) + trừ tồn 3 nơi
+    const woTx = {
+      id: uid(), code: 'WO-' + txCode(), kind: 'writeoff',
+      user: state.user?.code, userName: state.user?.name, branch, shiftId: state.shift?.id,
+      items: items.map(it=>({ sku: it.sku, name: it.name, qty: it.qty, price: it.cost||0, lineTotal: (it.cost||0)*it.qty })),
+      subtotal: woTotal, discountAmount: 0, total: woTotal,
+      paymentMethod: 'none', reason, createdAt: Date.now(),
+    };
+    await syncTxToSupabase(woTx);
+    items.forEach(it => { const p = state.products.find(x=>x.sku===it.sku); if(p) p.stock -= it.qty; });
+    toast('✅ Đã hủy ' + items.length + ' mặt hàng + ghi kế toán (Nợ 811/Có 156)', 'success');
+    $('#mgmtTabContent').innerHTML = renderMgmtTab('writeoff');
+  } catch(e) { toast('Lỗi: ' + (e.message||e), 'error'); }
 }
 
 function renderActivePromosTab() {
