@@ -409,6 +409,7 @@ td.num{font-family:var(--mono);text-align:right;font-weight:500;}
       <div class="sidebar-group-title">🔧 Hệ thống</div>
       <div class="nav-tab" data-page="audit" title="Audit log không sửa được"><span class="nav-tab-icon">📝</span><span>Audit log</span></div>
       <div class="nav-tab" data-page="catmap" title="88 cat_map TT 133"><span class="nav-tab-icon">📚</span><span>Danh mục</span></div>
+      <div class="nav-tab" data-page="taxconfig" title="Cấu hình thuế suất theo SP / danh mục / mặc định"><span class="nav-tab-icon">⚙️</span><span>Cấu hình thuế</span></div>
     </div>
   </div>
   <!-- Main content area -->
@@ -898,6 +899,42 @@ pages.catmap = `
       </thead>
       <tbody id="catmapTbody"></tbody>
     </table>
+  </div>
+`;
+
+// ============ PAGE: CẤU HÌNH THUẾ ============
+pages.taxconfig = `
+  <div class="page-header">
+    <div>
+      <div class="page-title">⚙️ Cấu hình thuế suất (VAT)</div>
+      <div class="page-sub">Thuế áp theo thứ tự ưu tiên: Sản phẩm → Danh mục/Ngành hàng → Mặc định công ty</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;padding:16px;">
+    <div style="font-weight:700;margin-bottom:8px;">1️⃣ Thuế suất mặc định của công ty</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span>VAT mặc định:</span>
+      <input id="taxDefaultVat" type="number" min="0" max="100" step="0.5" style="width:90px;padding:8px;border:1.5px solid var(--line);border-radius:8px;font-family:monospace;"> %
+      <button class="btn btn-primary" onclick="saveTaxDefault()">Lưu</button>
+      <span style="color:var(--ink-mute);font-size:12px;">Áp khi SP và danh mục đều chưa cấu hình</span>
+    </div>
+  </div>
+
+  <div class="card" style="padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-weight:700;">2️⃣ Thuế suất theo Danh mục / Ngành hàng</div>
+      <button class="btn btn-primary" onclick="addTaxCategory()">+ Thêm danh mục</button>
+    </div>
+    <div class="table-wrap">
+      <table style="width:100%;">
+        <thead><tr><th>Danh mục / Ngành hàng</th><th style="width:120px;">VAT (%)</th><th>Ghi chú</th><th style="width:140px;">Trạng thái</th><th style="width:100px;"></th></tr></thead>
+        <tbody id="taxCatTbody"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--ink-mute);">Đang tải...</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--ink-mute);">
+      💡 Muốn 1 sản phẩm có thuế riêng (khác danh mục)? Đặt VAT trực tiếp trên sản phẩm đó trong app Kho — nó sẽ được ưu tiên cao nhất.
+    </div>
   </div>
 `;
 
@@ -2911,6 +2948,64 @@ function logout() {
 }
 
 // ============ PAGE ROUTER ============
+// ============ TAX CONFIG functions ============
+async function loadTaxConfig() {
+  try {
+    // 1) thuế mặc định
+    const { data: cfg } = await supa.from('tenant_config').select('default_vat').limit(1).maybeSingle();
+    const inp = document.getElementById('taxDefaultVat');
+    if (inp) inp.value = (cfg && cfg.default_vat != null) ? cfg.default_vat : 8;
+    // 2) danh mục
+    await renderTaxCats();
+  } catch(e) { console.warn('loadTaxConfig', e); }
+}
+async function renderTaxCats() {
+  const tb = document.getElementById('taxCatTbody'); if (!tb) return;
+  const { data, error } = await supa.from('category_vat_defaults').select('*').order('category');
+  if (error) { tb.innerHTML = '<tr><td colspan=5 style="text-align:center;padding:20px;color:#c00;">Lỗi: '+error.message+'</td></tr>'; return; }
+  if (!data || !data.length) { tb.innerHTML = '<tr><td colspan=5 style="text-align:center;padding:30px;color:var(--ink-mute);">Chưa có danh mục. Bấm "+ Thêm danh mục".</td></tr>'; return; }
+  tb.innerHTML = data.map(r => `<tr>
+    <td><input data-id="${r.id}" data-f="category" value="${(r.category||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;"></td>
+    <td><input data-id="${r.id}" data-f="vat" type="number" min="0" max="100" step="0.5" value="${r.vat??''}" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;font-family:monospace;"></td>
+    <td><input data-id="${r.id}" data-f="note" value="${(r.note||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;"></td>
+    <td><label style="font-size:12px;cursor:pointer;"><input data-id="${r.id}" data-f="active" type="checkbox" ${r.active?'checked':''}> Áp dụng</label></td>
+    <td><button class="btn" onclick="saveTaxCat('${r.id}')" style="padding:4px 10px;">Lưu</button> <button class="btn" onclick="delTaxCat('${r.id}')" style="padding:4px 8px;color:#c00;">Xóa</button></td>
+  </tr>`).join('');
+}
+async function saveTaxDefault() {
+  const v = parseFloat(document.getElementById('taxDefaultVat').value);
+  if (isNaN(v) || v<0 || v>100) { alert('VAT phải 0-100'); return; }
+  const { data: cfg } = await supa.from('tenant_config').select('id').limit(1).maybeSingle();
+  let res;
+  if (cfg) res = await supa.from('tenant_config').update({ default_vat: v }).eq('id', cfg.id);
+  else res = await supa.from('tenant_config').insert({ default_vat: v });
+  alert(res.error ? ('Lỗi: '+res.error.message) : '✓ Đã lưu thuế mặc định '+v+'%');
+}
+async function addTaxCategory() {
+  const cat = prompt('Tên danh mục / ngành hàng (vd: Hoa pham, Sua, Dien tu):');
+  if (!cat) return;
+  const vat = parseFloat(prompt('VAT (%) cho danh mục này:', '8'));
+  if (isNaN(vat)) { alert('VAT không hợp lệ'); return; }
+  const { error } = await supa.from('category_vat_defaults').insert({ category: cat.trim(), vat, active: true });
+  if (error) alert('Lỗi: '+error.message); else renderTaxCats();
+}
+async function saveTaxCat(id) {
+  const row = {};
+  document.querySelectorAll(`[data-id="${id}"]`).forEach(el => {
+    const f = el.dataset.f;
+    if (f==='active') row[f] = el.checked;
+    else if (f==='vat') row[f] = parseFloat(el.value);
+    else row[f] = el.value.trim();
+  });
+  const { error } = await supa.from('category_vat_defaults').update(row).eq('id', id);
+  alert(error ? ('Lỗi: '+error.message) : '✓ Đã lưu');
+}
+async function delTaxCat(id) {
+  if (!confirm('Xóa danh mục thuế này?')) return;
+  const { error } = await supa.from('category_vat_defaults').delete().eq('id', id);
+  if (error) alert('Lỗi: '+error.message); else renderTaxCats();
+}
+
 function switchPage(p) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === p));
   const container = document.getElementById('pageContainer');
@@ -2919,6 +3014,7 @@ function switchPage(p) {
   
   // After render, setup page-specific
   if (p === 'dashboard') renderDashboard();
+  else if (p === 'taxconfig') loadTaxConfig();
   else if (p === 'smartpaste') setupSmartPaste();
   else if (p === 'bulkimport') setupBulkImport();
   else if (p === 'vouchers') setupVouchersPage();

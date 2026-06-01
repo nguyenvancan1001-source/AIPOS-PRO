@@ -105,6 +105,8 @@
     <div class="company" id="companyName">—</div>
     <div class="spacer"></div>
     <div class="user" id="userEmail"></div>
+    <button class="logout" id="backupBtn" style="background:rgba(11,122,59,.3);display:none;">💾 Sao lưu</button>
+    <button class="logout" id="restoreBtn" style="background:rgba(181,69,63,.25);display:none;">♻️ Khôi phục</button>
     <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Mời NV</button>
     <button class="logout" id="changePwBtn" style="background:rgba(255,255,255,.1);">🔑 Đổi MK</button>
     <button class="logout" id="resetBtn" style="background:rgba(200,146,42,.25);">🧹 Dọn demo</button>
@@ -184,7 +186,53 @@ document.getElementById('changePwBtn').onclick = async () => {
   } catch(e) { alert('Lỗi: ' + (e?.message||e)); }
 };
 
-// ===== MỜI NHÂN VIÊN (chỉ owner) =====
+// ===== SAO LƯU: tải toàn bộ dữ liệu công ty về máy (JSON) =====
+document.getElementById('backupBtn').onclick = async () => {
+  const btn = document.getElementById('backupBtn');
+  btn.disabled = true; btn.textContent = '⏳ Đang sao lưu...';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/tenant-backup', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: '{}',
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Lỗi sao lưu');
+    // tải file JSON về máy
+    const blob = new Blob([JSON.stringify(j, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0,10);
+    a.href = URL.createObjectURL(blob);
+    a.download = `aipos-backup-${(document.getElementById('companyName').textContent||'congty').replace(/[^a-zA-Z0-9]/g,'_')}-${today}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+    alert(`✅ Đã sao lưu ${j.total_rows} dòng dữ liệu (${j.table_count} bảng).\nFile đã tải về máy. Hãy lưu nơi an toàn.`);
+  } catch(e) { alert('⚠️ Lỗi sao lưu: ' + (e?.message||e)); }
+  finally { btn.disabled = false; btn.textContent = '💾 Sao lưu'; }
+};
+
+// ===== KHÔI PHỤC: chọn file JSON backup nạp lại =====
+document.getElementById('restoreBtn').onclick = async () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'application/json,.json';
+  inp.onchange = async () => {
+    const file = inp.files[0]; if (!file) return;
+    if (!confirm('♻️ KHÔI PHỤC DỮ LIỆU\n\nNạp lại dữ liệu từ file sao lưu. Dữ liệu trùng ID sẽ bị ghi đè bằng bản trong file.\n\nNên sao lưu hiện trạng trước khi khôi phục. Tiếp tục?')) return;
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch(SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/tenant-restore', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ backup, mode: 'merge' }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Lỗi khôi phục');
+      alert(`✅ Đã khôi phục ${j.total_restored} dòng dữ liệu.\nTải lại trang để thấy dữ liệu.`);
+      location.reload();
+    } catch(e) { alert('⚠️ Lỗi khôi phục: ' + (e?.message||e)); }
+  };
+  inp.click();
+};
 document.getElementById('inviteBtn').onclick = async () => {
   const email = prompt('Email nhân viên mới:');
   if (!email) return;
@@ -254,7 +302,11 @@ async function enterHub(user) {
   // hiện nút "Mời NV" nếu là owner
   try {
     const { data: role } = await sb.rpc('current_user_role');
-    if (role === 'owner') document.getElementById('inviteBtn').style.display = 'inline-block';
+    if (role === 'owner') {
+      document.getElementById('inviteBtn').style.display = 'inline-block';
+      document.getElementById('backupBtn').style.display = 'inline-block';
+      document.getElementById('restoreBtn').style.display = 'inline-block';
+    }
   } catch(e) {}
   renderApps(features);
 }
