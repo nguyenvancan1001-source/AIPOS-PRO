@@ -206,11 +206,17 @@
   .plan-pick label{flex:1;padding:14px 12px;border:2px solid #475569;border-radius:12px;cursor:pointer;
     text-align:center;transition:border-color .2s,background .2s;position:relative;background:#0f172a;}
   .plan-pick label:has(input:checked){border-color:var(--blue);background:rgba(59,130,246,.15);box-shadow:0 2px 12px -4px rgba(21,101,192,.3);}
-  .plan-pick input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+  .plan-pick input[type=radio]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+  .plan-pick label.selected{border-color:var(--blue)!important;background:rgba(59,130,246,.15)!important;box-shadow:0 2px 12px -4px rgba(21,101,192,.3)!important;}
   .plan-pick .pk-icon{font-size:22px;margin-bottom:6px;}
   .plan-pick .pk-name{font-size:13px;font-weight:700;color:#f1f5f9;}
   .plan-pick .pk-price{font-size:11px;color:#60a5fa;font-weight:600;margin-top:2px;}
   .plan-pick .pk-info{font-size:10px;color:#94a3b8;margin-top:4px;line-height:1.4;}
+  .hddt-pick label{padding:10px 8px!important;background:#0c1527!important;}
+  .hddt-pick label.selected{background:rgba(59,130,246,.12)!important;}
+  .hddt-pick .pk-name{font-size:11px!important;}
+  .hddt-pick .pk-price{font-size:10px!important;}
+  .hddt-pick .pk-icon{font-size:16px!important;margin-bottom:3px!important;}
   @media(max-width:480px){.plan-pick{flex-direction:column;}}
   .ok-msg{color:#4ade80;font-size:13px;font-weight:600;text-align:center}
   .link{font-size:12.5px;color:#60a5fa;text-decoration:none;font-weight:600;cursor:pointer}
@@ -432,26 +438,48 @@
         <div class="plan-pick">
           <label><input type="radio" name="regPlan" value="basic">
             <div class="pk-icon">🆓</div><div class="pk-name">Trải nghiệm</div>
-            <div class="pk-price" id="pkPriceBasic"><s style="color:#64748b;font-size:10px">200K</s> 0đ/tháng</div>
+            <div class="pk-price" id="pkPriceBasic"><s style="color:#64748b;font-size:10px">2.400.000đ</s> 0đ/năm</div>
             <div class="pk-info">POS cơ bản · 1 user</div>
           </label>
           <label><input type="radio" name="regPlan" value="standard" checked>
             <div class="pk-icon">⭐</div><div class="pk-name">Cơ bản</div>
-            <div class="pk-price" id="pkPriceStandard"><s style="color:#64748b;font-size:10px">500K</s> 100K/tháng</div>
+            <div class="pk-price" id="pkPriceStandard"><s style="color:#64748b;font-size:10px">6.000.000đ</s> 1.200.000đ/năm</div>
             <div class="pk-info">POS + Kho + NCC + HĐĐT</div>
           </label>
           <label><input type="radio" name="regPlan" value="premium">
             <div class="pk-icon">💎</div><div class="pk-name">Toàn diện</div>
-            <div class="pk-price" id="pkPricePremium"><s style="color:#64748b;font-size:10px">2.000K</s> 500K/tháng</div>
+            <div class="pk-price" id="pkPricePremium"><s style="color:#64748b;font-size:10px">24.000.000đ</s> 6.000.000đ/năm</div>
             <div class="pk-info">Full: Kế toán + Lương + AI</div>
           </label>
         </div>
       </div>
-      <div class="field"><label>Tên công ty / cửa hàng *</label><input type="text" id="regCompany" placeholder="VD: Siêu thị ABC"></div>
-      <div class="reg-card row">
-        <div class="field"><label>Mã số thuế</label><input type="text" id="regTaxId" placeholder="Không bắt buộc"></div>
-        <div class="field"><label>Họ tên quản trị</label><input type="text" id="regName" placeholder="Admin"></div>
+      <div class="field" id="regHddtWrap" style="display:none">
+        <label>📄 Gói Hoá đơn điện tử (HĐĐT) <span style="font-weight:400;color:#94a3b8">— không bắt buộc</span></label>
+        <div class="plan-pick hddt-pick">
+          <label onclick="selectHddt(this,'none')"><input type="radio" name="regHddt" value="none" checked>
+            <div class="pk-icon">—</div><div class="pk-name">Không mua</div>
+            <div class="pk-info">Mua sau cũng được</div>
+          </label>
+          <label onclick="selectHddt(this,'5000')"><input type="radio" name="regHddt" value="5000">
+            <div class="pk-icon">📄</div><div class="pk-name">5.000 HĐ</div>
+            <div class="pk-price">100đ/HĐ · 500.000đ</div>
+          </label>
+          <label onclick="selectHddt(this,'10000')"><input type="radio" name="regHddt" value="10000">
+            <div class="pk-icon">📄📄</div><div class="pk-name">10.000 HĐ</div>
+            <div class="pk-price">90đ/HĐ · 900.000đ <span style="color:#4ade80">▼10%</span></div>
+          </label>
+          <label onclick="selectHddt(this,'20000')"><input type="radio" name="regHddt" value="20000">
+            <div class="pk-icon">📄📄📄</div><div class="pk-name">20.000 HĐ</div>
+            <div class="pk-price">80đ/HĐ · 1.600.000đ <span style="color:#4ade80">▼20%</span></div>
+          </label>
+        </div>
       </div>
+      <div class="field"><label>Tên công ty *</label><input type="text" id="regCompany" placeholder="VD: Công ty TNHH ABC"></div>
+      <div class="field"><label>Tên cửa hàng *</label><input type="text" id="regStoreName" placeholder="VD: Siêu thị ABC - Chi nhánh 1"></div>
+      <div class="field"><label>Mã số thuế</label><input type="text" id="regTaxId" placeholder="Không bắt buộc"></div>
+      <div class="field"><label>Họ tên quản trị *</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div>
+      <div class="field"><label>Số điện thoại *</label><input type="tel" id="regPhone" placeholder="0901 234 567"></div>
+      <div class="field"><label>Địa chỉ *</label><input type="text" id="regAddress" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/TP"></div>
       <div class="field"><label>Email đăng nhập *</label><input type="email" id="regEmail" placeholder="you@congty.vn"></div>
       <div class="field"><label>Mật khẩu *</label><input type="password" id="regPass" placeholder="Tối thiểu 6 ký tự" minlength="6"></div>
       <button class="btn" id="regBtn" onclick="doRegister()">🚀 Đăng ký ngay</button>
@@ -789,8 +817,44 @@ function showView(v) {
 function startRegister(plan) {
   showView('register');
   const radio = document.querySelector(`input[name=regPlan][value="${plan}"]`);
-  if (radio) radio.checked = true;
+  if (radio) { radio.checked = true; highlightSelectedPlan(); }
 }
+function highlightSelectedPlan() {
+  document.querySelectorAll('.plan-pick:not(.hddt-pick) label').forEach(l => l.classList.remove('selected'));
+  const checked = document.querySelector('input[name=regPlan]:checked');
+  if (checked) checked.closest('label').classList.add('selected');
+  // Show/hide HĐĐT section based on plan
+  const plan = checked ? checked.value : 'basic';
+  const hddtWrap = document.getElementById('regHddtWrap');
+  if (hddtWrap) {
+    hddtWrap.style.display = (plan === 'standard' || plan === 'premium') ? '' : 'none';
+    // Reset HĐĐT to "none" if switching to basic
+    if (plan === 'basic') {
+      const noneRadio = document.querySelector('input[name=regHddt][value=none]');
+      if (noneRadio) noneRadio.checked = true;
+      document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
+      if (noneRadio) noneRadio.closest('label').classList.add('selected');
+    }
+  }
+}
+function selectHddt(lbl, val) {
+  document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
+  const radio = lbl.querySelector('input[type=radio]');
+  if (radio) { radio.checked = true; lbl.classList.add('selected'); }
+}
+// Init plan-pick click handlers
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.plan-pick:not(.hddt-pick) label').forEach(lbl => {
+    lbl.addEventListener('click', () => {
+      const radio = lbl.querySelector('input[type=radio]');
+      if (radio) { radio.checked = true; highlightSelectedPlan(); }
+    });
+  });
+  highlightSelectedPlan(); // highlight default checked (Cơ bản)
+  // Init HĐĐT default
+  const noneRadio = document.querySelector('input[name=regHddt][value=none]');
+  if (noneRadio) noneRadio.closest('label').classList.add('selected');
+});
 // Hash-based deep link: #register, #admin, #pricing
 (function(){
   const h = location.hash.replace('#','');
@@ -804,20 +868,28 @@ const REG_EDGE = SUPABASE_URL + '/functions/v1/self-register';
 async function doRegister() {
   const btn = document.getElementById('regBtn'), err = document.getElementById('regErr');
   const company = document.getElementById('regCompany').value.trim();
+  const storeName = document.getElementById('regStoreName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPass').value;
   const taxId = document.getElementById('regTaxId').value.trim();
   const adminName = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const address = document.getElementById('regAddress').value.trim();
   const plan = document.querySelector('input[name=regPlan]:checked')?.value || 'basic';
+  const hddtPkg = document.querySelector('input[name=regHddt]:checked')?.value || 'none';
   err.textContent = '';
   if (!company) { err.textContent = 'Vui lòng nhập tên công ty'; return; }
+  if (!storeName) { err.textContent = 'Vui lòng nhập tên cửa hàng'; return; }
+  if (!adminName) { err.textContent = 'Vui lòng nhập họ tên quản trị'; return; }
+  if (!phone) { err.textContent = 'Vui lòng nhập số điện thoại'; return; }
+  if (!address) { err.textContent = 'Vui lòng nhập địa chỉ'; return; }
   if (!email) { err.textContent = 'Vui lòng nhập email'; return; }
   if (password.length < 6) { err.textContent = 'Mật khẩu tối thiểu 6 ký tự'; return; }
   btn.disabled = true; btn.textContent = 'Đang xử lý...';
   try {
     const res = await fetch(REG_EDGE, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ company_name: company, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName || 'Quản trị viên', plan }),
+      body: JSON.stringify({ company_name: company, store_name: storeName, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName, phone: phone, address: address, plan, hddt_package: hddtPkg !== 'none' ? hddtPkg : null }),
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Lỗi không xác định');
