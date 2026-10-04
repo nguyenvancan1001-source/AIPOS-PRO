@@ -128,9 +128,10 @@
   @media(max-width:720px){.pricing-cards{grid-template-columns:1fr;max-width:380px;margin-left:auto;margin-right:auto;}}
   .p-card{background:#1e293b;border-radius:16px;padding:28px 22px;border:2px solid #475569;
     display:flex;flex-direction:column;position:relative;transition:border-color .2s,box-shadow .2s,transform .2s;color:#f1f5f9;cursor:pointer;}
+  .p-card{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;}
   .p-card:hover{border-color:#60a5fa;transform:translateY(-2px);}
-  .p-card.featured,.p-card.selected{border-color:var(--blue);box-shadow:0 8px 30px -8px rgba(21,101,192,.25);}
-  .p-card.selected{background:rgba(30,41,59,.95);border-color:#60a5fa;box-shadow:0 8px 30px -8px rgba(21,101,192,.4);transform:translateY(-3px);}
+  .p-card.featured{border-color:var(--blue);box-shadow:0 8px 30px -8px rgba(21,101,192,.25);}
+  .p-card.selected{background:rgba(15,23,42,.98)!important;border-color:#3b82f6!important;box-shadow:0 0 0 3px rgba(59,130,246,.35),0 8px 30px -8px rgba(21,101,192,.5)!important;transform:translateY(-4px)!important;}
   .p-card .p-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),#0ea5e9);
     color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.04em;white-space:nowrap;}
   .p-card .p-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
@@ -286,7 +287,7 @@
     </div>
     <div style="text-align:center;margin-top:10px;font-size:12.5px;color:var(--mute);">
       Chưa có tài khoản? <a href="#" class="link" onclick="showView('pricing');return false">Xem gói & Đăng ký</a>
-      &nbsp;·&nbsp; <a href="#" class="link" onclick="showView('adminPanel');return false" style="color:var(--gold)">🛡️ Admin</a>
+      <a href="#admin" class="link" onclick="showView('adminPanel');return false" style="color:var(--gold);display:none" id="admLink">🛡️ Admin</a>
     </div>
   </div>
 </div>
@@ -480,9 +481,16 @@
           </label>
         </div>
       </div>
-      <div class="field"><label>Tên công ty *</label><input type="text" id="regCompany" placeholder="VD: Công ty TNHH ABC"></div>
+      <div class="field"><label>Loại hình đăng ký *</label>
+        <select id="regBizType" onchange="updateRegBizLabels()" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--gray-600);background:var(--gray-800);color:#fff;font-size:14px">
+          <option value="company">Công ty / Doanh nghiệp</option>
+          <option value="household">Hộ kinh doanh</option>
+          <option value="individual">Cá nhân</option>
+        </select>
+      </div>
+      <div class="field"><label id="regCompanyLabel">Tên công ty *</label><input type="text" id="regCompany" placeholder="VD: Công ty TNHH ABC"></div>
       <div class="field"><label>Tên cửa hàng *</label><input type="text" id="regStoreName" placeholder="VD: Siêu thị ABC - Chi nhánh 1"></div>
-      <div class="field"><label>Mã số thuế</label><input type="text" id="regTaxId" placeholder="Không bắt buộc"></div>
+      <div class="field"><label id="regTaxLabel">Mã số thuế</label><input type="text" id="regTaxId" placeholder="Không bắt buộc"></div>
       <div class="field"><label>Họ tên quản trị *</label><input type="text" id="regName" placeholder="Nguyễn Văn A"></div>
       <div class="field"><label>Số điện thoại *</label><input type="tel" id="regPhone" placeholder="0901 234 567"></div>
       <div class="field"><label>Địa chỉ *</label><input type="text" id="regAddress" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/TP"></div>
@@ -776,17 +784,19 @@ async function enterHub(user) {
   showView('hub');
   document.getElementById('userEmail').textContent = user.email;
   // nạp tên công ty (trắng nhãn) qua RLS — chỉ ra tenant của user
-  let companyName = 'Công ty của bạn', plan = 'basic', features = null;
+  let companyName = 'Công ty của bạn', storeName = '', plan = 'basic', features = null;
   try {
-    const { data } = await sb.from('tenants').select('company_name, plan').limit(1).maybeSingle();
-    if (data) { companyName = data.company_name || companyName; plan = data.plan || 'basic'; }
+    const { data } = await sb.from('tenants').select('company_name, store_name, plan').limit(1).maybeSingle();
+    if (data) { companyName = data.company_name || companyName; storeName = data.store_name || ''; plan = data.plan || 'basic'; }
   } catch(e) {}
   // Lấy features từ DB function (ưu tiên override, fallback plan defaults)
   try {
     const { data: f } = await sb.rpc('get_plan_features');
     if (f) features = f;
   } catch(e) {}
-  document.getElementById('companyName').textContent = companyName;
+  // Hiển thị tên cửa hàng (ưu tiên) hoặc tên công ty
+  document.getElementById('companyName').textContent = storeName || companyName;
+  document.getElementById('companyName').title = storeName ? `${companyName} · ${storeName}` : companyName;
   // hiện badge gói
   const planBadge = document.getElementById('planBadge');
   if (planBadge) { planBadge.textContent = plan.toUpperCase(); planBadge.className = 'plan-' + plan; }
@@ -861,6 +871,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const noneRadio = document.querySelector('input[name=regHddt][value=none]');
   if (noneRadio) noneRadio.closest('label').classList.add('selected');
 });
+// Loại hình đăng ký — đổi label theo loại
+function updateRegBizLabels() {
+  const t = document.getElementById('regBizType').value;
+  const lbl = document.getElementById('regCompanyLabel');
+  const inp = document.getElementById('regCompany');
+  const taxLbl = document.getElementById('regTaxLabel');
+  const taxInp = document.getElementById('regTaxId');
+  if (t === 'company') {
+    lbl.textContent = 'Tên công ty *';
+    inp.placeholder = 'VD: Công ty TNHH ABC';
+    taxLbl.textContent = 'Mã số thuế';
+    taxInp.placeholder = 'Không bắt buộc';
+  } else if (t === 'household') {
+    lbl.textContent = 'Tên hộ kinh doanh *';
+    inp.placeholder = 'VD: HKD Tạp hoá Minh Tâm';
+    taxLbl.textContent = 'Mã số thuế HKD';
+    taxInp.placeholder = 'Không bắt buộc';
+  } else {
+    lbl.textContent = 'Tên đại diện / Tên kinh doanh *';
+    inp.placeholder = 'VD: Nguyễn Văn B hoặc Tạp hoá Bình An';
+    taxLbl.textContent = 'Mã số thuế cá nhân';
+    taxInp.placeholder = 'Không bắt buộc';
+  }
+}
+
 // Chọn gói trên trang pricing — highlight card
 let _selectedPricingPlan = 'standard'; // default
 function selectPricingCard(plan) {
@@ -891,7 +926,7 @@ function selectHddtPricing(val) {
   const h = location.hash.replace('#','');
   if (h === 'register') showView('register');
   else if (h === 'pricing') showView('pricing');
-  else if (h === 'admin') showView('adminPanel');
+  else if (h === 'admin') { showView('adminPanel'); const al=document.getElementById('admLink'); if(al) al.style.display='inline'; }
 })();
 
 // ===== SELF-REGISTRATION =====
@@ -906,10 +941,12 @@ async function doRegister() {
   const adminName = document.getElementById('regName').value.trim();
   const phone = document.getElementById('regPhone').value.trim();
   const address = document.getElementById('regAddress').value.trim();
+  const bizType = document.getElementById('regBizType').value;
   const plan = document.querySelector('input[name=regPlan]:checked')?.value || 'basic';
   const hddtPkg = document.querySelector('input[name=regHddt]:checked')?.value || 'none';
   err.textContent = '';
-  if (!company) { err.textContent = 'Vui lòng nhập tên công ty'; return; }
+  const bizLabels = { company:'tên công ty', household:'tên hộ kinh doanh', individual:'tên đại diện' };
+  if (!company) { err.textContent = `Vui lòng nhập ${bizLabels[bizType]||'tên'}`; return; }
   if (!storeName) { err.textContent = 'Vui lòng nhập tên cửa hàng'; return; }
   if (!adminName) { err.textContent = 'Vui lòng nhập họ tên quản trị'; return; }
   if (!phone) { err.textContent = 'Vui lòng nhập số điện thoại'; return; }
@@ -920,7 +957,7 @@ async function doRegister() {
   try {
     const res = await fetch(REG_EDGE, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ company_name: company, store_name: storeName, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName, phone: phone, address: address, plan, hddt_package: hddtPkg !== 'none' ? hddtPkg : null }),
+      body: JSON.stringify({ biz_type: bizType, company_name: company, store_name: storeName, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName, phone: phone, address: address, plan, hddt_package: hddtPkg !== 'none' ? hddtPkg : null }),
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Lỗi không xác định');
