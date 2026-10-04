@@ -127,17 +127,20 @@
   .pricing-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
   @media(max-width:720px){.pricing-cards{grid-template-columns:1fr;max-width:380px;margin-left:auto;margin-right:auto;}}
   .p-card{background:#1e293b;border-radius:16px;padding:28px 22px;border:2px solid #475569;
-    display:flex;flex-direction:column;position:relative;transition:border-color .2s,box-shadow .2s;color:#f1f5f9;}
-  .p-card.featured{border-color:var(--blue);box-shadow:0 8px 30px -8px rgba(21,101,192,.25);}
+    display:flex;flex-direction:column;position:relative;transition:border-color .2s,box-shadow .2s,transform .2s;color:#f1f5f9;cursor:pointer;}
+  .p-card:hover{border-color:#60a5fa;transform:translateY(-2px);}
+  .p-card.featured,.p-card.selected{border-color:var(--blue);box-shadow:0 8px 30px -8px rgba(21,101,192,.25);}
+  .p-card.selected{background:rgba(30,41,59,.95);border-color:#60a5fa;box-shadow:0 8px 30px -8px rgba(21,101,192,.4);transform:translateY(-3px);}
   .p-card .p-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),#0ea5e9);
     color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.04em;white-space:nowrap;}
   .p-card .p-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
     font-size:22px;margin-bottom:14px;}
   .p-card .p-name{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;}
-  .p-card .p-price{font-size:28px;font-weight:800;color:#fff;margin-bottom:2px;}
-  .p-card .p-price .p-orig{font-size:16px;font-weight:600;color:#64748b;text-decoration:line-through;margin-right:6px;}
+  .p-card .p-price{font-size:22px;font-weight:800;color:#fff;margin-bottom:2px;}
+  .p-card .p-price .p-orig{font-size:13px;font-weight:600;color:#64748b;text-decoration:line-through;margin-right:4px;}
   .p-card .p-save{display:inline-block;background:rgba(74,222,128,.15);color:#4ade80;font-size:11px;font-weight:700;
     padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:.03em;}
+  .p-card .p-saving{font-size:12px;font-weight:700;color:#ef4444;margin-top:6px;margin-bottom:4px;}
 
   /* ===== BILLING TOGGLE ===== */
   .billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;}
@@ -196,10 +199,10 @@
   .pricing-back{text-align:center;margin-top:8px;}
 
   /* ===== REGISTER VIEW ===== */
-  #register{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  #register{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow-y:auto;}
   .reg-card{background:#1e293b;border-radius:20px;padding:34px;width:520px;max-width:94vw;
     box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1);
-    border:1px solid rgba(255,255,255,.08);color:#f1f5f9;}
+    border:1px solid rgba(255,255,255,.08);color:#f1f5f9;margin:20px auto;}
   .reg-card .row{display:flex;gap:10px}
   .reg-card .row>div{flex:1}
   .plan-pick{display:flex;gap:10px;margin-top:6px;}
@@ -307,11 +310,12 @@
 
     <div class="pricing-cards">
       <!-- TRẢI NGHIỆM (Basic) -->
-      <div class="p-card" id="pCardBasic">
+      <div class="p-card" id="pCardBasic" onclick="selectPricingCard('basic')">
         <div class="p-icon" style="background:#F1F5F9;color:#64748b;">🆓</div>
         <div class="p-name">Trải nghiệm</div>
-        <div class="p-price" id="pPriceBasic"><span class="p-orig">200K</span>0đ <sub>/tháng</sub></div>
+        <div class="p-price" id="pPriceBasic"><span class="p-orig">200.000đ</span>0đ <sub>/tháng</sub></div>
         <div class="p-save" id="pSaveBasic">▼ MIỄN PHÍ</div>
+        <div class="p-saving" id="pSavingBasic">🔥 Tiết kiệm 2.400.000đ/năm</div>
         <div class="p-desc">Dùng thử POS cơ bản cho tiệm tạp hoá nhỏ</div>
         <ul class="p-features">
           <li>POS bán hàng tại quầy</li>
@@ -326,12 +330,13 @@
       </div>
 
       <!-- STANDARD -->
-      <div class="p-card featured" id="pCardStandard">
+      <div class="p-card featured" id="pCardStandard" onclick="selectPricingCard('standard')">
         <div class="p-badge">PHỔ BIẾN NHẤT</div>
         <div class="p-icon" style="background:#DBEAFE;color:#2563eb;">⭐</div>
         <div class="p-name">Cơ bản</div>
-        <div class="p-price" id="pPriceStandard"><span class="p-orig">500K</span>100K <sub>/tháng</sub></div>
+        <div class="p-price" id="pPriceStandard"><span class="p-orig">500.000đ</span>100.000đ <sub>/tháng</sub></div>
         <div class="p-save" id="pSaveStandard">▼ GIẢM 80%</div>
+        <div class="p-saving" id="pSavingStandard">🔥 Tiết kiệm 4.800.000đ/năm</div>
         <div class="p-desc">Đầy đủ cho cửa hàng vừa — bán hàng, kho, nhập hàng, HĐĐT</div>
         <ul class="p-features">
           <li>Toàn bộ tính năng Trải nghiệm</li>
@@ -347,11 +352,12 @@
       </div>
 
       <!-- PREMIUM -->
-      <div class="p-card" id="pCardPremium">
+      <div class="p-card" id="pCardPremium" onclick="selectPricingCard('premium')">
         <div class="p-icon" style="background:#FEF3C7;color:#f59e0b;">💎</div>
         <div class="p-name">Toàn diện</div>
-        <div class="p-price" id="pPricePremium"><span class="p-orig">2.000K</span>500K <sub>/tháng</sub></div>
+        <div class="p-price" id="pPricePremium"><span class="p-orig">2.000.000đ</span>500.000đ <sub>/tháng</sub></div>
         <div class="p-save" id="pSavePremium">▼ GIẢM 75%</div>
+        <div class="p-saving" id="pSavingPremium">🔥 Tiết kiệm 18.000.000đ/năm</div>
         <div class="p-desc">Giải pháp toàn diện cho chuỗi cửa hàng & doanh nghiệp</div>
         <ul class="p-features">
           <li>Toàn bộ tính năng Cơ bản</li>
@@ -402,12 +408,12 @@
       <div style="overflow-x:auto">
       <table class="cmp-table">
         <thead>
-          <tr><th class="feat-name">Gói HĐĐT</th><th class="val">Đơn giá</th><th class="val">Thành tiền</th><th class="val">Tiết kiệm</th></tr>
+          <tr><th class="feat-name">Gói HĐĐT</th><th class="val">Đơn giá</th><th class="val">Thành tiền</th><th class="val">Tiết kiệm</th><th class="val">Chọn</th></tr>
         </thead>
         <tbody>
-          <tr><td class="feat-name">Gói 5.000 HĐ</td><td class="val">100đ/HĐ</td><td class="val">500K</td><td class="val">—</td></tr>
-          <tr><td class="feat-name">Gói 10.000 HĐ</td><td class="val">90đ/HĐ</td><td class="val">900K</td><td class="val">▼ 10%</td></tr>
-          <tr><td class="feat-name">Gói 20.000 HĐ</td><td class="val">80đ/HĐ</td><td class="val">1.600K</td><td class="val">▼ 20%</td></tr>
+          <tr id="hddtRow5k" class="hddt-row" onclick="selectHddtPricing('5000')" style="cursor:pointer;transition:background .2s"><td class="feat-name">Gói 5.000 HĐ</td><td class="val">100đ/HĐ</td><td class="val">500.000đ</td><td class="val">—</td><td class="val"><span class="hddt-check" style="display:inline-block;width:22px;height:22px;border:2px solid #475569;border-radius:6px;text-align:center;line-height:18px;font-size:14px;transition:all .2s">&#8203;</span></td></tr>
+          <tr id="hddtRow10k" class="hddt-row" onclick="selectHddtPricing('10000')" style="cursor:pointer;transition:background .2s"><td class="feat-name">Gói 10.000 HĐ</td><td class="val">90đ/HĐ</td><td class="val">900.000đ</td><td class="val" style="color:#4ade80">▼ 10%</td><td class="val"><span class="hddt-check" style="display:inline-block;width:22px;height:22px;border:2px solid #475569;border-radius:6px;text-align:center;line-height:18px;font-size:14px;transition:all .2s">&#8203;</span></td></tr>
+          <tr id="hddtRow20k" class="hddt-row" onclick="selectHddtPricing('20000')" style="cursor:pointer;transition:background .2s"><td class="feat-name">Gói 20.000 HĐ</td><td class="val">80đ/HĐ</td><td class="val">1.600.000đ</td><td class="val" style="color:#4ade80">▼ 20%</td><td class="val"><span class="hddt-check" style="display:inline-block;width:22px;height:22px;border:2px solid #475569;border-radius:6px;text-align:center;line-height:18px;font-size:14px;transition:all .2s">&#8203;</span></td></tr>
         </tbody>
       </table>
       </div>
@@ -855,6 +861,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const noneRadio = document.querySelector('input[name=regHddt][value=none]');
   if (noneRadio) noneRadio.closest('label').classList.add('selected');
 });
+// Chọn gói trên trang pricing — highlight card
+let _selectedPricingPlan = 'standard'; // default
+function selectPricingCard(plan) {
+  _selectedPricingPlan = plan;
+  document.querySelectorAll('.pricing-cards .p-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('pCard' + plan.charAt(0).toUpperCase() + plan.slice(1));
+  if (card) card.classList.add('selected');
+}
+// Chọn gói HĐĐT trên bảng giá pricing
+let _selectedHddtPricing = null;
+function selectHddtPricing(val) {
+  if (_selectedHddtPricing === val) { _selectedHddtPricing = null; } else { _selectedHddtPricing = val; }
+  document.querySelectorAll('.hddt-row').forEach(row => {
+    const chk = row.querySelector('.hddt-check');
+    if (!chk) return;
+    const rowVal = row.getAttribute('onclick')?.match(/'(\d+)'/)?.[1];
+    if (rowVal === _selectedHddtPricing) {
+      chk.textContent = '✓'; chk.style.background = 'var(--blue)'; chk.style.borderColor = 'var(--blue)'; chk.style.color = '#fff';
+      row.style.background = 'rgba(59,130,246,.12)';
+    } else {
+      chk.innerHTML = '&#8203;'; chk.style.background = ''; chk.style.borderColor = '#475569'; chk.style.color = '';
+      row.style.background = '';
+    }
+  });
+}
 // Hash-based deep link: #register, #admin, #pricing
 (function(){
   const h = location.hash.replace('#','');
@@ -1040,34 +1071,40 @@ function setBilling(mode) {
     sw.classList.add('yearly'); bonus.classList.add('show');
     mLabel.classList.remove('active'); yLabel.classList.add('active');
     // Trải nghiệm: 0đ × 12 = 0đ/năm (miễn phí)
-    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">2.400K</span>0đ <sub>/năm</sub>';
+    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">2.400.000đ</span>0đ <sub>/năm</sub>';
     document.getElementById('pSaveBasic').innerHTML = '🎁 MIỄN PHÍ trọn năm';
-    // Cơ bản: 100K × 12 = 1.200K/năm (dùng 14 tháng)
-    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">6.000K</span>1.200K <sub>/năm</sub>';
+    document.getElementById('pSavingBasic').innerHTML = '🔥 Tiết kiệm 2.400.000đ/năm';
+    // Cơ bản: 100.000đ × 12 = 1.200.000đ/năm (dùng 14 tháng)
+    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">6.000.000đ</span>1.200.000đ <sub>/năm</sub>';
     document.getElementById('pSaveStandard').innerHTML = '🎁 Dùng 14 tháng · Tặng 2 tháng';
-    // Toàn diện: 500K × 12 = 6.000K/năm (dùng 14 tháng)
-    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">24.000K</span>6.000K <sub>/năm</sub>';
+    document.getElementById('pSavingStandard').innerHTML = '🔥 Tiết kiệm 4.800.000đ/năm';
+    // Toàn diện: 500.000đ × 12 = 6.000.000đ/năm (dùng 14 tháng)
+    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">24.000.000đ</span>6.000.000đ <sub>/năm</sub>';
     document.getElementById('pSavePremium').innerHTML = '🎁 Dùng 14 tháng · Tặng 2 tháng';
+    document.getElementById('pSavingPremium').innerHTML = '🔥 Tiết kiệm 18.000.000đ/năm';
     // Register form
-    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">2.400K</s> 0đ/năm';
-    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">6.000K</s> 1.200K/năm';
-    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">24.000K</s> 6.000K/năm';
+    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">2.400.000đ</s> 0đ/năm';
+    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">6.000.000đ</s> 1.200.000đ/năm';
+    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">24.000.000đ</s> 6.000.000đ/năm';
   } else {
     sw.classList.remove('yearly'); bonus.classList.remove('show');
     mLabel.classList.add('active'); yLabel.classList.remove('active');
     // Trải nghiệm monthly
-    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">200K</span>0đ <sub>/tháng</sub>';
+    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">200.000đ</span>0đ <sub>/tháng</sub>';
     document.getElementById('pSaveBasic').innerHTML = '▼ MIỄN PHÍ';
+    document.getElementById('pSavingBasic').innerHTML = '🔥 Tiết kiệm 2.400.000đ/năm';
     // Cơ bản monthly
-    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">500K</span>100K <sub>/tháng</sub>';
+    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">500.000đ</span>100.000đ <sub>/tháng</sub>';
     document.getElementById('pSaveStandard').innerHTML = '▼ GIẢM 80%';
+    document.getElementById('pSavingStandard').innerHTML = '🔥 Tiết kiệm 4.800.000đ/năm';
     // Toàn diện monthly
-    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">2.000K</span>500K <sub>/tháng</sub>';
+    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">2.000.000đ</span>500.000đ <sub>/tháng</sub>';
     document.getElementById('pSavePremium').innerHTML = '▼ GIẢM 75%';
+    document.getElementById('pSavingPremium').innerHTML = '🔥 Tiết kiệm 18.000.000đ/năm';
     // Register form
-    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">200K</s> 0đ/tháng';
-    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">500K</s> 100K/tháng';
-    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">2.000K</s> 500K/tháng';
+    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">200.000đ</s> 0đ/tháng';
+    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">500.000đ</s> 100.000đ/tháng';
+    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">2.000.000đ</s> 500.000đ/tháng';
   }
 }
 
