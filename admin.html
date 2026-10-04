@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIPOS-PRO · Admin Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f172a;--card:#1e293b;--card2:#334155;--accent:#3b82f6;--green:#22c55e;--orange:#f59e0b;--red:#ef4444;--text:#f1f5f9;--text2:#94a3b8;--border:#475569}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* Login */
+#loginView{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-card{background:var(--card);border-radius:16px;padding:40px;width:380px;max-width:92vw;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.login-card h1{font-size:22px;margin-bottom:4px;color:var(--accent)}
+.login-card p{font-size:13px;color:var(--text2);margin-bottom:24px}
+.login-card input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text);margin-bottom:12px}
+.login-card input:focus{border-color:var(--accent);outline:none}
+.login-card button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.login-card .err{color:var(--red);font-size:12px;margin-top:6px;min-height:16px}
+/* Dashboard */
+#dashView{display:none}
+.topbar{background:var(--card);padding:12px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.topbar h1{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.topbar h1 span{color:var(--accent)}
+.topbar .spacer{flex:1}
+.topbar .logout{background:rgba(239,68,68,.2);color:#fca5a5;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 24px}
+.stat{background:var(--card);border-radius:12px;padding:18px 20px}
+.stat .num{font-size:28px;font-weight:800;color:var(--accent)}
+.stat .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+/* Table */
+.section{padding:0 24px 24px}
+.section h2{font-size:14px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.tbl{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+.tbl th{background:var(--card2);padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.tbl td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);font-size:13px}
+.tbl tr:hover td{background:rgba(59,130,246,.06)}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.b-basic{background:#475569;color:#e2e8f0}
+.b-standard{background:rgba(59,130,246,.25);color:#93c5fd}
+.b-premium{background:rgba(245,158,11,.25);color:#fcd34d}
+.b-active{background:rgba(34,197,94,.2);color:#86efac}
+.b-suspended{background:rgba(239,68,68,.2);color:#fca5a5}
+.act{display:flex;gap:4px}
+.act button{padding:4px 10px;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600}
+.act .edit{background:rgba(59,130,246,.2);color:#93c5fd}
+.act .toggle{background:rgba(245,158,11,.2);color:#fcd34d}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:14px;padding:28px;width:440px;max-width:92vw}
+.modal h3{font-size:16px;margin-bottom:16px;color:var(--accent)}
+.modal label{display:block;font-size:11px;color:var(--text2);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+.modal select,.modal input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px}
+.modal .btns{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.modal .btns button{padding:8px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.modal .save{background:var(--accent);color:#fff}
+.modal .cancel{background:var(--card2);color:var(--text2)}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.features-grid label{font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text);text-transform:none;letter-spacing:0;margin:0}
+.features-grid input{width:auto}
+</style>
+</head>
+<body>
+<!-- LOGIN -->
+<div id="loginView">
+  <div class="login-card">
+    <h1>🛡️ AIPOS-PRO Admin</h1>
+    <p>Bảng điều khiển nhà cung cấp SaaS</p>
+    <input type="password" id="secretInput" placeholder="Admin Secret Key">
+    <button onclick="doLogin()">Đăng nhập</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashView">
+  <div class="topbar">
+    <h1>🛡️ AIPOS<span>·PRO</span> Admin</h1>
+    <div class="spacer"></div>
+    <button class="logout" onclick="doLogout()">🚪 Đăng xuất</button>
+  </div>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="section">
+    <h2>📋 Danh sách Tenants</h2>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Công ty</th><th>Code</th><th>MST</th><th>Gói</th><th>Trạng thái</th><th>Users</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+        <tbody id="tenantBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3 id="modalTitle">Chỉnh sửa Tenant</h3>
+    <input type="hidden" id="m-tid">
+    <label>Gói dịch vụ</label>
+    <select id="m-plan"><option value="basic">Basic</option><option value="standard">Standard</option><option value="premium">Premium</option></select>
+    <label>Trạng thái</label>
+    <select id="m-status"><option value="active">Active</option><option value="suspended">Suspended</option></select>
+
+    <label>Feature Flags (override)</label>
+    <div class="features-grid" id="m-features">
+      <label><input type="checkbox" data-f="pos"> POS</label>
+      <label><input type="checkbox" data-f="kho"> Kho</label>
+      <label><input type="checkbox" data-f="ncc"> NCC</label>
+      <label><input type="checkbox" data-f="luong"> Lương</label>
+      <label><input type="checkbox" data-f="ketoan"> Kế toán</label>
+      <label><input type="checkbox" data-f="einvoice"> E-Invoice</label>
+      <label><input type="checkbox" data-f="ai_assist"> AI Assist</label>
+      <label><input type="checkbox" data-f="auto_backup"> Auto Backup</label>
+      <label><input type="checkbox" data-f="api_access"> API Access</label>
+    </div>
+    <div style="margin-top:8px">
+      <label>Max Users</label><input type="number" id="m-maxusers" min="1" value="10">
+      <label>Max Branches</label><input type="number" id="m-maxbranches" min="1" value="3">
+    </div>
+    <div class="btns">
+      <button class="cancel" onclick="closeModal()">Hủy</button>
+      <button class="save" onclick="saveEdit()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const EDGE = 'https://ssrodnzhuydlupglvepm.supabase.co/functions/v1/admin-api';
+let SECRET = '';
+
+function doLogin() {
+  SECRET = document.getElementById('secretInput').value.trim();
+  if (!SECRET) { document.getElementById('loginErr').textContent = 'Vui lòng nhập secret key'; return; }
+  // Test by calling stats
+  api('stats').then(d => {
+    if (d.error) { document.getElementById('loginErr').textContent = d.error; SECRET=''; return; }
+    sessionStorage.setItem('_adm', SECRET);
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('dashView').style.display = 'block';
+    renderStats(d);
+    loadTenants();
+  });
+}
+function doLogout() { SECRET=''; sessionStorage.removeItem('_adm'); location.reload(); }
+
+// auto-login from session
+(function(){ const s=sessionStorage.getItem('_adm'); if(s){SECRET=s; doLogin(); document.getElementById('secretInput').value=s;} })();
+
+async function api(action, extra={}) {
+  try {
+    const res = await fetch(EDGE, {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':SECRET},
+      body: JSON.stringify({action,...extra})
+    });
+    return await res.json();
+  } catch(e) { return {error:String(e)}; }
+}
+
+function renderStats(d) {
+  const s = document.getElementById('statsRow');
+  s.innerHTML = `
+    <div class="stat"><div class="num">${d.total_tenants}</div><div class="lbl">Tenants</div></div>
+    <div class="stat"><div class="num">${d.total_users}</div><div class="lbl">Users</div></div>
+    <div class="stat"><div class="num">${d.active}</div><div class="lbl">Active</div></div>
+    <div class="stat"><div class="num">${d.by_plan?.basic||0}</div><div class="lbl">Basic</div></div>
+    <div class="stat"><div class="num">${d.by_plan?.standard||0}</div><div class="lbl">Standard</div></div>
+    <div class="stat"><div class="num">${d.by_plan?.premium||0}</div><div class="lbl">Premium</div></div>`;
+}
+
+let TENANTS = [];
+async function loadTenants() {
+  const d = await api('list_tenants');
+  if (d.error) { alert(d.error); return; }
+  TENANTS = d.tenants || [];
+  const tb = document.getElementById('tenantBody');
+  tb.innerHTML = TENANTS.map(t => `<tr>
+    <td><b>${esc(t.company_name)}</b></td>
+    <td>${esc(t.code)}</td>
+    <td>${esc(t.tax_id||'—')}</td>
+    <td><span class="badge b-${t.plan}">${t.plan.toUpperCase()}</span></td>
+    <td><span class="badge b-${t.status}">${t.status}</span></td>
+    <td>${t.user_count}</td>
+    <td>${new Date(t.created_at).toLocaleDateString('vi')}</td>
+    <td class="act"><button class="edit" onclick="openEdit('${t.id}')">✏️ Sửa</button>
+      <button class="toggle" onclick="toggleStatus('${t.id}','${t.status}')">${t.status==='active'?'⏸️':'▶️'}</button></td>
+  </tr>`).join('');
+}
+
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function openEdit(tid) {
+  const t = TENANTS.find(x=>x.id===tid); if(!t) return;
+  document.getElementById('m-tid').value = tid;
+  document.getElementById('modalTitle').textContent = `Chỉnh sửa: ${t.company_name}`;
+  document.getElementById('m-plan').value = t.plan;
+  document.getElementById('m-status').value = t.status;
+  document.getElementById('m-maxusers').value = t.features?.max_users || 10;
+  document.getElementById('m-maxbranches').value = t.features?.max_branches || 3;
+  // Feature checkboxes
+  document.querySelectorAll('#m-features input').forEach(cb => {
+    const f = cb.dataset.f;
+    cb.checked = t.features?.[f] !== false; // default true unless explicitly false
+  });
+  document.getElementById('editModal').classList.add('show');
+}
+function closeModal() { document.getElementById('editModal').classList.remove('show'); }
+
+async function saveEdit() {
+  const tid = document.getElementById('m-tid').value;
+  const plan = document.getElementById('m-plan').value;
+  const status = document.getElementById('m-status').value;
+  // Build features override
+  const features = {};
+  document.querySelectorAll('#m-features input').forEach(cb => { features[cb.dataset.f] = cb.checked; });
+  features.max_users = parseInt(document.getElementById('m-maxusers').value) || 10;
+  features.max_branches = parseInt(document.getElementById('m-maxbranches').value) || 3;
+
+  // Update tenant + features
+  const r1 = await api('update_tenant', { tenant_id: tid, plan, status });
+  const r2 = await api('update_features', { tenant_id: tid, features });
+  if (r1.error) { alert(r1.error); return; }
+  if (r2.error) { alert(r2.error); return; }
+
+  closeModal();
+  // Refresh
+  const sd = await api('stats'); renderStats(sd);
+  await loadTenants();
+}
+
+async function toggleStatus(tid, cur) {
+  const next = cur === 'active' ? 'suspended' : 'active';
+  if (!confirm(`${next==='suspended'?'Tạm khóa':'Kích hoạt lại'} tenant này?`)) return;
+  await api('update_tenant', { tenant_id: tid, status: next });
+  const sd = await api('stats'); renderStats(sd);
+  await loadTenants();
+}
+</script>
+</body>
+</html>

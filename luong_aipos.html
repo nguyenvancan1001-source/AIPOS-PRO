@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <!-- BUILD: 1777104187 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VICOMART – HỆ THỐNG QUẢN LÝ LƯƠNG</title>
+<title>AIPOS-PRO · Quản Lý Lương</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -621,7 +621,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
       <div id="search-results" style="display:none;position:absolute;top:34px;right:0;width:360px;max-height:400px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:9999;padding:6px 0"></div>
     </div>
     <div class="tright">
-      <span id="sync-status" class="tbadge" style="cursor:pointer;font-size:11px;" title="Vicomart v5 build 1777104015 - Nhấn để tải lại" onclick="sbLoad(true)">☁️ Cloud</span>
+      <span id="sync-status" class="tbadge" style="cursor:pointer;font-size:11px;" title="AIPOS-PRO v5 - Nhấn để tải lại" onclick="sbLoad(true)">☁️ Cloud</span>
       <span class="tadmin" id="admbdg" style="display:none">⭐ ADMIN</span>
       <div class="tbadge" id="udsp">👤 —</div>
       <button class="tbtn no-print" onclick="openTheme()" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3);color:#a5b4fc">🎨 Giao diện</button>
@@ -663,7 +663,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ DASHBOARD ════ -->
       <div class="page active" id="pg-db">
-        <div class="prn"><h2>VICOMART – TỔNG QUAN LƯƠNG THÁNG 03/2026</h2><p>In lúc: <span id="pt-db"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – TỔNG QUAN LƯƠNG THÁNG 03/2026</h2><p>In lúc: <span id="pt-db"></span></p></div>
         <div class="phead">
           <div class="phl" style="position:relative">
             <div style="display:inline-flex;align-items:center;gap:14px;padding:14px 22px;background:linear-gradient(135deg,#0c1e3e 0%,#0a1730 50%,#06112a 100%);border:1px solid rgba(212,175,55,.3);border-radius:12px;box-shadow:0 8px 32px rgba(8,16,40,.6),inset 0 1px 0 rgba(255,255,255,.05);margin-bottom:8px;position:relative;overflow:hidden">
@@ -740,10 +740,10 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
           </table></div>
         </div>
 
-        <!-- ════ COST STRUCTURE — VICOMART vs NGÀNH BÁN LẺ ════ -->
+        <!-- ════ COST STRUCTURE — NGÀNH BÁN LẺ ════ -->
         <div class="sec">
           <div class="shead">
-            <h2>📈 Cơ cấu chi phí — Vicomart vs Tiêu chuẩn ngành bán lẻ VN</h2>
+            <h2>📈 Cơ cấu chi phí — So sánh vs Tiêu chuẩn ngành bán lẻ VN</h2>
             <span class="sc">cập nhật real-time từ dữ liệu app lương</span>
           </div>
           <p style="font-size:11px;color:var(--text3);margin:0 0 14px;line-height:1.5">
@@ -789,11 +789,11 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
                 <div style="font-size:13px;font-weight:800;letter-spacing:0.5px;margin-bottom:18px;text-align:center">SO SÁNH TỶ LỆ<br><span style="font-size:9px;font-weight:600;opacity:0.85">(% DOANH THU)</span></div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
                   <span style="width:18px;height:14px;background:#3b82f6;border-radius:2px"></span>
-                  <span style="font-size:10px">VICOMART (Hiện tại)</span>
+                  <span style="font-size:10px">Hiện tại</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
                   <span style="width:18px;height:14px;background:#10b981;border-radius:2px"></span>
-                  <span style="font-size:10px">VICOMART (Mục tiêu chuẩn)</span>
+                  <span style="font-size:10px">Mục tiêu chuẩn</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <span style="width:18px;height:14px;border:2px dashed #ef4444;border-radius:2px"></span>
@@ -845,7 +845,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
               <thead><tr>
                 <th style="width:30px">#</th>
                 <th>Khoản chi phí</th>
-                <th class="td" style="width:90px">Vicomart<br><span style="font-weight:400;font-size:9px;color:var(--text3)">hiện tại</span></th>
+                <th class="td" style="width:90px">Cty<br><span style="font-weight:400;font-size:9px;color:var(--text3)">hiện tại</span></th>
                 <th class="td" style="width:90px">Mục tiêu<br><span style="font-weight:400;font-size:9px;color:var(--text3)">chuẩn</span></th>
                 <th class="td" style="width:110px">Tiêu chuẩn ngành</th>
                 <th class="td" style="width:130px">Số tiền (T này)</th>
@@ -860,7 +860,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
             <!-- PIE: Cơ cấu chi phí -->
             <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;color:#111">
               <div style="background:#1e3a8a;color:#fff;padding:8px 12px;border-radius:6px;text-align:center;margin-bottom:10px">
-                <div style="font-size:11px;font-weight:800;letter-spacing:.4px">CƠ CẤU CHI PHÍ VICOMART</div>
+                <div style="font-size:11px;font-weight:800;letter-spacing:.4px">CƠ CẤU CHI PHÍ</div>
                 <div style="font-size:9px;opacity:.85">(MỤC TIÊU CHUẨN — % DOANH THU)</div>
               </div>
               <div id="cost-pie-container" style="display:flex;align-items:center;gap:12px"></div>
@@ -964,7 +964,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
           <div class="sec" style="margin-top:24px">
             <div class="shead">
               <h2>📌 Hiệu suất bắt buộc mỗi cửa hàng</h2>
-              <span class="sc">Chuẩn ngành bán lẻ VN · Áp dụng cho Vicomart</span>
+              <span class="sc">Chuẩn ngành bán lẻ VN · Áp dụng cho doanh nghiệp</span>
             </div>
             <div id="kpi-store-section"></div>
           </div>
@@ -973,7 +973,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ BÁO CÁO CHI NHÁNH ════ -->
       <div class="page" id="pg-chinhanh">
-        <div class="prn"><h2>VICOMART – BÁO CÁO CHI NHÁNH THÁNG 03/2026</h2><p>In lúc: <span id="pt-cn2"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – BÁO CÁO CHI NHÁNH THÁNG 03/2026</h2><p>In lúc: <span id="pt-cn2"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>Báo cáo chi nhánh</h1><p id="cn-period-sub">So sánh hiệu suất các chi nhánh tháng 03/2026</p></div>
           <div class="pact no-print"><button class="tbtn" onclick="exportChinhanh()">📥 Xuất Excel</button></div>
@@ -1105,7 +1105,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ CHẤM CÔNG NGÀY ════ -->
       <div class="page" id="pg-daily">
-        <div class="prn"><h2>VICOMART – CHẤM CÔNG NGÀY <span id="pt-day-lbl"></span></h2><p>In lúc: <span id="pt-daily"></span></p>
+        <div class="prn"><h2>AIPOS-PRO – CHẤM CÔNG NGÀY <span id="pt-day-lbl"></span></h2><p>In lúc: <span id="pt-daily"></span></p>
           <div id="print-daily-table"></div>
         </div>
         <div class="phead">
@@ -1140,7 +1140,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ CÔNG THỨC LƯƠNG ════ -->
       <div class="page" id="pg-congthuc">
-        <div class="prn"><h2>VICOMART – CÔNG THỨC TÍNH LƯƠNG</h2><p>In lúc: <span id="pt-congthuc"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – CÔNG THỨC TÍNH LƯƠNG</h2><p>In lúc: <span id="pt-congthuc"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>📐 Công thức tính lương</h1><p>Giải thích chi tiết cách tính lương — dành cho nhân sự</p></div>
           <button class="tbtn p no-print" onclick="printPage()">🖨️ In trang này</button>
@@ -1431,7 +1431,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
         </div>
         <div class="form-group">
           <label>Email</label>
-          <input type="email" id="f-email" placeholder="nv@vicomart.vn">
+          <input type="email" id="f-email" placeholder="email@congty.vn">
         </div>
         <div class="form-group span2">
           <label>Địa chỉ thường trú</label>
@@ -1950,7 +1950,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ NHÂN SỰ ════ -->
       <div class="page" id="pg-nv">
-        <div class="prn"><h2>VICOMART – DANH SÁCH NHÂN SỰ T03/2026</h2><p>In lúc: <span id="pt-nv"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – DANH SÁCH NHÂN SỰ T03/2026</h2><p>In lúc: <span id="pt-nv"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>Quản lý nhân sự</h1><p>Thêm, sửa, xóa — gán chi nhánh làm việc</p></div>
           <div class="pact no-print" style="display:flex;gap:6px">
@@ -2006,7 +2006,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ TỔNG LƯƠNG ════ -->
       <div class="page" id="pg-tong">
-        <div class="prn"><h2>VICOMART – BẢNG TỔNG HỢP LƯƠNG – <span id="pt-tong-br"></span></h2><p>In lúc: <span id="pt-tong"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – BẢNG TỔNG HỢP LƯƠNG – <span id="pt-tong-br"></span></h2><p>In lúc: <span id="pt-tong"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>Bảng lương — <span id="tg-period-lbl" style="color:var(--yellow2)">Tháng 03/2026</span></h1><p>Chi nhánh: <span id="tg-scope" style="color:var(--accent3)">Tất cả</span></p></div>
           <div class="pact no-print" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2122,7 +2122,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ CÔNG NỢ ════ -->
       <div class="page" id="pg-congno">
-        <div class="prn"><h2>VICOMART – CÔNG NỢ NHÂN SỰ</h2><p>In lúc: <span id="pt-congno"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – CÔNG NỢ NHÂN SỰ</h2><p>In lúc: <span id="pt-congno"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>🔴 Công nợ nhân sự</h1><p>Quản lý các khoản ứng lương, mượn tiền, khấu trừ đặc biệt</p></div>
           <button class="tbtn no-print" style="background:rgba(239,68,68,.15);border:1px solid var(--red2);color:var(--red2);margin-left:auto" onclick="openMatHangModal()">📦 Ghi nhận mất hàng</button>
@@ -2173,7 +2173,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ CHI TIẾT NS ════ -->
       <div class="page" id="pg-ct">
-        <div class="prn"><h2>VICOMART – CHI TIẾT LƯƠNG NS T03/2026</h2><p id="pt-nvname"></p><p>In lúc: <span id="pt-ct"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – CHI TIẾT LƯƠNG NS T03/2026</h2><p id="pt-nvname"></p><p>In lúc: <span id="pt-ct"></span></p></div>
         <div class="phead"><div class="phl"><h1>Chi tiết nhân sự</h1><p>Lương từng ngày theo nhân sự</p></div></div>
         <div class="sec no-print">
           <div class="shead"><h2>🔍 Chọn nhân sự</h2></div>
@@ -2198,7 +2198,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ LỊCH SỬ ════ -->
       <div class="page" id="pg-hist">
-        <div class="prn"><h2>VICOMART – LỊCH SỬ DỮ LIỆU</h2><p>In lúc: <span id="pt-hist"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – LỊCH SỬ DỮ LIỆU</h2><p>In lúc: <span id="pt-hist"></span></p></div>
         <div class="phead"><div class="phl"><h1>📅 Lịch sử dữ liệu</h1><p>Xem lại dữ liệu từng ngày, từng tháng theo chi nhánh</p></div></div>
 
         <div class="tabs">
@@ -2255,7 +2255,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ NHẬT KÝ THAY ĐỔI ════ -->
       <div class="page" id="pg-audit">
-        <div class="prn"><h2>VICOMART – NHẬT KÝ THAY ĐỔI HỆ THỐNG</h2><p>In lúc: <span id="pt-audit"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – NHẬT KÝ THAY ĐỔI HỆ THỐNG</h2><p>In lúc: <span id="pt-audit"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>🔍 Nhật ký thay đổi</h1><p>Toàn bộ hành động sửa / xóa của người dùng</p></div>
           <div class="pact no-print" style="display:flex;gap:6px">
@@ -2292,7 +2292,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
         </div>
       </div>
       <div class="page" id="pg-cfg">
-        <div class="prn"><h2>VICOMART – CẤU HÌNH LƯƠNG 2026</h2><p>In lúc: <span id="pt-cfg"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – CẤU HÌNH LƯƠNG 2026</h2><p>In lúc: <span id="pt-cfg"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>Cấu hình lương</h1><p>Xem và chỉnh sửa (chỉ Admin)</p></div>
           <div class="pact"><span id="adm-note" style="font-size:11px;color:var(--text3)"></span></div>
@@ -2402,13 +2402,13 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
             <div>
               <div style="font-size:10px;font-weight:800;color:var(--accent3);letter-spacing:.5px;margin-bottom:8px">── PHÁP NHÂN</div>
               <div class="fg"><label>Tên đầy đủ theo ĐKKD</label>
-                <input type="text" id="co-tenDayDu" placeholder="VD: CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL"></div>
+                <input type="text" id="co-tenDayDu" placeholder="VD: CÔNG TY ABC"></div>
               <div class="fg"><label>Tên viết tắt</label>
-                <input type="text" id="co-tenVietTat" placeholder="VD: CTCP VICOMART"></div>
+                <input type="text" id="co-tenVietTat" placeholder="VD: CTCP ABC"></div>
               <div class="fg"><label>Tên thương hiệu (hiển thị header)</label>
-                <input type="text" id="co-tenViet" placeholder="VD: VICOMART"></div>
+                <input type="text" id="co-tenViet" placeholder="VD: TÊN CỬA HÀNG"></div>
               <div class="fg"><label>Tên quốc tế</label>
-                <input type="text" id="co-tenQuocTe" placeholder="VD: VICOMART RETAIL JOINT STOCK COMPANY"></div>
+                <input type="text" id="co-tenQuocTe" placeholder="VD: ABC RETAIL JSC"></div>
               <div class="fg"><label>Mã số thuế</label>
                 <input type="text" id="co-mst" placeholder="10-13 chữ số"></div>
               <div class="fg"><label>Địa chỉ trụ sở</label>
@@ -2416,9 +2416,9 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
               <div class="fg"><label>Điện thoại</label>
                 <input type="text" id="co-dienThoai" placeholder="0234.xxx.xxxx"></div>
               <div class="fg"><label>Email HR</label>
-                <input type="email" id="co-email" placeholder="hr@vicomart.vn"></div>
+                <input type="email" id="co-email" placeholder="hr@congty.vn"></div>
               <div class="fg" style="margin:0"><label>Website</label>
-                <input type="text" id="co-website" placeholder="vicomart.vn"></div>
+                <input type="text" id="co-website" placeholder="website.vn"></div>
             </div>
             <!-- CỘT PHẢI: Người đại diện + ngân hàng -->
             <div>
@@ -2556,7 +2556,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
         </div>
       </div>
       <div class="page" id="pg-phucap">
-        <div class="prn"><h2>VICOMART – PHỤ CẤP & HỖ TRỢ 2026</h2><p>In lúc: <span id="pt-phucap"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – PHỤ CẤP & HỖ TRỢ 2026</h2><p>In lúc: <span id="pt-phucap"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>🎒 Phụ cấp & Hỗ trợ</h1><p>Cấu hình mức phụ cấp, hỗ trợ và thưởng đặc biệt (chỉ Admin)</p></div>
           <div class="pact"><span id="pc-adm-note" style="font-size:11px;color:var(--text3)"></span></div>
@@ -2725,7 +2725,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
         </div><!-- end pg-phucap -->
 
       <div class="page" id="pg-phat">
-        <div class="prn"><h2>VICOMART – BẢNG PHẠT / KHẤU TRỪ</h2><p>In lúc: <span id="pt-phat"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – BẢNG PHẠT / KHẤU TRỪ</h2><p>In lúc: <span id="pt-phat"></span></p></div>
         <div class="phead"><div class="phl"><h1>⛔ Bảng phạt / khấu trừ</h1><p>Cấu hình vi phạm + ghi nhận công nợ NS</p></div></div>
         <div class="tabs">
           <div class="tab active" onclick="stab('ph',this,'list')">📋 Bảng vi phạm</div>
@@ -2754,7 +2754,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ KẾT CA ════ -->
       <div class="page" id="pg-ketca">
-        <div class="prn"><h2>VICOMART – BÁO CÁO KẾT CA</h2><p>In lúc: <span id="pt-kc"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – BÁO CÁO KẾT CA</h2><p>In lúc: <span id="pt-kc"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>🔐 Kết ca</h1><p>Ghi nhận đối soát tiền mặt, doanh thu, tồn quỹ cuối ca</p></div>
           <div class="pact no-print" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2801,7 +2801,7 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 
       <!-- ════ THU CHI ════ -->
       <div class="page" id="pg-thuchi">
-        <div class="prn"><h2>VICOMART – BÁO CÁO THU CHI</h2><p>In lúc: <span id="pt-tc"></span></p></div>
+        <div class="prn"><h2>AIPOS-PRO – BÁO CÁO THU CHI</h2><p>In lúc: <span id="pt-tc"></span></p></div>
         <div class="phead">
           <div class="phl"><h1>📈 Báo cáo Thu – Chi</h1><p>Nhập liệu và theo dõi toàn bộ dòng tiền vào / ra</p></div>
           <div class="pact no-print" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -3599,14 +3599,14 @@ hr.divider { grid-column: span 2; border: none; border-top: 1px solid var(--bord
 </div>
 
 <script>
-// ═══════════════════════════ VICOMART PAYROLL v5 ═══════════════════════════
-// ROLES: director (vicomart) > admin > manager
+// ═══════════════════════════ AIPOS-PRO PAYROLL v5 ═══════════════════════════
+// ROLES: director (owner) > admin > manager
 // director: ALL permissions + quản lý chi nhánh + quản lý tài khoản
 // admin: cấu hình lương, nhật ký, thêm/sửa NS, bảng phạt
 // manager: chấm công, xem báo cáo (không sửa cấu hình)
 
 const USERS_DB={
-  vicomart:{pw:'vc2026',   role:'director', display:'Giám đốc'},
+  director:{pw:'dir2026',   role:'director', display:'Giám đốc'},
   admin:   {pw:'admin123', role:'admin',    display:'Admin'},
   manager: {pw:'mgr2026',  role:'manager',  display:'Quản lý'},
 };
@@ -3695,22 +3695,22 @@ let CFG={
   },
   // ── THÔNG TIN CÔNG TY (dùng cho phiếu in chuẩn pháp lý) ──
   company:{
-    tenDayDu:    'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL',  // Tên đầy đủ theo ĐKKD
-    tenVietTat:  'CTCP VICOMART',                             // Tên viết tắt
-    tenViet:     'VICOMART',                                  // Tên thương hiệu hiển thị
-    tenQuocTe:   'VICOMART RETAIL JOINT STOCK COMPANY',      // Tên tiếng Anh
+    tenDayDu:    '',  // Tên đầy đủ theo ĐKKD
+    tenVietTat:  '',                             // Tên viết tắt
+    tenViet:     '',                                  // Tên thương hiệu hiển thị
+    tenQuocTe:   '',      // Tên tiếng Anh
     maSoThue:    '3301744382',                                // MST chính thức
     diaChi:      '02 Sóng Hồng, Phường Phú Bài, TP. Huế, Việt Nam',
     diaChiThue:  '02 Sóng Hồng, Phường Phú Bài, TP. Huế, Việt Nam',
     dienThoai:   '',                                          // TODO: cập nhật
-    email:       'hr@vicomart.vn',
-    website:     'vicomart.vn',
+    email:       'hr@congty.vn',
+    website:     '',
     daiDienPhapLuat: '',                                      // TODO: tên GĐ
     chucDanhDD:  'Giám đốc',
     keToanTruong:'',                                          // TODO: tên KTT
     nganHang:    'Vietinbank — CN Huế',                      // NH chính trả lương
     stk:         '119612476789',                              // STK Vietinbank công ty
-    chuTaiKhoan: 'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL',
+    chuTaiKhoan: '',
     coKySo:      true,                                        // App có dùng chữ ký số
     nhanLuongQuaCK: true                                      // Trả lương qua chuyển khoản
   },
@@ -5045,7 +5045,7 @@ function exportCfgBackup(){
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `vicomart-cfg-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `aipos-cfg-backup-${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -5069,7 +5069,7 @@ function importCfgBackup(){
       try {
         const data = JSON.parse(ev.target.result);
         if(!data.cfg){
-          alert('❌ File không đúng định dạng backup Vicomart');
+          alert('❌ File không đúng định dạng backup AIPOS-PRO');
           return;
         }
         const meta = data._meta || {};
@@ -5265,7 +5265,7 @@ function saveCostTargetsAllMonths(silent){
   if(typeof auditLog==='function') auditLog('CFG','SỬA','Mục tiêu chi phí',`Năm ${yy} · ${brView==='default'?'Default':brView.toUpperCase()}`,`Lương ${CFG.costInputs.luongPct}% DT, BHXH ${CFG.costInputs.bhxhPct}% LCB, ${customKeys.length} khoản custom`);
   // Backup localStorage trước
   try {
-    localStorage.setItem('vicomart_lastCfg_backup', JSON.stringify({
+    localStorage.setItem('aipos_lastCfg_backup', JSON.stringify({
       cfg: JSON.parse(JSON.stringify(CFG)),
       branches: JSON.parse(JSON.stringify(BRANCH_REG||[])),
       updated_at: new Date().toISOString(),
@@ -5513,10 +5513,10 @@ function rKPIStoreSection(){
 
     </div>
 
-    <!-- BOTTOM: Đánh giá Vicomart hiện tại theo CN -->
+    <!-- BOTTOM: Đánh giá hiện tại theo CN -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--accent3)">🎯 Vicomart hiện tại — Đánh giá năng suất NS theo CN (T${String(mm).padStart(2,'0')}/${yy})</div>
+        <div style="font-size:13px;font-weight:800;color:var(--accent3)">🎯 Đánh giá năng suất NS theo CN (T${String(mm).padStart(2,'0')}/${yy})</div>
         <span style="font-size:10px;color:var(--text3)">Auto từ DT hệ thống & ngày công thực tế</span>
       </div>
       <div class="tw">
@@ -6030,7 +6030,7 @@ function saveCostInputs(){
   else alert(`✅ Đã lưu chi phí ${N(totalSaved)}đ`);
 }
 
-// ── COST STRUCTURE: Vicomart vs Tiêu chuẩn ngành bán lẻ VN ──
+// ── COST STRUCTURE: So sánh vs Tiêu chuẩn ngành bán lẻ VN ──
 function rCostStructure(doanhThu, tongLuong, tongPhat){
   const grid = document.getElementById('cost-cards-grid');
   if(!grid) return; // dashboard chưa có section này
@@ -6130,11 +6130,11 @@ function rCostStructure(doanhThu, tongLuong, tongPhat){
 
   // Tiêu chuẩn ngành (% doanh thu)
   const benchmark = {
-    cogs:    {min:75, max:85, vicomart_target:65, name:'Giá vốn hàng bán', short:'COGS', color:'#3b82f6', icon:'📦'},
-    sales:   {min:10, max:15, vicomart_target:5,  name:'Chi phí bán hàng', short:'Sales',color:'#10b981', icon:'🛒'},
-    ga:      {min:5,  max:10, vicomart_target:3,  name:'Chi phí quản lý',  short:'G&A',  color:'#f59e0b', icon:'👥'},
-    fin:     {min:2,  max:4,  vicomart_target:1,  name:'Chi phí tài chính',short:'Fin',  color:'#8b5cf6', icon:'💰'},
-    other:   {min:0.5,max:2,  vicomart_target:0.3,name:'Chi phí khác',     short:'Other',color:'#64748b', icon:'⚪'},
+    cogs:    {min:75, max:85, company_target:65, name:'Giá vốn hàng bán', short:'COGS', color:'#3b82f6', icon:'📦'},
+    sales:   {min:10, max:15, company_target:5,  name:'Chi phí bán hàng', short:'Sales',color:'#10b981', icon:'🛒'},
+    ga:      {min:5,  max:10, company_target:3,  name:'Chi phí quản lý',  short:'G&A',  color:'#f59e0b', icon:'👥'},
+    fin:     {min:2,  max:4,  company_target:1,  name:'Chi phí tài chính',short:'Fin',  color:'#8b5cf6', icon:'💰'},
+    other:   {min:0.5,max:2,  company_target:0.3,name:'Chi phí khác',     short:'Other',color:'#64748b', icon:'⚪'},
   };
 
   // Build 5 cost cards
@@ -6207,7 +6207,7 @@ function rCostStructure(doanhThu, tongLuong, tongPhat){
         </div>
         <!-- Labels under bars -->
         <div style="display:flex;justify-content:space-around;font-size:7px;color:#666;margin-top:3px;font-weight:700">
-          <span>VICOMART<br>Hiện tại</span>
+          <span>Hiện tại</span>
           <span>Mục tiêu<br>chuẩn</span>
           <span>Tiêu chuẩn<br>ngành</span>
         </div>
@@ -6312,7 +6312,7 @@ function rCostStructure(doanhThu, tongLuong, tongPhat){
       <td class="td">${idx+1}</td>
       <td>${c.icon} <b>${c.name}</b></td>
       <td class="td" style="font-weight:700;color:${c.color}">${curPct.toFixed(1)}%</td>
-      <td class="td" style="color:var(--text3)">${c.vicomart_target}%</td>
+      <td class="td" style="color:var(--text3)">${c.company_target}%</td>
       <td class="td" style="color:var(--text3)">${c.min}-${c.max}%</td>
       <td class="td" style="font-weight:600">${N(c.cur)}đ</td>
       <td class="td" style="color:${evalColor};font-weight:700">${evalText}</td>
@@ -6986,8 +6986,8 @@ function printPayroll(){
     html += `<div class="page">
       <div class="hdr">
         <div class="hdr-left">
-          <h1 class="brand">${(CFG.company?.tenViet)||'VICOMART'}</h1>
-          <p class="brand-sub">${(CFG.company?.tenDayDu)||'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL'}</p>
+          <h1 class="brand">${(CFG.company?.tenViet)||'Cửa hàng'}</h1>
+          <p class="brand-sub">${(CFG.company?.tenDayDu)||''}</p>
           <p class="brand-sub" style="font-weight:400;text-transform:none;letter-spacing:0.2pt">
             <span style="font-weight:600">MST:</span> ${(CFG.company?.maSoThue)||'—'} 
             <span style="margin:0 4pt">·</span> 
@@ -7033,7 +7033,7 @@ function printPayroll(){
       </div>
 
       <div class="ftr">
-        <div>Phiếu được tạo & ký số từ hệ thống điện tử Vicomart Payroll · Lưu trữ tại: <b>luong.vicomart.vn</b> · Hiệu lực 10 năm theo Luật Kế toán</div>
+        <div>Phiếu được tạo & ký số từ hệ thống AIPOS-PRO Payroll · Lưu trữ tại: <b>luong.aipos-pro.vn</b> · Hiệu lực 10 năm theo Luật Kế toán</div>
         <div>${docId} · ${ts}</div>
       </div>
     </div>`;
@@ -7046,8 +7046,8 @@ function printPayroll(){
     html += `<div class="page">
       <div class="hdr">
         <div class="hdr-left">
-          <h1 class="brand">${(CFG.company?.tenViet)||'VICOMART'}</h1>
-          <p class="brand-sub">${(CFG.company?.tenDayDu)||'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL'}</p>
+          <h1 class="brand">${(CFG.company?.tenViet)||'Cửa hàng'}</h1>
+          <p class="brand-sub">${(CFG.company?.tenDayDu)||''}</p>
           <p class="brand-sub" style="font-weight:400;text-transform:none;letter-spacing:0.2pt">
             <span style="font-weight:600">MST:</span> ${(CFG.company?.maSoThue)||'—'} 
             <span style="margin:0 4pt">·</span> 
@@ -7121,7 +7121,7 @@ function printPayroll(){
       </div>
 
       <div class="ftr">
-        <div>${(CFG.company?.tenViet)||'VICOMART'} · Tổng hợp tự động từ hệ thống · Đối chiếu với từng phiếu chi nhánh · Lưu trữ 10 năm theo Luật Kế toán</div>
+        <div>${(CFG.company?.tenViet)||'Cửa hàng'} · Tổng hợp tự động từ hệ thống · Đối chiếu với từng phiếu chi nhánh · Lưu trữ 10 năm theo Luật Kế toán</div>
         <div>${docId} · ${ts}</div>
       </div>
     </div>`;
@@ -7365,7 +7365,7 @@ function saveVPAttendance(){
   closeMo('mo-vp-attendance');
   // Lưu vpAtt vào localStorage ngay (cloud chưa có cột này)
   try {
-    localStorage.setItem('vicomart_vpAtt', JSON.stringify(ST.vpAtt || {}));
+    localStorage.setItem('aipos_vpAtt', JSON.stringify(ST.vpAtt || {}));
   } catch(e){ console.warn('Lưu vpAtt local fail:', e); }
   if(typeof rTong === 'function') rTong();
   if(typeof sbSave === 'function') sbSave();
@@ -9729,7 +9729,7 @@ function loadCompanyInfo(){
 }
 function updateCompanyPreview(){
   const get=(id)=>document.getElementById(id)?.value||'';
-  const tenViet=get('co-tenViet')||'VICOMART';
+  const tenViet=get('co-tenViet')||'Cửa hàng';
   const tenDayDu=get('co-tenDayDu')||'CÔNG TY ...';
   const mst=get('co-mst')||'—';
   const diaChi=get('co-diaChi')||'—';
@@ -9935,7 +9935,7 @@ function cfgTgtSaveAll(){
 
     // Backup ngay vào localStorage
     try {
-      localStorage.setItem('vicomart_lastCfg_backup', JSON.stringify({
+      localStorage.setItem('aipos_lastCfg_backup', JSON.stringify({
         cfg: JSON.parse(JSON.stringify(CFG)),
         branches: JSON.parse(JSON.stringify(BRANCH_REG||[])),
         updated_at: new Date().toISOString(),
@@ -10211,7 +10211,7 @@ function exportDB(){
   const dbTotDT=dbData.reduce((s,r)=>s+(r[5]||0),0);
   const dbTotNg=dbData.reduce((s,r)=>s+(r[4]||0),0);
   rows.push(['','','','TỔNG ('+cnt+' NS)',dbTotNg,dbTotDT,'','','','',dbTotTL,dbTotPH]);
-  xlsxDownload(wb1('Dashboard',rows),`Vicomart_Dashboard_T${flt.month||3}_${flt.year||2026}_${fmtDate()}.xlsx`);
+  xlsxDownload(wb1('Dashboard',rows),`Dashboard_T${flt.month||3}_${flt.year||2026}_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10257,7 +10257,7 @@ function exportChinhanh(){
   const ws2=XLSX.utils.aoa_to_sheet(rows2);
   ws2['!cols']=rows2[0].map((_,i)=>({wch:Math.max(...rows2.map(r=>(r[i]||'').toString().length),14)}));
   XLSX.utils.book_append_sheet(wb,ws2,'So sanh CN');
-  xlsxDownload(wb,`Vicomart_ChinNhanh_T${flt.month||3}_${flt.year||2026}_${fmtDate()}.xlsx`);
+  xlsxDownload(wb,`ChiNhanh_T${flt.month||3}_${flt.year||2026}_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10309,8 +10309,8 @@ function exportCKNganHang(kyInput){
 
     // ═══ HEADER CHUYÊN NGHIỆP (6 dòng) ═══
     const tieuDe=ky===1?'LỆNH CHUYỂN KHOẢN TẠM ỨNG LƯƠNG KỲ 1':'LỆNH CHUYỂN KHOẢN QUYẾT TOÁN LƯƠNG KỲ 2';
-    rows.push([(co.tenViet||'VICOMART').toUpperCase()+' — '+tieuDe,'','','','','','','','','']);
-    rows.push([co.tenDayDu||'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL','','','','','','','','','']);
+    rows.push([(co.tenViet||'Cửa hàng').toUpperCase()+' — '+tieuDe,'','','','','','','','','']);
+    rows.push([co.tenDayDu||'','','','','','','','','','']);
     rows.push([`MST: ${co.maSoThue||'—'}    |    Đ/c: ${co.diaChi||'—'}    |    ĐT: ${co.dienThoai||'—'}`,'','','','','','','','','']);
     const kyInfo=ky===1?`Kỳ 1 — Tạm ứng ${pct}% (chi ngày 15/${mm}/${yy})`:`Kỳ 2 — Quyết toán ${100-pct}% (chi cuối T${mm}/${yy})`;
     rows.push([`Tháng: ${mm}/${yy}    |    CN: ${br==='all'?'Tất cả':brName(br)}    |    ${kyInfo}    |    DOC ID: ${docId}`,'','','','','','','','','']);
@@ -10391,8 +10391,8 @@ function exportCKNganHang(kyInput){
 
     // ═══ FOOTER + KÝ SỐ ═══
     rows.push(['','','','','','','','','','']);  // gap
-    rows.push([(co.coKySo)?`Lệnh CK được tạo & ký số từ hệ thống Vicomart Payroll · ${ts}`:`Lệnh CK được tạo từ hệ thống Vicomart Payroll · ${ts}`,'','','','','','','','','']);
-    rows.push([`Lưu trữ tại: luong.vicomart.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`,'','','','','','','','','']);
+    rows.push([(co.coKySo)?`Lệnh CK được tạo & ký số từ hệ thống AIPOS-PRO Payroll · ${ts}`:`Lệnh CK được tạo từ hệ thống AIPOS-PRO Payroll · ${ts}`,'','','','','','','','','']);
+    rows.push([`Lưu trữ tại: luong.aipos-pro.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`,'','','','','','','','','']);
     rows.push(['','','','','','','','','','']);
     rows.push(['','NGƯỜI LẬP','','','KẾ TOÁN TRƯỞNG','','','GIÁM ĐỐC','',(co.coKySo)?'(Đã ký số)':'(Đóng dấu)']);
     rows.push(['',(co.coKySo)?'Đã ký số':'(Họ tên / Ngày)','','',(co.coKySo)?'Đã ký số':(co.keToanTruong||'(Họ tên / Ngày)'),'','',(co.coKySo)?'Đã ký số':(co.daiDienPhapLuat||'(Họ tên / Ngày)'),'','']);
@@ -10436,7 +10436,7 @@ function exportCKNganHang(kyInput){
 
     // Sheet 2: Kiểm tra STK
     const ws2data=[
-      [(co.tenViet||'VICOMART').toUpperCase()+' — KIỂM TRA THÔNG TIN STK NHÂN SỰ','','','','','','',''],
+      [(co.tenViet||'Cửa hàng').toUpperCase()+' — KIỂM TRA THÔNG TIN STK NHÂN SỰ','','','','','','',''],
       [`Tháng ${mm}/${yy} — DOC ID: ${docId}`,'','','','','','',''],
       ['','','','','','','',''],
       ['STT','Họ tên','Chi nhánh','Chức danh','Ngân hàng','Số TK','Tên chủ TK','Trạng thái']];
@@ -10464,7 +10464,7 @@ function exportCKNganHang(kyInput){
 
     const _brLabel=br==='all'?'TatCa':brName(br).replace(/\s+/g,'');
     const kyLabel=ky===1?'Ky1_TamUng':'Ky2_QuyetToan';
-    const fname=`Vicomart_LenhCK_T${mm}_${yy}_${kyLabel}_${_brLabel}.xlsx`;
+    const fname=`LenhCK_T${mm}_${yy}_${kyLabel}_${_brLabel}.xlsx`;
     window.XLSX.writeFile(wb,fname);
     const kyText=ky===1?'Kỳ 1 — Tạm ứng (ngày 15)':'Kỳ 2 — Quyết toán (cuối tháng)';
     _toast(`✅ Đã xuất ${stt} lệnh CK ${kyText} — Tổng: ${N(tongCK)}₫`);
@@ -10510,8 +10510,8 @@ function exportTong(){
     const brTenFull = br==='all'?'Tất cả chi nhánh':brName(br);
     // 6 dòng header công ty (dòng 1-6)
     const infoRows=[
-      [(co.tenViet||'VICOMART').toUpperCase()+' — PHIẾU TẠM ỨNG LƯƠNG KỲ 1', '','','','','','','','','',''],
-      [(co.tenDayDu||'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL'),'','','','','','','','','',''],
+      [(co.tenViet||'Cửa hàng').toUpperCase()+' — PHIẾU TẠM ỨNG LƯƠNG KỲ 1', '','','','','','','','','',''],
+      [(co.tenDayDu||''),'','','','','','','','','',''],
       [`MST: ${co.maSoThue||'—'}    |    Đ/c: ${co.diaChi||'—'}    |    ĐT: ${co.dienThoai||'—'}`,'','','','','','','','','',''],
       [`Tháng: ${_mm}/${_yy}    |    Chi nhánh: ${brTenFull}    |    Ngày chi: 15/${_mm}/${_yy}    |    DOC ID: ${docId}`,'','','','','','','','','',''],
       [`Hình thức: ${(co.nhanLuongQuaCK)?('Chuyển khoản qua '+(co.nganHang||'NH chính')+' · STK '+(co.stk||'—')):'Tiền mặt — yêu cầu ký nhận'}`,'','','','','','','','','',''],
@@ -10543,8 +10543,8 @@ function exportTong(){
     // Footer ký số
     const sigRows=[
       ['','','','','','','','','','',''],
-      [(co.coKySo)?`Phiếu được tạo & ký số từ hệ thống Vicomart Payroll · ${ts}`:`Phiếu được tạo từ hệ thống Vicomart Payroll · ${ts}`,'','','','','','','','','',''],
-      [`Lưu trữ tại: luong.vicomart.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`,'','','','','','','','','',''],
+      [(co.coKySo)?`Phiếu được tạo & ký số từ hệ thống AIPOS-PRO Payroll · ${ts}`:`Phiếu được tạo từ hệ thống AIPOS-PRO Payroll · ${ts}`,'','','','','','','','','',''],
+      [`Lưu trữ tại: luong.aipos-pro.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`,'','','','','','','','','',''],
       ['','','','','','','','','','',''],
       ['','','NGƯỜI LẬP PHIẾU','','KẾ TOÁN TRƯỞNG','','','GIÁM ĐỐC','',(co.coKySo)?'(Đã ký số)':'(Đóng dấu)',''],
       ['','',(co.coKySo)?'Đã ký số':'(Họ tên / Ngày)','',(co.coKySo)?'Đã ký số':(co.keToanTruong||'(Họ tên / Ngày)'),'','',(co.coKySo)?'Đã ký số':(co.daiDienPhapLuat||'(Họ tên / Ngày)'),'','',''],
@@ -10593,7 +10593,7 @@ function exportTong(){
     _ws['!freeze']={xSplit:0,ySplit:dataStartRow};
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,_ws,`TamUng_T${_mm}_${_yy}`);
-    xlsxDownload(wb,`Vicomart_TamUng_T${_mm}_${_yy}_${_brLabel}.xlsx`);
+    xlsxDownload(wb,`TamUng_T${_mm}_${_yy}_${_brLabel}.xlsx`);
     _toast(`✅ Đã xuất tạm ứng ${cnt} NS — T${_mm}/${_yy}`);
     return;
   }
@@ -10604,8 +10604,8 @@ function exportTong(){
   const headerEmpty = Array(COLS).fill('');
   const fillEmpty = (arr) => { while(arr.length < COLS) arr.push(''); return arr; };
   const luongInfoRows=[
-    fillEmpty([(co.tenViet||'VICOMART').toUpperCase()+' — BẢNG LƯƠNG CUỐI THÁNG']),
-    fillEmpty([co.tenDayDu||'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL']),
+    fillEmpty([(co.tenViet||'Cửa hàng').toUpperCase()+' — BẢNG LƯƠNG CUỐI THÁNG']),
+    fillEmpty([co.tenDayDu||'']),
     fillEmpty([`MST: ${co.maSoThue||'—'}    |    Đ/c: ${co.diaChi||'—'}    |    ĐT: ${co.dienThoai||'—'}`]),
     fillEmpty([`Tháng: ${_mm}/${_yy}    |    Chi nhánh: ${brTenFull2}    |    DOC ID: ${docId}    |    Xuất lúc: ${ts}`]),
     fillEmpty([`Hình thức: ${(co.nhanLuongQuaCK)?('Chuyển khoản '+(co.nganHang||'')+' · STK '+(co.stk||'—')+' · Sao kê NH thay chứng từ ký nhận (TT 200/2014)'):'Tiền mặt'}`]),
@@ -10635,8 +10635,8 @@ function exportTong(){
   // Footer
   const sigRowsBL=[
     headerEmpty.slice(),
-    fillEmpty([(co.coKySo)?`Phiếu được tạo & ký số từ hệ thống Vicomart Payroll · ${ts}`:`Phiếu được tạo từ hệ thống Vicomart Payroll · ${ts}`]),
-    fillEmpty([`Lưu trữ tại: luong.vicomart.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`]),
+    fillEmpty([(co.coKySo)?`Phiếu được tạo & ký số từ hệ thống AIPOS-PRO Payroll · ${ts}`:`Phiếu được tạo từ hệ thống AIPOS-PRO Payroll · ${ts}`]),
+    fillEmpty([`Lưu trữ tại: luong.aipos-pro.vn  ·  Hiệu lực 10 năm theo Luật Kế toán  ·  ${docId}`]),
     headerEmpty.slice(),
     fillEmpty(['','','','','NGƯỜI LẬP PHIẾU','','','','KẾ TOÁN TRƯỞNG','','','','','GIÁM ĐỐC','','','','',(co.coKySo)?'(Đã ký số)':'(Đóng dấu)']),
     fillEmpty(['','','','',(co.coKySo)?'Đã ký số':'(Họ tên / Ngày)','','','',(co.coKySo)?'Đã ký số':(co.keToanTruong||'(Họ tên / Ngày)'),'','','','',(co.coKySo)?'Đã ký số':(co.daiDienPhapLuat||'(Họ tên / Ngày)')]),
@@ -10681,7 +10681,7 @@ function exportTong(){
   ws2['!freeze']={xSplit:4,ySplit:dataStartRow2};
   const wb2=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb2,ws2,`BangLuong_T${_mm}_${_yy}`);
-  xlsxDownload(wb2,`Vicomart_BangLuong_T${_mm}_${_yy}_${_brLabel}.xlsx`);
+  xlsxDownload(wb2,`BangLuong_T${_mm}_${_yy}_${_brLabel}.xlsx`);
   _toast(`✅ Đã xuất bảng lương ${cnt} NS — T${_mm}/${_yy}`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
@@ -10739,7 +10739,7 @@ function exportChamCong(){
     rows.push(['','','','TỔNG',...Array(nDays).fill(''),totNg,totDT,'']);
 
     const sheetName=`CC_T${month}_${year}`;
-    xlsxDownload(wb1(sheetName,rows),`Vicomart_ChamCong_T${month}_${year}_${fmtDate()}.xlsx`);
+    xlsxDownload(wb1(sheetName,rows),`ChamCong_T${month}_${year}_${fmtDate()}.xlsx`);
     // Confirm
     const nvCount=data.length;
     const daysWithData=Array.from({length:nDays},(_,i)=>{
@@ -10814,7 +10814,7 @@ function exportNV(){
     const br=BRANCH_REG.find(b=>b.id===nv.br);
     rows.push([i+1,nv.ht,brName(nv.br),br?.code||nv.br,nv.cd,cd.hs,cd.bh]);
   });
-  xlsxDownload(wb1('Nhan vien',rows),`Vicomart_NhanVien_${fmtDate()}.xlsx`);
+  xlsxDownload(wb1('Nhan vien',rows),`NhanVien_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10874,7 +10874,7 @@ function exportKetCa(){
     rows.push([i+1,k.ng,k.ca,brName(k.br),k.nvName||'—',k.ql||'—',k.dtSys||0,k.tm||0,k.ck||0,k.tonDau||0,k.sumChiKC||0,k.sumThuKC||0,k.nopCty||0,cl,k.gc||'',k.createdAt||'']);
   });
   const label=from&&to?`${from}_${to}`:fmtDate();
-  xlsxDownload(wb1('Ket ca',rows),`Vicomart_KetCa_${label}.xlsx`);
+  xlsxDownload(wb1('Ket ca',rows),`KetCa_${label}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10904,7 +10904,7 @@ function exportThuChi(){
   rows.push(['','','','TỔNG THU','',tThu,'','','','']);
   rows.push(['','','','TỔNG CHI','',tChi,'','','','']);
   rows.push(['','','','SỐ DƯ','',tThu-tChi,'','','','']);
-  xlsxDownload(wb1('Thu Chi',rows),`Vicomart_ThuChi_${fmtDate()}.xlsx`);
+  xlsxDownload(wb1('Thu Chi',rows),`ThuChi_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10963,7 +10963,7 @@ function exportCongNo(){
   });
   const total=data.reduce((s,c)=>s+(c.t||0),0);
   rows.push(['','','','','TỔNG','','',total,'','']);
-  xlsxDownload(wb1('Cong no NS',rows),`Vicomart_CongNo_${fmtDate()}.xlsx`);
+  xlsxDownload(wb1('Cong no NS',rows),`CongNo_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -10980,7 +10980,7 @@ function exportAudit(){
   data.forEach((a,i)=>{
     rows.push([i+1,a.ts||'',a.user||'',a.type||'',a.action||'',a.target||'',a.before||'',a.after||'']);
   });
-  xlsxDownload(wb1('Nhat ky',rows),`Vicomart_NhatKy_${fmtDate()}.xlsx`);
+  xlsxDownload(wb1('Nhat ky',rows),`NhatKy_${fmtDate()}.xlsx`);
   }catch(e){alert('❌ Lỗi xuất: '+e.message);console.error(e);}
 }
 
@@ -12663,7 +12663,7 @@ function doLogin_OLD_disabled(){
   const u=document.getElementById('iu').value.trim();
   const p=document.getElementById('ip').value;
   const DEFAULT_USERS={
-    vicomart:{pw:'vc2026',role:'director',display:'Giám đốc'},
+    director:{pw:'dir2026',role:'director',display:'Giám đốc'},
     admin:{pw:'admin123',role:'admin',display:'Admin'},
     manager:{pw:'mgr2026',role:'manager',display:'Quản lý'},
   };
@@ -13021,7 +13021,7 @@ function loadSavedTheme(){
 
 
 // ═══════════════════════════════════════════════════
-// VICOMART CLOUD SYNC v5 - Safari Compatible
+// AIPOS-PRO CLOUD SYNC v5 - Safari Compatible
 // ═══════════════════════════════════════════════════
 (function() {
   var SB_URL = 'https://ssrodnzhuydlupglvepm.supabase.co';
@@ -13102,14 +13102,14 @@ function loadSavedTheme(){
     setTimeout(function(){ window._isSaving = false; }, 8000); // reset sau 8s
     // Backup localStorage trước
     try {
-      localStorage.setItem('vicomart_lastCfg_backup', JSON.stringify({
+      localStorage.setItem('aipos_lastCfg_backup', JSON.stringify({
         cfg: payload.cfg,
         branches: payload.branches,
         updated_at: payload.updated_at,
       }));
       // Lưu vpAtt riêng vào localStorage (vì cloud chưa có cột này)
       if (typeof ST !== 'undefined' && ST.vpAtt) {
-        localStorage.setItem('vicomart_vpAtt', JSON.stringify(ST.vpAtt));
+        localStorage.setItem('aipos_vpAtt', JSON.stringify(ST.vpAtt));
       }
     } catch(e) {
       console.warn('localStorage backup fail:', e);
@@ -13121,10 +13121,10 @@ function loadSavedTheme(){
         if(typeof toast === 'function') {
           toast('⚠️ KHÔNG LƯU ĐƯỢC CLOUD: ' + r.error.message + ' — data đã backup local','err');
         }
-        try { localStorage.setItem('vicomart_pendingSync', '1'); } catch(e){}
+        try { localStorage.setItem('aipos_pendingSync', '1'); } catch(e){}
         return false;
       } else {
-        try { localStorage.removeItem('vicomart_pendingSync'); } catch(e){}
+        try { localStorage.removeItem('aipos_pendingSync'); } catch(e){}
         // ⚠️ CRITICAL: Update lastCloudTs ngay sau khi mình save thành công
         // Để polling sbLoad không kéo data cũ về override CFG mới
         // (Nếu không, có thể bị mất data trong vòng 10s polling)
@@ -13207,7 +13207,7 @@ function loadSavedTheme(){
         // Nếu cloud không có vpAtt, restore từ localStorage (vì cloud chưa có cột)
         if (!ST.vpAtt || Object.keys(ST.vpAtt||{}).length === 0) {
           try {
-            const _vpAttRaw = localStorage.getItem('vicomart_vpAtt');
+            const _vpAttRaw = localStorage.getItem('aipos_vpAtt');
             if (_vpAttRaw) {
               ST.vpAtt = JSON.parse(_vpAttRaw);
               console.log('✅ Restored vpAtt from localStorage:', Object.keys(ST.vpAtt).length, 'records');
@@ -13261,7 +13261,7 @@ function loadSavedTheme(){
         if (Array.isArray(d.nhansu) && typeof employees !== 'undefined') {
           employees = d.nhansu;
           window.employees = employees; // sync window.employees để CK/lương dùng được
-          try { localStorage.setItem('vicomart_nhansu_v2', JSON.stringify(employees)); } catch(e){}
+          try { localStorage.setItem('aipos_nhansu_v2', JSON.stringify(employees)); } catch(e){}
           try { if(window.__NSHR__){ window.__NSHR__.updateStats(); window.__NSHR__.renderTable(); } } catch(e){}
         }
         // Load CFG tu cloud
@@ -13270,7 +13270,7 @@ function loadSavedTheme(){
           // ⚠️ CRITICAL CHECK: Nếu cloud có cfg nhưng RỖNG (costInputs/targetDTByMonth không có)
           // → có thể save trước đó bị fail. Kiểm tra localStorage backup, ưu tiên backup nếu mới hơn
           var _backupRaw = null;
-          try { _backupRaw = localStorage.getItem('vicomart_lastCfg_backup'); } catch(e){}
+          try { _backupRaw = localStorage.getItem('aipos_lastCfg_backup'); } catch(e){}
           if (_backupRaw) {
             try {
               var _bk = JSON.parse(_backupRaw);
@@ -13283,7 +13283,7 @@ function loadSavedTheme(){
                 console.warn('⚠️ Cloud cfg thiếu data → ưu tiên localStorage backup. Backup time:', new Date(_bkTime).toLocaleString('vi-VN'));
                 _cfg = _bk.cfg; // override với backup
                 // Đánh dấu pending để re-save
-                try { localStorage.setItem('vicomart_pendingSync', '1'); } catch(e){}
+                try { localStorage.setItem('aipos_pendingSync', '1'); } catch(e){}
               }
             } catch(e) { console.warn('Parse backup fail:', e); }
           }
@@ -13355,7 +13355,7 @@ function loadSavedTheme(){
       }
       // Nếu có pending sync (lần trước save fail) → auto re-save
       try {
-        var _pending = localStorage.getItem('vicomart_pendingSync');
+        var _pending = localStorage.getItem('aipos_pendingSync');
         if (_pending === '1') {
           console.warn('⚠️ Phát hiện pending sync — tự động lưu lại data hiện tại');
           setTimeout(function(){
@@ -13446,7 +13446,7 @@ function loadSavedTheme(){
       db = window.supabase.createClient(SB_URL, SB_KEY);
       window._aiposDb = db;  // expose cho doLogin (Supabase Auth)
       ok = true;
-      console.log('=== VICOMART v5 BUILD 1777177703 ===');
+      console.log('=== AIPOS-PRO v5 ===');
       console.log('Supabase client OK');
       badge('⏳ Connecting...');
       preloadUsers();
@@ -13794,7 +13794,7 @@ try {
 // ══════════════════════════════════════════════
 // DATA & STATE
 // ══════════════════════════════════════════════
-const STORAGE_KEY = 'vicomart_nhansu_v2';
+const STORAGE_KEY = 'aipos_nhansu_v2';
 // Dùng window.employees để sbSave/sbLoad truy cập được
 window.employees = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let employees = window.employees;
@@ -13837,7 +13837,7 @@ const CHECKLIST = [
 if (!employees.length) {
   employees = [{
     id:'VCM-001', name:'Nguyễn Thị Lan', gender:'Nữ', dob:'1998-05-12',
-    phone:'0905 123 456', email:'lan@vicomart.vn', address:'12 Lý Thường Kiệt, Phú Bài',
+    phone:'0905 123 456', email:'', address:'12 Lý Thường Kiệt, Phú Bài',
     branch:'Phú Bài', role:'QL Trải nghiệm KH & Quầy chính thức', status:'active', shift:'Ca sáng (6:00–14:00)',
     startDate:'2023-01-10', endDate:'2025-01-10', contractType:'Xác định thời hạn 1 năm',
     signDate:'2023-01-08', contractNo:'VCM/HĐ/2023/001',
@@ -13848,12 +13848,12 @@ if (!employees.length) {
     emergName:'Nguyễn Văn Bình', emergRel:'Cha', emergPhone:'0901 999 888', emergAddr:'',
     edu:'THPT', docNote:'', note:'', files:{},
     history:[
-      {type:'Vào làm',date:'2023-01-10',desc:'Bắt đầu làm việc tại Vicomart Phú Bài'},
+      {type:'Vào làm',date:'2023-01-10',desc:'Bắt đầu làm việc'},
       {type:'Ký lại hợp đồng',date:'2024-01-10',desc:'Gia hạn hợp đồng thêm 1 năm'},
     ]
   },{
     id:'VCM-002', name:'Trần Minh Tuấn', gender:'Nam', dob:'1995-08-20',
-    phone:'0912 345 678', email:'tuan@vicomart.vn', address:'45 Hùng Vương, Vinh Thanh',
+    phone:'0912 345 678', email:'', address:'45 Hùng Vương, Vinh Thanh',
     branch:'Vinh Thanh', role:'Giám đốc siêu thị chính thức', status:'active', shift:'Hành chính',
     startDate:'2022-06-01', endDate:'2026-06-01', contractType:'Xác định thời hạn 3 năm',
     signDate:'2022-05-28', contractNo:'VCM/HĐ/2022/002',
@@ -13900,7 +13900,7 @@ function nsCheckCloud(){
 Lấy dữ liệu mới nhất từ cloud?`)){
           employees=cloudData;
           window.employees=employees;
-          try{ localStorage.setItem('vicomart_nhansu_v2',JSON.stringify(employees)); }catch(e){}
+          try{ localStorage.setItem('aipos_nhansu_v2',JSON.stringify(employees)); }catch(e){}
           // Refresh dropdowns + bảng + stats sau khi lấy data từ cloud
           if(typeof refreshHRDropdowns==='function') refreshHRDropdowns();
           if(window.__NSHR__){
@@ -14583,7 +14583,7 @@ function exportCSV() {
 ');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download = `Vicomart_NhanSu_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `NhanSu_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   toast('Đã xuất CSV');
 }
@@ -14819,7 +14819,7 @@ function globalSearch(q){
   var u=new URLSearchParams(location.search).get('sso');
   if(!u)return;
   history.replaceState(null,'',location.pathname);
-  var pwMap={vicomart:'vc2026',admin:'admin123',manager:'mgr2026'};
+  var pwMap={director:'dir2026',admin:'admin123',manager:'mgr2026'};
   var pw=pwMap[u];if(!pw)return;
   var iv=setInterval(function(){
     var ui=document.querySelector('input[type="text"]');

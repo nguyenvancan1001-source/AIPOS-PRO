@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIPOS-PRO · Đăng Ký Dùng Thử</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%)}
+.card{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.3);width:460px;max-width:94vw;overflow:hidden}
+.header{background:linear-gradient(135deg,#1565c0,#0d47a1);padding:28px 32px;text-align:center;color:#fff}
+.header h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.header p{font-size:13px;opacity:.85;margin-top:4px}
+.body{padding:28px 32px}
+label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:4px;margin-top:16px;text-transform:uppercase;letter-spacing:.5px}
+label:first-child{margin-top:0}
+input,select{width:100%;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:14px;transition:.2s}
+input:focus,select:focus{border-color:#2563eb;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.row{display:flex;gap:12px}
+.row>div{flex:1}
+.plans{display:flex;gap:8px;margin-top:6px}
+.plans label{display:flex;align-items:center;gap:6px;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;flex:1;margin:0;text-transform:none;letter-spacing:0}
+.plans label:has(input:checked){border-color:#2563eb;background:#eff6ff}
+.plans input[type=radio]{width:auto;margin:0}
+.plans .pn{font-size:13px;font-weight:700;color:#1e293b}
+.plans .pp{font-size:11px;color:#64748b}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;margin-top:22px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);transition:.2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.35)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.err{color:#dc2626;font-size:12px;margin-top:8px;min-height:16px;font-weight:600}
+.ok{color:#16a34a;font-size:13px;margin-top:8px;font-weight:600;text-align:center}
+.footer{text-align:center;padding:0 32px 24px;font-size:13px;color:#64748b}
+.footer a{color:#2563eb;text-decoration:none;font-weight:600}
+.note{font-size:11px;color:#94a3b8;margin-top:12px;text-align:center}
+/* success state */
+.success{text-align:center;padding:48px 32px}
+.success .ic{font-size:56px;margin-bottom:12px}
+.success h2{font-size:20px;color:#16a34a;margin-bottom:8px}
+.success p{font-size:14px;color:#475569;margin-bottom:20px}
+.success .btn{background:linear-gradient(135deg,#16a34a,#15803d)}
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- FORM -->
+  <div id="formView">
+    <div class="header">
+      <h1>AIPOS-PRO</h1>
+      <p>Đăng ký tài khoản quản lý bán hàng</p>
+    </div>
+    <div class="body">
+      <label>Tên công ty / cửa hàng *</label>
+      <input type="text" id="company" placeholder="VD: Siêu thị ABC" required>
+
+      <div class="row">
+        <div>
+          <label>Mã số thuế</label>
+          <input type="text" id="taxId" placeholder="Không bắt buộc">
+        </div>
+        <div>
+          <label>Họ tên quản trị</label>
+          <input type="text" id="adminName" placeholder="Admin">
+        </div>
+      </div>
+
+      <label>Email đăng nhập *</label>
+      <input type="email" id="email" placeholder="you@company.vn" required>
+
+      <label>Mật khẩu *</label>
+      <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+
+      <label style="margin-top:18px">Chọn gói</label>
+      <div class="plans">
+        <label><input type="radio" name="plan" value="basic" checked>
+          <div><div class="pn">Basic</div><div class="pp">Miễn phí</div></div></label>
+        <label><input type="radio" name="plan" value="standard">
+          <div><div class="pn">Standard</div><div class="pp">Liên hệ</div></div></label>
+        <label><input type="radio" name="plan" value="premium">
+          <div><div class="pn">Premium</div><div class="pp">Liên hệ</div></div></label>
+      </div>
+
+      <button class="btn" id="regBtn" onclick="doRegister()">🚀 Đăng ký ngay</button>
+      <div class="err" id="err"></div>
+      <div class="note">Bằng việc đăng ký, bạn đồng ý với điều khoản sử dụng AIPOS-PRO.</div>
+    </div>
+    <div class="footer">Đã có tài khoản? <a href="index.html">Đăng nhập</a></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="okView" style="display:none">
+    <div class="success">
+      <div class="ic">🎉</div>
+      <h2>Đăng ký thành công!</h2>
+      <p id="okMsg">Tài khoản đã sẵn sàng.</p>
+      <a href="index.html"><button class="btn">🔑 Đăng nhập ngay</button></a>
+    </div>
+  </div>
+</div>
+
+<script>
+const EDGE = 'https://ssrodnzhuydlupglvepm.supabase.co/functions/v1/self-register';
+
+async function doRegister() {
+  const btn = document.getElementById('regBtn'), err = document.getElementById('err');
+  const company = document.getElementById('company').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const taxId = document.getElementById('taxId').value.trim();
+  const adminName = document.getElementById('adminName').value.trim();
+  const plan = document.querySelector('input[name=plan]:checked')?.value || 'basic';
+
+  err.textContent = '';
+  if (!company) { err.textContent = 'Vui lòng nhập tên công ty'; return; }
+  if (!email) { err.textContent = 'Vui lòng nhập email'; return; }
+  if (password.length < 6) { err.textContent = 'Mật khẩu tối thiểu 6 ký tự'; return; }
+
+  btn.disabled = true; btn.textContent = 'Đang xử lý...';
+  try {
+    const res = await fetch(EDGE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company_name: company, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName || 'Quản trị viên', plan }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Lỗi không xác định');
+    // Success
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('okView').style.display = 'block';
+    document.getElementById('okMsg').textContent = data.message || `Đăng nhập với ${email}`;
+  } catch (e) {
+    err.textContent = e.message;
+    btn.disabled = false; btn.textContent = '🚀 Đăng ký ngay';
+  }
+}
+</script>
+</body>
+</html>

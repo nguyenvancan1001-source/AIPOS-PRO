@@ -7,13 +7,13 @@
 <title>AIPOS·PRO — Nền tảng quản lý bán lẻ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
   :root{
     --navy:#0B2545; --navy2:#13386b; --blue:#1565C0; --gold:#C8922A; --gold-l:#E8B84B;
     --ink:#0F1B2D; --mute:#7C8AA0; --line:#E4E9F2; --bg:#EEF2F8; --card:#FFFFFF;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Sora',sans-serif;color:var(--ink);min-height:100vh;
+  body{font-family:'Plus Jakarta Sans','Inter',sans-serif;color:var(--ink);min-height:100vh;
     background:
       radial-gradient(1200px 500px at 80% -10%, rgba(21,101,192,.18), transparent 60%),
       radial-gradient(900px 500px at 0% 110%, rgba(200,146,42,.14), transparent 55%),
@@ -22,22 +22,24 @@
 
   /* ===== LOGIN ===== */
   #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
-  .login-card{background:var(--card);border-radius:20px;padding:38px 34px;width:380px;max-width:92vw;
-    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1);}
+  .login-card{background:#1e293b;border-radius:20px;padding:38px 34px;width:380px;max-width:92vw;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1);
+    border:1px solid rgba(255,255,255,.08);color:#f1f5f9;}
   @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
   .brand{text-align:center;margin-bottom:26px;}
-  .brand .logo{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--navy);}
-  .brand .logo span{color:var(--gold);}
-  .brand .tag{font-size:12px;color:var(--mute);margin-top:5px;letter-spacing:.03em;}
+  .brand .logo{font-size:30px;font-weight:800;letter-spacing:-.02em;color:#f1f5f9;font-family:'Plus Jakarta Sans',sans-serif;}
+  .brand .logo span{color:var(--gold-l);}
+  .brand .tag{font-size:12px;color:#94a3b8;margin-top:5px;letter-spacing:.03em;}
   .field{margin-bottom:13px;}
-  .field label{display:block;font-size:12px;font-weight:600;color:var(--mute);margin-bottom:6px;}
-  .field input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;font-size:14px;
-    font-family:inherit;transition:border .2s;}
+  .field label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;}
+  .field input{width:100%;padding:12px 14px;border:1.5px solid #475569;border-radius:11px;font-size:14px;
+    font-family:inherit;transition:border .2s;background:#0f172a;color:#f1f5f9;}
   .field input:focus{outline:none;border-color:var(--blue);}
+  .field input::placeholder{color:#64748b;}
   .btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--blue),var(--navy));color:#fff;border:none;
     border-radius:11px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .2s,transform .1s;}
   .btn:hover{filter:brightness(1.08);} .btn:active{transform:scale(.98);} .btn:disabled{opacity:.6;cursor:default;}
-  .err{color:#DC2626;font-size:12.5px;margin-top:11px;text-align:center;min-height:16px;}
+  .err{color:#f87171;font-size:12.5px;margin-top:11px;text-align:center;min-height:16px;}
 
   /* ===== HUB ===== */
   #hub{display:none;min-height:100vh;flex-direction:column;}
@@ -47,6 +49,9 @@
   .topbar .logo span{color:var(--gold-l);}
   .topbar .company{margin-left:6px;padding-left:14px;border-left:1px solid rgba(255,255,255,.18);
     color:#cdd9ec;font-size:13px;font-weight:600;}
+  .plan-basic{background:#64748b;color:#fff}
+  .plan-standard{background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff}
+  .plan-premium{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
   .topbar .spacer{flex:1;}
   .topbar .user{color:#aebfd6;font-size:12.5px;}
   .topbar .logout{background:rgba(255,255,255,.1);color:#fff;border:none;padding:8px 14px;border-radius:9px;
@@ -55,28 +60,203 @@
 
   .hub-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
   .hub-head{text-align:center;margin-bottom:38px;}
-  .hub-head h1{color:#fff;font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;}
+  .hub-head h1{color:#fff;font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em;font-family:'Plus Jakarta Sans',sans-serif;}
   .hub-head p{color:#a9bad4;font-size:14px;margin-top:8px;}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,210px));gap:18px;justify-content:center;
-    width:100%;max-width:900px;}
-  .app{background:var(--card);border-radius:18px;padding:26px 20px;text-align:center;cursor:pointer;
-    text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.5);position:relative;overflow:hidden;
-    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;
-    opacity:0;animation:pop .5s forwards;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;justify-content:center;
+    width:100%;max-width:1060px;}
+  @media(min-width:960px){.grid{grid-template-columns:repeat(5,1fr);}}
+
+  /* ── APP TILES — rebuilt from Admin card spec ── */
+  .app{
+    background:#1e293b;
+    border-radius:20px;
+    aspect-ratio:1/1;
+    padding:28px 20px 22px;
+    text-align:center;
+    cursor:pointer;
+    text-decoration:none;
+    color:#f1f5f9;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+    position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+    opacity:0;transform:translateY(14px);
+    animation:pop .5s forwards;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s;
+  }
   @keyframes pop{to{opacity:1;transform:none}}
-  .app{transform:translateY(14px);}
   .app:nth-child(1){animation-delay:.05s}.app:nth-child(2){animation-delay:.12s}
   .app:nth-child(3){animation-delay:.19s}.app:nth-child(4){animation-delay:.26s}
   .app:nth-child(5){animation-delay:.33s}
-  .app:hover{transform:translateY(-7px);box-shadow:0 22px 44px -18px rgba(0,0,0,.45);}
-  .app::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent,var(--blue));}
-  .app .ic{font-size:42px;display:block;margin-bottom:14px;}
-  .app .nm{font-weight:700;font-size:16px;}
-  .app .ds{font-size:12px;color:var(--mute);margin-top:5px;line-height:1.4;}
-  .app .go{margin-top:14px;font-size:11.5px;font-weight:700;color:var(--accent,var(--blue));letter-spacing:.04em;text-transform:uppercase;}
+  .app:hover{transform:translateY(-6px);box-shadow:0 40px 90px -20px rgba(0,0,0,.6);border-color:rgba(255,255,255,.15);}
+
+  /* icon: dark bg matching card interior */
+  .app .ic-wrap{
+    width:62px;height:62px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .app .ic-wrap svg{width:30px;height:30px;}
+  .app .nm{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16.5px;letter-spacing:-.01em;color:#f1f5f9;margin-top:4px;}
+  .app .ds{font-size:11.5px;color:#94a3b8;margin-top:8px;line-height:1.45;min-height:0;}
+  .app .go{
+    margin-top:auto;padding-top:12px;
+    font-size:11.5px;font-weight:700;
+    color:#60a5fa;
+    letter-spacing:.05em;text-transform:uppercase;
+    display:flex;align-items:center;gap:5px;
+    transition:color .2s;
+  }
+  .app .go svg{width:14px;height:14px;transition:transform .2s;}
+  .app:hover .go{color:#93c5fd;}
+  .app:hover .go svg{transform:translateX(3px);}
 
   .foot{text-align:center;color:#7e90ab;font-size:11px;padding:18px;}
+
+  /* ===== PRICING VIEW ===== */
+  #pricing{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow-y:auto;}
+  .pricing-wrap{width:100%;max-width:960px;margin:20px auto;animation:rise .5s cubic-bezier(.2,.8,.2,1);}
+  .pricing-header{text-align:center;margin-bottom:32px;}
+  .pricing-header .logo{font-size:28px;font-weight:800;color:#f1f5f9;margin-bottom:6px;}
+  .pricing-header .logo span{color:var(--gold-l);}
+  .pricing-header h2{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;}
+  .pricing-header p{font-size:13px;color:#94a3b8;}
+  .pricing-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+  @media(max-width:720px){.pricing-cards{grid-template-columns:1fr;max-width:380px;margin-left:auto;margin-right:auto;}}
+  .p-card{background:#1e293b;border-radius:16px;padding:28px 22px;border:2px solid #475569;
+    display:flex;flex-direction:column;position:relative;transition:border-color .2s,box-shadow .2s;color:#f1f5f9;}
+  .p-card.featured{border-color:var(--blue);box-shadow:0 8px 30px -8px rgba(21,101,192,.25);}
+  .p-card .p-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),#0ea5e9);
+    color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.04em;white-space:nowrap;}
+  .p-card .p-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;}
+  .p-card .p-name{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;}
+  .p-card .p-price{font-size:28px;font-weight:800;color:#fff;margin-bottom:2px;}
+  .p-card .p-price .p-orig{font-size:16px;font-weight:600;color:#64748b;text-decoration:line-through;margin-right:6px;}
+  .p-card .p-save{display:inline-block;background:rgba(74,222,128,.15);color:#4ade80;font-size:11px;font-weight:700;
+    padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:.03em;}
+
+  /* ===== BILLING TOGGLE ===== */
+  .billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;}
+  .billing-toggle .bt-label{font-size:14px;font-weight:700;color:#64748b;cursor:pointer;transition:color .2s;}
+  .billing-toggle .bt-label.active{color:#f1f5f9;}
+  .billing-toggle .bt-switch{width:52px;height:28px;background:#334155;border-radius:14px;position:relative;cursor:pointer;
+    transition:background .3s;border:1px solid rgba(255,255,255,.1);}
+  .billing-toggle .bt-switch.yearly{background:linear-gradient(135deg,var(--blue),#0ea5e9);}
+  .billing-toggle .bt-switch .bt-dot{width:22px;height:22px;background:#fff;border-radius:50%;position:absolute;top:2px;left:3px;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.2);}
+  .billing-toggle .bt-switch.yearly .bt-dot{transform:translateX(24px);}
+  .billing-toggle .bt-bonus{background:rgba(74,222,128,.15);color:#4ade80;font-size:10.5px;font-weight:700;
+    padding:3px 10px;border-radius:20px;letter-spacing:.03em;opacity:0;transform:scale(.8);transition:all .3s;}
+  .billing-toggle .bt-bonus.show{opacity:1;transform:scale(1);}
+
+  /* ===== DEMO BUTTON ===== */
+  .p-btn-demo{background:transparent;border:2px solid #4ade80;color:#4ade80;margin-top:8px;
+    display:flex;align-items:center;justify-content:center;gap:6px;}
+  .p-btn-demo:hover{background:rgba(74,222,128,.1);border-color:#86efac;color:#86efac;}
+
+  /* ===== DEMO BANNER ===== */
+  .demo-banner{background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(59,130,246,.15));
+    border:1px solid rgba(74,222,128,.25);border-radius:12px;padding:12px 20px;
+    display:flex;align-items:center;gap:12px;margin-bottom:20px;max-width:1060px;width:100%;
+    animation:rise .5s cubic-bezier(.2,.8,.2,1);}
+  .demo-banner .db-icon{font-size:22px;flex-shrink:0;}
+  .demo-banner .db-text{font-size:13px;color:#e2e8f0;font-weight:600;flex:1;}
+  .demo-banner .db-text span{color:#4ade80;}
+  .demo-banner .db-close{background:rgba(255,255,255,.1);border:none;color:#94a3b8;
+    padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s;}
+  .demo-banner .db-close:hover{background:rgba(255,255,255,.2);color:#fff;}
+  .p-card .p-price sub{font-size:13px;font-weight:600;color:#94a3b8;}
+  .p-card .p-desc{font-size:12px;color:#94a3b8;margin-bottom:16px;line-height:1.5;}
+  .p-card .p-features{list-style:none;margin-bottom:20px;flex:1;}
+  .p-card .p-features li{font-size:12.5px;color:#e2e8f0;padding:5px 0;display:flex;align-items:flex-start;gap:7px;line-height:1.4;}
+  .p-card .p-features li::before{content:"✓";color:#4ade80;font-weight:700;flex-shrink:0;margin-top:1px;}
+  .p-card .p-features li.no::before{content:"—";color:#475569;}
+  .p-card .p-features li.no{color:#64748b;}
+  .p-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;
+    font-family:inherit;transition:filter .2s,transform .1s;}
+  .p-btn:hover{filter:brightness(1.08);} .p-btn:active{transform:scale(.98);}
+  .p-btn-outline{background:transparent;border:2px solid #60a5fa;color:#60a5fa;}
+  .p-btn-fill{background:linear-gradient(135deg,var(--blue),var(--navy));color:#fff;}
+  .p-btn-gold{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;}
+  .pricing-compare{background:#1e293b;border-radius:16px;padding:28px;margin-bottom:20px;border:1px solid rgba(255,255,255,.08);}
+  .pricing-compare h3{font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;text-align:center;}
+  .cmp-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .cmp-table th{text-align:left;padding:10px 12px;font-weight:700;color:#94a3b8;font-size:11px;
+    text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #334155;}
+  .cmp-table td{padding:9px 12px;border-bottom:1px solid #334155;color:#e2e8f0;}
+  .cmp-table tr:last-child td{border-bottom:none;}
+  .cmp-table .feat-name{font-weight:600;color:#f1f5f9;}
+  .cmp-table .ck{color:#4ade80;font-weight:700;text-align:center;}
+  .cmp-table .no{color:#475569;text-align:center;}
+  .cmp-table .val{text-align:center;font-weight:600;color:#e2e8f0;}
+  .pricing-back{text-align:center;margin-top:8px;}
+
+  /* ===== REGISTER VIEW ===== */
+  #register{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .reg-card{background:#1e293b;border-radius:20px;padding:34px;width:520px;max-width:94vw;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.8,.2,1);
+    border:1px solid rgba(255,255,255,.08);color:#f1f5f9;}
+  .reg-card .row{display:flex;gap:10px}
+  .reg-card .row>div{flex:1}
+  .plan-pick{display:flex;gap:10px;margin-top:6px;}
+  .plan-pick label{flex:1;padding:14px 12px;border:2px solid #475569;border-radius:12px;cursor:pointer;
+    text-align:center;transition:border-color .2s,background .2s;position:relative;background:#0f172a;}
+  .plan-pick label:has(input:checked){border-color:var(--blue);background:rgba(59,130,246,.15);box-shadow:0 2px 12px -4px rgba(21,101,192,.3);}
+  .plan-pick input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+  .plan-pick .pk-icon{font-size:22px;margin-bottom:6px;}
+  .plan-pick .pk-name{font-size:13px;font-weight:700;color:#f1f5f9;}
+  .plan-pick .pk-price{font-size:11px;color:#60a5fa;font-weight:600;margin-top:2px;}
+  .plan-pick .pk-info{font-size:10px;color:#94a3b8;margin-top:4px;line-height:1.4;}
+  @media(max-width:480px){.plan-pick{flex-direction:column;}}
+  .ok-msg{color:#4ade80;font-size:13px;font-weight:600;text-align:center}
+  .link{font-size:12.5px;color:#60a5fa;text-decoration:none;font-weight:600;cursor:pointer}
+  .note{font-size:11px;color:#94a3b8;margin-top:10px;text-align:center}
+
+  /* ===== ADMIN PANEL ===== */
+  #adminPanel{display:none;min-height:100vh;background:var(--navy);color:#f1f5f9}
+  .adm-topbar{display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.1)}
+  .adm-topbar h1{font-size:16px;font-weight:800;color:#fff}
+  .adm-topbar h1 span{color:var(--gold-l)}
+  .adm-topbar .spacer{flex:1}
+  .adm-topbar button{background:rgba(255,255,255,.1);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:18px 24px}
+  .stat-card{background:rgba(255,255,255,.08);border-radius:12px;padding:16px 18px}
+  .stat-card .num{font-size:26px;font-weight:800;color:var(--gold-l)}
+  .stat-card .lbl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .adm-section{padding:0 24px 24px}
+  .adm-section h2{font-size:13px;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+  .adm-tbl{width:100%;border-collapse:collapse;background:rgba(255,255,255,.05);border-radius:12px;overflow:hidden}
+  .adm-tbl th{background:rgba(255,255,255,.08);padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8}
+  .adm-tbl td{padding:9px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:12px}
+  .adm-tbl tr:hover td{background:rgba(59,130,246,.08)}
+  .bdg{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:.3px}
+  .bdg-basic{background:#475569;color:#e2e8f0}
+  .bdg-standard{background:rgba(59,130,246,.25);color:#93c5fd}
+  .bdg-premium{background:rgba(245,158,11,.25);color:#fcd34d}
+  .bdg-active{background:rgba(34,197,94,.2);color:#86efac}
+  .bdg-suspended{background:rgba(239,68,68,.2);color:#fca5a5}
+  .adm-act{display:flex;gap:4px}
+  .adm-act button{padding:3px 9px;border:none;border-radius:5px;font-size:10px;cursor:pointer;font-weight:600}
+  .adm-act .ab-edit{background:rgba(59,130,246,.2);color:#93c5fd}
+  .adm-act .ab-toggle{background:rgba(245,158,11,.2);color:#fcd34d}
+  /* Admin Modal */
+  .adm-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center}
+  .adm-modal-bg.show{display:flex}
+  .adm-modal{background:#1e293b;border-radius:14px;padding:26px;width:440px;max-width:92vw;color:#f1f5f9}
+  .adm-modal h3{font-size:15px;margin-bottom:14px;color:var(--gold-l)}
+  .adm-modal label{display:block;font-size:10px;color:#94a3b8;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.5px}
+  .adm-modal select,.adm-modal input[type=number]{width:100%;padding:8px 10px;border:1.5px solid #475569;border-radius:7px;background:#0f172a;color:#f1f5f9;font-size:12px}
+  .adm-feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+  .adm-feat-grid label{font-size:11px;display:flex;align-items:center;gap:5px;color:#f1f5f9;text-transform:none;letter-spacing:0;margin:0}
+  .adm-feat-grid input{width:auto}
+  .adm-modal .mbtn-row{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+  .adm-modal .mbtn-row button{padding:7px 18px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+  .adm-modal .m-save{background:var(--blue);color:#fff}
+  .adm-modal .m-cancel{background:#334155;color:#94a3b8}
 </style>
 </head>
 <body>
@@ -95,6 +275,199 @@
     <div style="text-align:center;margin-top:14px;">
       <a href="#" id="forgotLink" style="font-size:12.5px;color:var(--blue);text-decoration:none;font-weight:600;">Quên mật khẩu?</a>
     </div>
+    <div style="text-align:center;margin-top:10px;font-size:12.5px;color:var(--mute);">
+      Chưa có tài khoản? <a href="#" class="link" onclick="showView('pricing');return false">Xem gói & Đăng ký</a>
+      &nbsp;·&nbsp; <a href="#" class="link" onclick="showView('adminPanel');return false" style="color:var(--gold)">🛡️ Admin</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BẢNG GIÁ ===== -->
+<div id="pricing">
+  <div class="pricing-wrap">
+    <div class="pricing-header">
+      <div class="logo">AIPOS<span>·PRO</span></div>
+      <h2>Chọn gói phù hợp cho cửa hàng</h2>
+      <p>Bắt đầu miễn phí, nâng cấp khi cần — không ràng buộc hợp đồng</p>
+    </div>
+
+    <!-- BILLING TOGGLE -->
+    <div class="billing-toggle">
+      <span class="bt-label active" id="btMonth" onclick="setBilling('monthly')">Tháng</span>
+      <div class="bt-switch" id="btSwitch" onclick="toggleBilling()"><div class="bt-dot"></div></div>
+      <span class="bt-label" id="btYear" onclick="setBilling('yearly')">Năm</span>
+      <span class="bt-bonus" id="btBonus">🎁 Tặng 2 tháng</span>
+    </div>
+
+    <div class="pricing-cards">
+      <!-- TRẢI NGHIỆM (Basic) -->
+      <div class="p-card" id="pCardBasic">
+        <div class="p-icon" style="background:#F1F5F9;color:#64748b;">🆓</div>
+        <div class="p-name">Trải nghiệm</div>
+        <div class="p-price" id="pPriceBasic"><span class="p-orig">200K</span>0đ <sub>/tháng</sub></div>
+        <div class="p-save" id="pSaveBasic">▼ MIỄN PHÍ</div>
+        <div class="p-desc">Dùng thử POS cơ bản cho tiệm tạp hoá nhỏ</div>
+        <ul class="p-features">
+          <li>POS bán hàng tại quầy</li>
+          <li>Tối đa 200 sản phẩm</li>
+          <li>Không giới hạn hoá đơn</li>
+          <li>1 người dùng · 1 chi nhánh</li>
+          <li class="no">Quản lý kho</li>
+          <li class="no">Nhà cung cấp & công nợ</li>
+          <li class="no">Hoá đơn điện tử (HĐĐT)</li>
+        </ul>
+        <button class="p-btn p-btn-outline" onclick="startRegister('basic')">Đăng ký miễn phí</button>
+      </div>
+
+      <!-- STANDARD -->
+      <div class="p-card featured" id="pCardStandard">
+        <div class="p-badge">PHỔ BIẾN NHẤT</div>
+        <div class="p-icon" style="background:#DBEAFE;color:#2563eb;">⭐</div>
+        <div class="p-name">Cơ bản</div>
+        <div class="p-price" id="pPriceStandard"><span class="p-orig">500K</span>100K <sub>/tháng</sub></div>
+        <div class="p-save" id="pSaveStandard">▼ GIẢM 80%</div>
+        <div class="p-desc">Đầy đủ cho cửa hàng vừa — bán hàng, kho, nhập hàng, HĐĐT</div>
+        <ul class="p-features">
+          <li>Toàn bộ tính năng Trải nghiệm</li>
+          <li>Quản lý kho · Điều chuyển</li>
+          <li>Nhà cung cấp · Công nợ</li>
+          <li>HĐĐT · 100đ/HĐ · Gói 5K–20K giảm đến 80đ</li>
+          <li>Tự động sao lưu dữ liệu</li>
+          <li>Không giới hạn sản phẩm & hoá đơn</li>
+          <li>5 người dùng · 2 chi nhánh</li>
+        </ul>
+        <button class="p-btn p-btn-fill" onclick="startRegister('standard')">Dùng thử 14 ngày</button>
+        <button class="p-btn p-btn-demo" onclick="loginDemo()">👁️ Xem Demo</button>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="p-card" id="pCardPremium">
+        <div class="p-icon" style="background:#FEF3C7;color:#f59e0b;">💎</div>
+        <div class="p-name">Toàn diện</div>
+        <div class="p-price" id="pPricePremium"><span class="p-orig">2.000K</span>500K <sub>/tháng</sub></div>
+        <div class="p-save" id="pSavePremium">▼ GIẢM 75%</div>
+        <div class="p-desc">Giải pháp toàn diện cho chuỗi cửa hàng & doanh nghiệp</div>
+        <ul class="p-features">
+          <li>Toàn bộ tính năng Cơ bản</li>
+          <li>Kế toán · Sổ sách · TT99</li>
+          <li>Lương · TNCN · KPI</li>
+          <li>AI Assist thông minh</li>
+          <li>API Access tích hợp</li>
+          <li>20 người dùng · 10 chi nhánh</li>
+          <li>Hỗ trợ ưu tiên 24/7</li>
+        </ul>
+        <button class="p-btn p-btn-gold" onclick="startRegister('premium')">Dùng thử 14 ngày</button>
+        <button class="p-btn p-btn-demo" onclick="loginDemo()">👁️ Xem Demo</button>
+      </div>
+    </div>
+
+    <!-- BẢNG SO SÁNH CHI TIẾT -->
+    <div class="pricing-compare">
+      <h3>So sánh chi tiết tính năng</h3>
+      <div style="overflow-x:auto">
+      <table class="cmp-table">
+        <thead>
+          <tr><th class="feat-name">Tính năng</th><th class="val">Trải nghiệm</th><th class="val">Cơ bản</th><th class="val">Toàn diện</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="feat-name">POS bán hàng</td><td class="ck">✓</td><td class="ck">✓</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Quản lý kho</td><td class="no">—</td><td class="ck">✓</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Nhà cung cấp · Công nợ</td><td class="no">—</td><td class="ck">✓</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Hoá đơn điện tử (HĐĐT)</td><td class="no">—</td><td class="ck">✓</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Tự động sao lưu</td><td class="no">—</td><td class="ck">✓</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Kế toán · Sổ sách · TT99</td><td class="no">—</td><td class="no">—</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Lương · TNCN · KPI</td><td class="no">—</td><td class="no">—</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">AI Assist</td><td class="no">—</td><td class="no">—</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">API Access</td><td class="no">—</td><td class="no">—</td><td class="ck">✓</td></tr>
+          <tr><td class="feat-name">Số người dùng</td><td class="val">1</td><td class="val">5</td><td class="val">20</td></tr>
+          <tr><td class="feat-name">Số chi nhánh</td><td class="val">1</td><td class="val">2</td><td class="val">10</td></tr>
+          <tr><td class="feat-name">Sản phẩm</td><td class="val">200</td><td class="val">∞</td><td class="val">∞</td></tr>
+          <tr><td class="feat-name">Hoá đơn bán hàng</td><td class="val">∞</td><td class="val">∞</td><td class="val">∞</td></tr>
+          <tr><td class="feat-name">HĐĐT (hoá đơn điện tử)</td><td class="no">—</td><td class="val">100đ/HĐ</td><td class="val">100đ/HĐ</td></tr>
+          <tr><td class="feat-name">Hỗ trợ</td><td class="val">Cộng đồng</td><td class="val">Email · Chat</td><td class="val">Ưu tiên 24/7</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- BẢNG GIÁ GÓI HĐĐT -->
+    <div class="pricing-compare">
+      <h3>📄 Bảng giá Hoá đơn điện tử (HĐĐT)</h3>
+      <div style="overflow-x:auto">
+      <table class="cmp-table">
+        <thead>
+          <tr><th class="feat-name">Gói HĐĐT</th><th class="val">Đơn giá</th><th class="val">Thành tiền</th><th class="val">Tiết kiệm</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="feat-name">Gói 5.000 HĐ</td><td class="val">100đ/HĐ</td><td class="val">500K</td><td class="val">—</td></tr>
+          <tr><td class="feat-name">Gói 10.000 HĐ</td><td class="val">90đ/HĐ</td><td class="val">900K</td><td class="val">▼ 10%</td></tr>
+          <tr><td class="feat-name">Gói 20.000 HĐ</td><td class="val">80đ/HĐ</td><td class="val">1.600K</td><td class="val">▼ 20%</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div style="margin-top:14px;padding:12px 16px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:10px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">💡</span>
+        <div style="font-size:12.5px;color:#94a3b8;line-height:1.6;">
+          <strong style="color:#e2e8f0;">Bạn thuộc diện dùng hoá đơn điện tử?</strong><br>
+          Chọn gói HĐĐT phù hợp sau khi đăng ký để tiết kiệm chi phí. Mua càng nhiều, giá càng tốt!
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-back">
+      <a href="#" class="link" onclick="showView('login');return false">← Quay lại đăng nhập</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ĐĂNG KÝ ===== -->
+<div id="register">
+  <div class="reg-card">
+    <div class="brand">
+      <div class="logo">AIPOS<span>·PRO</span></div>
+      <div class="tag">Đăng ký tài khoản quản lý bán hàng</div>
+    </div>
+    <div id="regForm">
+      <div class="field"><label>Gói đã chọn</label>
+        <div class="plan-pick">
+          <label><input type="radio" name="regPlan" value="basic">
+            <div class="pk-icon">🆓</div><div class="pk-name">Trải nghiệm</div>
+            <div class="pk-price" id="pkPriceBasic"><s style="color:#64748b;font-size:10px">200K</s> 0đ/tháng</div>
+            <div class="pk-info">POS cơ bản · 1 user</div>
+          </label>
+          <label><input type="radio" name="regPlan" value="standard" checked>
+            <div class="pk-icon">⭐</div><div class="pk-name">Cơ bản</div>
+            <div class="pk-price" id="pkPriceStandard"><s style="color:#64748b;font-size:10px">500K</s> 100K/tháng</div>
+            <div class="pk-info">POS + Kho + NCC + HĐĐT</div>
+          </label>
+          <label><input type="radio" name="regPlan" value="premium">
+            <div class="pk-icon">💎</div><div class="pk-name">Toàn diện</div>
+            <div class="pk-price" id="pkPricePremium"><s style="color:#64748b;font-size:10px">2.000K</s> 500K/tháng</div>
+            <div class="pk-info">Full: Kế toán + Lương + AI</div>
+          </label>
+        </div>
+      </div>
+      <div class="field"><label>Tên công ty / cửa hàng *</label><input type="text" id="regCompany" placeholder="VD: Siêu thị ABC"></div>
+      <div class="reg-card row">
+        <div class="field"><label>Mã số thuế</label><input type="text" id="regTaxId" placeholder="Không bắt buộc"></div>
+        <div class="field"><label>Họ tên quản trị</label><input type="text" id="regName" placeholder="Admin"></div>
+      </div>
+      <div class="field"><label>Email đăng nhập *</label><input type="email" id="regEmail" placeholder="you@congty.vn"></div>
+      <div class="field"><label>Mật khẩu *</label><input type="password" id="regPass" placeholder="Tối thiểu 6 ký tự" minlength="6"></div>
+      <button class="btn" id="regBtn" onclick="doRegister()">🚀 Đăng ký ngay</button>
+      <div class="err" id="regErr"></div>
+      <div class="note">Bằng việc đăng ký, bạn đồng ý với điều khoản sử dụng AIPOS-PRO.</div>
+      <div style="text-align:center;margin-top:8px"><a href="#" class="link" onclick="showView('pricing');return false">← Xem bảng giá chi tiết</a></div>
+    </div>
+    <div id="regOk" style="display:none;text-align:center;padding:30px 0">
+      <div style="font-size:56px;margin-bottom:12px">🎉</div>
+      <div class="ok-msg" style="font-size:18px;margin-bottom:8px">Đăng ký thành công!</div>
+      <p id="regOkMsg" style="font-size:13px;color:var(--mute);margin-bottom:18px">Tài khoản đã sẵn sàng.</p>
+      <button class="btn" onclick="showView('login')" style="max-width:220px;margin:0 auto">🔑 Đăng nhập ngay</button>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:12.5px;color:var(--mute);">
+      Đã có tài khoản? <a href="#" class="link" onclick="showView('login');return false">Đăng nhập</a>
+    </div>
   </div>
 </div>
 
@@ -103,6 +476,7 @@
   <div class="topbar">
     <div class="logo">AIPOS<span>·PRO</span></div>
     <div class="company" id="companyName">—</div>
+    <span id="planBadge" class="plan-basic" style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.5px;margin-left:8px">BASIC</span>
     <div class="spacer"></div>
     <div class="user" id="userEmail"></div>
     <button class="logout" id="backupBtn" style="background:rgba(11,122,59,.3);display:none;">💾 Sao lưu</button>
@@ -122,6 +496,72 @@
   <div class="foot">AIPOS·PRO · Nền tảng đa khách hàng · Phiên đăng nhập dùng chung cho mọi phân hệ</div>
 </div>
 
+<!-- ===== ADMIN PANEL ===== -->
+<div id="adminPanel">
+  <div id="admLogin" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+    <div class="login-card" style="background:#1e293b;color:#f1f5f9">
+      <div class="brand"><div class="logo" style="color:#f1f5f9">🛡️ AIPOS<span>·PRO</span> Admin</div>
+      <div class="tag" style="color:#94a3b8">Bảng điều khiển nhà cung cấp SaaS</div></div>
+      <div class="field"><label style="color:#94a3b8">Admin Secret Key</label>
+        <input type="password" id="admSecret" placeholder="Nhập secret key" style="background:#0f172a;color:#f1f5f9;border-color:#475569"></div>
+      <button class="btn" onclick="admLogin()">Đăng nhập Admin</button>
+      <div class="err" id="admErr"></div>
+      <div style="text-align:center;margin-top:14px;font-size:12.5px">
+        <a href="#" class="link" onclick="showView('login');return false" style="color:#93c5fd">← Về đăng nhập</a>
+      </div>
+    </div>
+  </div>
+  <div id="admDash" style="display:none">
+    <div class="adm-topbar">
+      <h1>🛡️ AIPOS<span>·PRO</span> Admin</h1>
+      <div class="spacer"></div>
+      <button onclick="showView('login');admLogout()">🚪 Đăng xuất</button>
+    </div>
+    <div class="stats-row" id="admStats"></div>
+    <div class="adm-section">
+      <h2>📋 Danh sách Tenants</h2>
+      <div style="overflow-x:auto">
+        <table class="adm-tbl">
+          <thead><tr><th>Công ty</th><th>Code</th><th>MST</th><th>Gói</th><th>Trạng thái</th><th>Users</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+          <tbody id="admTenantBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN EDIT MODAL -->
+<div class="adm-modal-bg" id="admEditModal">
+  <div class="adm-modal">
+    <h3 id="admModalTitle">Chỉnh sửa Tenant</h3>
+    <input type="hidden" id="adm-tid">
+    <label>Gói dịch vụ</label>
+    <select id="adm-plan"><option value="basic">Trải nghiệm</option><option value="standard">Cơ bản</option><option value="premium">Toàn diện</option></select>
+    <label>Trạng thái</label>
+    <select id="adm-status"><option value="active">Active</option><option value="suspended">Suspended</option></select>
+    <label>Feature Flags (override)</label>
+    <div class="adm-feat-grid" id="adm-features">
+      <label><input type="checkbox" data-f="pos"> POS</label>
+      <label><input type="checkbox" data-f="kho"> Kho</label>
+      <label><input type="checkbox" data-f="ncc"> NCC</label>
+      <label><input type="checkbox" data-f="luong"> Lương</label>
+      <label><input type="checkbox" data-f="ketoan"> Kế toán</label>
+      <label><input type="checkbox" data-f="einvoice"> E-Invoice</label>
+      <label><input type="checkbox" data-f="ai_assist"> AI Assist</label>
+      <label><input type="checkbox" data-f="auto_backup"> Auto Backup</label>
+      <label><input type="checkbox" data-f="api_access"> API Access</label>
+    </div>
+    <div style="margin-top:8px">
+      <label>Max Users</label><input type="number" id="adm-maxusers" min="1" value="10" style="width:100%;padding:8px 10px;border:1.5px solid #475569;border-radius:7px;background:#0f172a;color:#f1f5f9;font-size:12px">
+      <label>Max Branches</label><input type="number" id="adm-maxbranches" min="1" value="3" style="width:100%;padding:8px 10px;border:1.5px solid #475569;border-radius:7px;background:#0f172a;color:#f1f5f9;font-size:12px">
+    </div>
+    <div class="mbtn-row">
+      <button class="m-cancel" onclick="admCloseModal()">Hủy</button>
+      <button class="m-save" onclick="admSaveEdit()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://ssrodnzhuydlupglvepm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcm9kbnpodXlkbHVwZ2x2ZXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzAzNTgsImV4cCI6MjA5NTY0NjM1OH0.Dys8NRpgo9Cn9AucfdGmbDTVUUb_6jJlYYt_u6akwag';
@@ -129,11 +569,21 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Danh sách phân hệ — file deploy cùng thư mục (đường dẫn tương đối)
 const APPS = [
-  { code:'ketoan', nm:'Kế toán',  ic:'📊', ds:'Sổ sách · thuế · báo cáo TT99', url:'ketoan_aipos.html', color:'#1565C0' },
-  { code:'pos',    nm:'POS',      ic:'🛒', ds:'Bán hàng tại quầy',            url:'pos_aipos.html',    color:'#0B7A3B' },
-  { code:'kho',    nm:'Kho',      ic:'📦', ds:'Tồn kho WAC · điều chuyển',     url:'kho_aipos.html',    color:'#C8922A' },
-  { code:'ncc',    nm:'Nhà cung cấp', ic:'🤝', ds:'Đặt hàng · nhận hàng · công nợ', url:'ncc_aipos.html', color:'#7A3FB5' },
-  { code:'luong',  nm:'Lương',    ic:'💰', ds:'Tính lương · TNCN · KPI',       url:'luong_aipos.html',  color:'#B5453F' },
+  { code:'ketoan', nm:'Kế toán',
+    ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h12l4 4v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2z"/><path d="M14 2v4h4"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h4"/></svg>',
+    ds:'Sổ sách · thuế · báo cáo TT99', url:'ketoan_aipos.html', color:'#1565C0', icBg:'#DBEAFE' },
+  { code:'pos', nm:'POS',
+    ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><path d="M6 16h4"/><path d="M14 16h4"/></svg>',
+    ds:'Bán hàng tại quầy', url:'pos_aipos.html', color:'#0B7A3B', icBg:'#DCFCE7' },
+  { code:'kho', nm:'Kho',
+    ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/><rect x="1" y="8" width="22" height="8" rx="1"/><path d="M10 12h4"/></svg>',
+    ds:'Tồn kho WAC · điều chuyển', url:'kho_aipos.html', color:'#C8922A', icBg:'#FEF3C7' },
+  { code:'ncc', nm:'Nhà cung cấp',
+    ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/><circle cx="12" cy="12" r="3"/></svg>',
+    ds:'Đặt hàng · nhận hàng · công nợ', url:'ncc_aipos.html', color:'#7A3FB5', icBg:'#F3E8FF' },
+  { code:'luong', nm:'Lương',
+    ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>',
+    ds:'Tính lương · TNCN · KPI', url:'luong_aipos.html', color:'#B5453F', icBg:'#FEE2E2' },
 ];
 
 // đã đăng nhập sẵn?
@@ -289,16 +739,23 @@ async function doLogin() {
 }
 
 async function enterHub(user) {
-  document.getElementById('login').style.display='none';
-  document.getElementById('hub').style.display='flex';
+  showView('hub');
   document.getElementById('userEmail').textContent = user.email;
   // nạp tên công ty (trắng nhãn) qua RLS — chỉ ra tenant của user
-  let companyName = 'Công ty của bạn', features = null;
+  let companyName = 'Công ty của bạn', plan = 'basic', features = null;
   try {
-    const { data } = await sb.from('tenants').select('company_name, tenant_config(features)').limit(1).maybeSingle();
-    if (data) { companyName = data.company_name || companyName; features = data.tenant_config?.features || null; }
+    const { data } = await sb.from('tenants').select('company_name, plan').limit(1).maybeSingle();
+    if (data) { companyName = data.company_name || companyName; plan = data.plan || 'basic'; }
+  } catch(e) {}
+  // Lấy features từ DB function (ưu tiên override, fallback plan defaults)
+  try {
+    const { data: f } = await sb.rpc('get_plan_features');
+    if (f) features = f;
   } catch(e) {}
   document.getElementById('companyName').textContent = companyName;
+  // hiện badge gói
+  const planBadge = document.getElementById('planBadge');
+  if (planBadge) { planBadge.textContent = plan.toUpperCase(); planBadge.className = 'plan-' + plan; }
   // hiện nút "Mời NV" nếu là owner
   try {
     const { data: role } = await sb.rpc('current_user_role');
@@ -309,6 +766,237 @@ async function enterHub(user) {
     }
   } catch(e) {}
   renderApps(features);
+  // Demo banner nếu đang ở chế độ demo
+  if (isDemo) showDemoBanner();
+}
+
+// ===== VIEW SWITCHING =====
+function showView(v) {
+  ['login','register','hub','adminPanel','pricing'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (id === 'hub') el.style.display = (v===id) ? 'flex' : 'none';
+    else el.style.display = (v===id) ? 'flex' : 'none';
+  });
+  // reset err messages
+  document.getElementById('err').textContent = '';
+  document.getElementById('regErr').textContent = '';
+  document.getElementById('admErr').textContent = '';
+  // reset register form khi quay lại
+  if (v === 'register') { document.getElementById('regForm').style.display=''; document.getElementById('regOk').style.display='none'; }
+}
+// Chọn gói từ pricing → chuyển sang form đăng ký với plan đã chọn
+function startRegister(plan) {
+  showView('register');
+  const radio = document.querySelector(`input[name=regPlan][value="${plan}"]`);
+  if (radio) radio.checked = true;
+}
+// Hash-based deep link: #register, #admin, #pricing
+(function(){
+  const h = location.hash.replace('#','');
+  if (h === 'register') showView('register');
+  else if (h === 'pricing') showView('pricing');
+  else if (h === 'admin') showView('adminPanel');
+})();
+
+// ===== SELF-REGISTRATION =====
+const REG_EDGE = SUPABASE_URL + '/functions/v1/self-register';
+async function doRegister() {
+  const btn = document.getElementById('regBtn'), err = document.getElementById('regErr');
+  const company = document.getElementById('regCompany').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPass').value;
+  const taxId = document.getElementById('regTaxId').value.trim();
+  const adminName = document.getElementById('regName').value.trim();
+  const plan = document.querySelector('input[name=regPlan]:checked')?.value || 'basic';
+  err.textContent = '';
+  if (!company) { err.textContent = 'Vui lòng nhập tên công ty'; return; }
+  if (!email) { err.textContent = 'Vui lòng nhập email'; return; }
+  if (password.length < 6) { err.textContent = 'Mật khẩu tối thiểu 6 ký tự'; return; }
+  btn.disabled = true; btn.textContent = 'Đang xử lý...';
+  try {
+    const res = await fetch(REG_EDGE, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company_name: company, tax_id: taxId || null, admin_email: email, admin_password: password, admin_name: adminName || 'Quản trị viên', plan }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Lỗi không xác định');
+    document.getElementById('regForm').style.display = 'none';
+    document.getElementById('regOk').style.display = 'block';
+    document.getElementById('regOkMsg').textContent = data.message || `Đăng nhập với ${email}`;
+  } catch (e) {
+    err.textContent = e.message;
+    btn.disabled = false; btn.textContent = '🚀 Đăng ký ngay';
+  }
+}
+
+// ===== ADMIN PANEL =====
+const ADM_EDGE = SUPABASE_URL + '/functions/v1/admin-api';
+let ADM_SECRET = '';
+let ADM_TENANTS = [];
+
+function admLogin() {
+  ADM_SECRET = document.getElementById('admSecret').value.trim();
+  if (!ADM_SECRET) { document.getElementById('admErr').textContent = 'Vui lòng nhập secret key'; return; }
+  admApi('stats').then(d => {
+    if (d.error) { document.getElementById('admErr').textContent = d.error; ADM_SECRET=''; return; }
+    sessionStorage.setItem('_adm', ADM_SECRET);
+    document.getElementById('admLogin').style.display = 'none';
+    document.getElementById('admDash').style.display = 'block';
+    admRenderStats(d);
+    admLoadTenants();
+  });
+}
+function admLogout() { ADM_SECRET=''; sessionStorage.removeItem('_adm'); document.getElementById('admLogin').style.display='flex'; document.getElementById('admDash').style.display='none'; }
+// auto-login
+(function(){ const s=sessionStorage.getItem('_adm'); if(s){ ADM_SECRET=s; document.getElementById('admSecret').value=s; } })();
+
+async function admApi(action, extra={}) {
+  try {
+    const res = await fetch(ADM_EDGE, { method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':ADM_SECRET}, body: JSON.stringify({action,...extra}) });
+    return await res.json();
+  } catch(e) { return {error:String(e)}; }
+}
+
+function admRenderStats(d) {
+  document.getElementById('admStats').innerHTML = `
+    <div class="stat-card"><div class="num">${d.total_tenants}</div><div class="lbl">Tenants</div></div>
+    <div class="stat-card"><div class="num">${d.total_users}</div><div class="lbl">Users</div></div>
+    <div class="stat-card"><div class="num">${d.active}</div><div class="lbl">Active</div></div>
+    <div class="stat-card"><div class="num">${d.by_plan?.basic||0}</div><div class="lbl">Trải nghiệm</div></div>
+    <div class="stat-card"><div class="num">${d.by_plan?.standard||0}</div><div class="lbl">Cơ bản</div></div>
+    <div class="stat-card"><div class="num">${d.by_plan?.premium||0}</div><div class="lbl">Toàn diện</div></div>`;
+}
+
+async function admLoadTenants() {
+  const d = await admApi('list_tenants');
+  if (d.error) { alert(d.error); return; }
+  ADM_TENANTS = d.tenants || [];
+  document.getElementById('admTenantBody').innerHTML = ADM_TENANTS.map(t => `<tr>
+    <td><b>${admEsc(t.company_name)}</b></td>
+    <td>${admEsc(t.code)}</td>
+    <td>${admEsc(t.tax_id||'—')}</td>
+    <td><span class="bdg bdg-${t.plan}">${t.plan.toUpperCase()}</span></td>
+    <td><span class="bdg bdg-${t.status}">${t.status}</span></td>
+    <td>${t.user_count}</td>
+    <td>${new Date(t.created_at).toLocaleDateString('vi')}</td>
+    <td class="adm-act"><button class="ab-edit" onclick="admOpenEdit('${t.id}')">✏️ Sửa</button>
+      <button class="ab-toggle" onclick="admToggle('${t.id}','${t.status}')">${t.status==='active'?'⏸️':'▶️'}</button></td>
+  </tr>`).join('');
+}
+
+function admEsc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function admOpenEdit(tid) {
+  const t = ADM_TENANTS.find(x=>x.id===tid); if(!t) return;
+  document.getElementById('adm-tid').value = tid;
+  document.getElementById('admModalTitle').textContent = `Chỉnh sửa: ${t.company_name}`;
+  document.getElementById('adm-plan').value = t.plan;
+  document.getElementById('adm-status').value = t.status;
+  document.getElementById('adm-maxusers').value = t.features?.max_users || 10;
+  document.getElementById('adm-maxbranches').value = t.features?.max_branches || 3;
+  document.querySelectorAll('#adm-features input').forEach(cb => { cb.checked = t.features?.[cb.dataset.f] !== false; });
+  document.getElementById('admEditModal').classList.add('show');
+}
+function admCloseModal() { document.getElementById('admEditModal').classList.remove('show'); }
+
+async function admSaveEdit() {
+  const tid = document.getElementById('adm-tid').value;
+  const plan = document.getElementById('adm-plan').value;
+  const status = document.getElementById('adm-status').value;
+  const features = {};
+  document.querySelectorAll('#adm-features input').forEach(cb => { features[cb.dataset.f] = cb.checked; });
+  features.max_users = parseInt(document.getElementById('adm-maxusers').value) || 10;
+  features.max_branches = parseInt(document.getElementById('adm-maxbranches').value) || 3;
+  const r1 = await admApi('update_tenant', { tenant_id: tid, plan, status });
+  const r2 = await admApi('update_features', { tenant_id: tid, features });
+  if (r1.error) { alert(r1.error); return; }
+  if (r2.error) { alert(r2.error); return; }
+  admCloseModal();
+  const sd = await admApi('stats'); admRenderStats(sd);
+  await admLoadTenants();
+}
+
+async function admToggle(tid, cur) {
+  const next = cur === 'active' ? 'suspended' : 'active';
+  if (!confirm(`${next==='suspended'?'Tạm khóa':'Kích hoạt lại'} tenant này?`)) return;
+  await admApi('update_tenant', { tenant_id: tid, status: next });
+  const sd = await admApi('stats'); admRenderStats(sd);
+  await admLoadTenants();
+}
+
+// ===== DEMO LOGIN =====
+const DEMO_EMAIL = 'demo@aipos.vn';
+const DEMO_PASS  = 'Demo@2026';
+let isDemo = false;
+
+async function loginDemo() {
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASS });
+    if (error) throw error;
+    isDemo = true;
+    await enterHub(data.user);
+  } catch(e) {
+    alert('⚠️ Tài khoản demo chưa sẵn sàng. Vui lòng liên hệ để được hỗ trợ.');
+  }
+}
+
+function showDemoBanner() {
+  // Xóa banner cũ nếu có
+  const old = document.getElementById('demoBanner');
+  if (old) old.remove();
+  const banner = document.createElement('div');
+  banner.className = 'demo-banner';
+  banner.id = 'demoBanner';
+  banner.innerHTML = `<div class="db-icon">🔍</div>
+    <div class="db-text"><span>Chế độ trải nghiệm</span> — Dữ liệu mẫu, không ảnh hưởng hệ thống thật</div>
+    <button class="db-close" onclick="sb.auth.signOut().then(()=>location.reload())">Thoát Demo ✕</button>`;
+  const hubBody = document.querySelector('.hub-body');
+  hubBody.insertBefore(banner, hubBody.firstChild.nextSibling);
+}
+
+// ===== BILLING TOGGLE (Tháng / Năm) =====
+let currentBilling = 'monthly';
+function toggleBilling() { setBilling(currentBilling === 'monthly' ? 'yearly' : 'monthly'); }
+function setBilling(mode) {
+  currentBilling = mode;
+  const sw = document.getElementById('btSwitch');
+  const bonus = document.getElementById('btBonus');
+  const mLabel = document.getElementById('btMonth');
+  const yLabel = document.getElementById('btYear');
+  if (mode === 'yearly') {
+    sw.classList.add('yearly'); bonus.classList.add('show');
+    mLabel.classList.remove('active'); yLabel.classList.add('active');
+    // Trải nghiệm: 0đ × 12 = 0đ/năm (miễn phí)
+    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">2.400K</span>0đ <sub>/năm</sub>';
+    document.getElementById('pSaveBasic').innerHTML = '🎁 MIỄN PHÍ trọn năm';
+    // Cơ bản: 100K × 12 = 1.200K/năm (dùng 14 tháng)
+    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">6.000K</span>1.200K <sub>/năm</sub>';
+    document.getElementById('pSaveStandard').innerHTML = '🎁 Dùng 14 tháng · Tặng 2 tháng';
+    // Toàn diện: 500K × 12 = 6.000K/năm (dùng 14 tháng)
+    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">24.000K</span>6.000K <sub>/năm</sub>';
+    document.getElementById('pSavePremium').innerHTML = '🎁 Dùng 14 tháng · Tặng 2 tháng';
+    // Register form
+    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">2.400K</s> 0đ/năm';
+    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">6.000K</s> 1.200K/năm';
+    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">24.000K</s> 6.000K/năm';
+  } else {
+    sw.classList.remove('yearly'); bonus.classList.remove('show');
+    mLabel.classList.add('active'); yLabel.classList.remove('active');
+    // Trải nghiệm monthly
+    document.getElementById('pPriceBasic').innerHTML = '<span class="p-orig">200K</span>0đ <sub>/tháng</sub>';
+    document.getElementById('pSaveBasic').innerHTML = '▼ MIỄN PHÍ';
+    // Cơ bản monthly
+    document.getElementById('pPriceStandard').innerHTML = '<span class="p-orig">500K</span>100K <sub>/tháng</sub>';
+    document.getElementById('pSaveStandard').innerHTML = '▼ GIẢM 80%';
+    // Toàn diện monthly
+    document.getElementById('pPricePremium').innerHTML = '<span class="p-orig">2.000K</span>500K <sub>/tháng</sub>';
+    document.getElementById('pSavePremium').innerHTML = '▼ GIẢM 75%';
+    // Register form
+    document.getElementById('pkPriceBasic').innerHTML = '<s style="color:#64748b;font-size:10px">200K</s> 0đ/tháng';
+    document.getElementById('pkPriceStandard').innerHTML = '<s style="color:#64748b;font-size:10px">500K</s> 100K/tháng';
+    document.getElementById('pkPricePremium').innerHTML = '<s style="color:#64748b;font-size:10px">2.000K</s> 500K/tháng';
+  }
 }
 
 function renderApps(features) {
@@ -317,9 +1005,9 @@ function renderApps(features) {
   APPS.forEach(a => {
     if (features && features[a.code] === false) return; // gói không có app này
     const el = document.createElement('a');
-    el.className='app'; el.href=a.url; el.style.setProperty('--accent', a.color);
-    el.innerHTML = `<span class="ic">${a.ic}</span><span class="nm">${a.nm}</span>
-      <span class="ds">${a.ds}</span><span class="go">Mở ứng dụng →</span>`;
+    el.className='app'; el.href=a.url;
+    el.innerHTML = `<div class="ic-wrap" style="color:${a.color}">${a.ic}</div><span class="nm">${a.nm}</span>
+      <span class="ds">${a.ds}</span><span class="go">Mở ứng dụng <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></span>`;
     grid.appendChild(el);
   });
 }

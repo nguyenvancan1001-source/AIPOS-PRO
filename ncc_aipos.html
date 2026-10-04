@@ -7,16 +7,16 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>VICOMART NCC v4.0 — Walmart Ops</title>
+<title>AIPOS-PRO · Nhà Cung Cấp</title>
 
 <!-- PWA Meta Tags -->
-<meta name="application-name" content="VICOMART NCC">
-<meta name="description" content="Hệ thống quản lý đặt hàng nhà cung cấp Vicomart">
+<meta name="application-name" content="AIPOS-PRO NCC">
+<meta name="description" content="Hệ thống quản lý đặt hàng nhà cung cấp AIPOS-PRO">
 <meta name="theme-color" content="#0d1525">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VICOMART NCC">
+<meta name="apple-mobile-web-app-title" content="AIPOS-PRO NCC">
 <!-- Favicon inline — tránh 404 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='72' x='50' text-anchor='middle' font-size='60'>🛒</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='72' x='50' text-anchor='middle' font-size='60'>🛒</text></svg>">
@@ -29,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════
-   DESIGN SYSTEM — VICOMART NCC
+   DESIGN SYSTEM — AIPOS-PRO NCC
    Font: Inter (UI) + JetBrains Mono (numbers/data)
    Base unit: 4px · Color: Blue-slate dark · Radius: 8px
 ═══════════════════════════════════════════════════════ */
@@ -830,7 +830,7 @@ body.theme-claude [style*="color:#888888"] { color:#6b6b63 !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   v2.58 — VICOMART coin logo (star 4-cánh thay chữ V)
+   v2.58 — AIPOS coin logo (star 4-cánh thay chữ V)
    Container rotate CW + span (chứa SVG) rotate CCW
    → ngôi sao navy 4-cánh đứng yên, gradient coin xoay quanh
 ═══════════════════════════════════════════════════════════ */
@@ -2639,7 +2639,7 @@ body.theme-claude [style*="color:#888888"] { color:#6b6b63 !important; }
 .v4-ns-hidden { display: none !important; }
 
 
-/* ===== NHAN HANG STYLES (scoped #tab-nhanhang) ===== */
+/* ===== NHAN HANG STYLES (scoped #tab- ===== */
 
 :root {
   --vc-navy: #0D47A1;
@@ -2664,7 +2664,7 @@ body.theme-claude [style*="color:#888888"] { color:#6b6b63 !important; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-#tab-nhanhang {
+#tab-{
   font-family: 'Inter', -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -2675,7 +2675,7 @@ html, body { height: 100%; }
 .mono { font-family: 'JetBrains Mono', monospace; }
 
 /* === TOP NAV === */
-#tab-nhanhang .topnav {
+#tab-.topnav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
@@ -2686,7 +2686,7 @@ html, body { height: 100%; }
   top: 0;
   z-index: 50;
 }
-#tab-nhanhang .brand {
+#tab-.brand {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2696,7 +2696,7 @@ html, body { height: 100%; }
   letter-spacing: -0.01em;
   margin-right: 32px;
 }
-#tab-nhanhang .brand-logo {
+#tab-.brand-logo {
   width: 28px; height: 28px;
   background: var(--vc-navy);
   color: white;
@@ -2705,7 +2705,7 @@ html, body { height: 100%; }
   font-size: 13px; font-weight: 700;
 }
 .tabs { display: flex; gap: 2px; flex: 1; }
-#tab-nhanhang .tab {
+#tab-.tab {
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 13px;
@@ -2720,7 +2720,7 @@ html, body { height: 100%; }
 }
 .tab:hover { background: var(--bg); color: var(--text-1); }
 .tab.active { background: var(--vc-blue-light); color: var(--vc-navy); }
-#tab-nhanhang .tab .badge {
+#tab-.tab .badge {
   background: var(--vc-navy);
   color: white;
   font-size: 11px;
@@ -2731,12 +2731,12 @@ html, body { height: 100%; }
 }
 .tab .badge.warn { background: var(--warning); }
 .tab .badge.danger { background: var(--danger); }
-#tab-nhanhang .user {
+#tab-.user {
   font-size: 13px;
   color: var(--text-2);
   display: flex; align-items: center; gap: 8px;
 }
-#tab-nhanhang .role-select {
+#tab-.role-select {
   font-family: inherit;
   font-size: 12px;
   padding: 6px 10px;
@@ -2748,7 +2748,7 @@ html, body { height: 100%; }
   font-weight: 500;
 }
 .role-select:hover { border-color: var(--vc-blue); }
-#tab-nhanhang .avatar {
+#tab-.avatar {
   width: 32px; height: 32px;
   background: var(--vc-blue);
   color: white;
@@ -2762,7 +2762,7 @@ html, body { height: 100%; }
 .view { display: none; }
 .view.active { display: block; }
 
-#tab-nhanhang .page-head {
+#tab-.page-head {
   display: flex; justify-content: space-between; align-items: flex-end;
   margin-bottom: 18px;
   padding-bottom: 14px;
@@ -2772,26 +2772,26 @@ html, body { height: 100%; }
 .page-sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
 
 /* === KPI CARDS === */
-#tab-nhanhang .kpi-grid {
+#tab-.kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
-#tab-nhanhang .kpi {
+#tab-.kpi {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px 16px;
 }
-#tab-nhanhang .kpi-label {
+#tab-.kpi-label {
   font-size: 12px; color: var(--text-2);
   margin-bottom: 4px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-#tab-nhanhang .kpi-value {
+#tab-.kpi-value {
   font-family: 'JetBrains Mono', monospace;
   font-size: 20px;
   font-weight: 600;
@@ -2804,14 +2804,14 @@ html, body { height: 100%; }
 .kpi-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
 
 /* === CARD === */
-#tab-nhanhang .card {
+#tab-.card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 16px;
   overflow: hidden;
 }
-#tab-nhanhang .card-head {
+#tab-.card-head {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   display: flex; justify-content: space-between; align-items: center;
@@ -2821,12 +2821,12 @@ html, body { height: 100%; }
 .card-body { padding: 14px 16px; }
 
 /* === TABLES === */
-#tab-nhanhang .tbl {
+#tab-.tbl {
   width: 100%;
   font-size: 13px;
   border-collapse: collapse;
 }
-#tab-nhanhang .tbl th {
+#tab-.tbl th {
   text-align: left;
   padding: 10px 8px;
   font-size: 11px;
@@ -2837,7 +2837,7 @@ html, body { height: 100%; }
   border-bottom: 1px solid var(--border-strong);
   background: var(--bg);
 }
-#tab-nhanhang .tbl td {
+#tab-.tbl td {
   padding: 11px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
@@ -2851,7 +2851,7 @@ html, body { height: 100%; }
 .tbl .center { text-align: center; }
 
 /* === BUTTONS === */
-#tab-nhanhang .btn {
+#tab-.btn {
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
@@ -2864,18 +2864,18 @@ html, body { height: 100%; }
   transition: all 0.15s;
 }
 .btn:hover { background: var(--bg); border-color: var(--text-3); }
-#tab-nhanhang .btn-primary {
+#tab-.btn-primary {
   background: var(--vc-navy);
   color: white;
   border-color: var(--vc-navy);
 }
 .btn-primary:hover { background: var(--vc-blue); border-color: var(--vc-blue); }
-#tab-nhanhang .btn-warning {
+#tab-.btn-warning {
   background: var(--warning-bg);
   color: var(--warning);
   border-color: var(--warning);
 }
-#tab-nhanhang .btn-danger {
+#tab-.btn-danger {
   background: var(--danger-bg);
   color: var(--danger);
   border-color: var(--danger);
@@ -2884,7 +2884,7 @@ html, body { height: 100%; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* === PILLS === */
-#tab-nhanhang .pill {
+#tab-.pill {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 12px;
@@ -2900,7 +2900,7 @@ html, body { height: 100%; }
 .pill-muted { background: var(--bg); color: var(--text-2); }
 
 /* === MODAL === */
-#tab-nhanhang .modal-bg {
+#tab-.modal-bg {
   position: fixed; inset: 0;
   background: rgba(17, 24, 39, 0.6);
   display: none;
@@ -2911,7 +2911,7 @@ html, body { height: 100%; }
   overflow-y: auto;
 }
 .modal-bg.show { display: flex; }
-#tab-nhanhang .modal {
+#tab-.modal {
   background: var(--surface);
   border-radius: 12px;
   width: 100%;
@@ -2919,21 +2919,21 @@ html, body { height: 100%; }
   box-shadow: 0 20px 50px rgba(0,0,0,0.2);
   margin: auto 0;
 }
-#tab-nhanhang .modal-head {
+#tab-.modal-head {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   display: flex; justify-content: space-between; align-items: flex-start;
 }
 .modal-title { font-size: 16px; font-weight: 600; color: var(--text-1); }
 .modal-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
-#tab-nhanhang .modal-close {
+#tab-.modal-close {
   background: transparent; border: none;
   font-size: 22px; cursor: pointer; color: var(--text-3);
   line-height: 1; padding: 4px 8px;
 }
 .modal-close:hover { color: var(--text-1); }
 .modal-body { padding: 18px 20px; }
-#tab-nhanhang .modal-foot {
+#tab-.modal-foot {
   padding: 12px 20px;
   border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end; gap: 8px;
@@ -2942,11 +2942,11 @@ html, body { height: 100%; }
 }
 
 /* === TIMELINE === */
-#tab-nhanhang .timeline {
+#tab-.timeline {
   display: flex; gap: 4px;
   margin-bottom: 16px;
 }
-#tab-nhanhang .tl-step {
+#tab-.tl-step {
   flex: 1;
   padding: 8px 10px;
   border-radius: 6px;
@@ -2960,7 +2960,7 @@ html, body { height: 100%; }
 .tl-step.current { background: var(--info-bg); color: var(--info); border-color: var(--info); font-weight: 600; }
 
 /* === SECTION LABEL === */
-#tab-nhanhang .sec-label {
+#tab-.sec-label {
   font-size: 11px;
   color: var(--text-3);
   text-transform: uppercase;
@@ -2971,7 +2971,7 @@ html, body { height: 100%; }
 .sec-label:first-child { margin-top: 0; }
 
 /* === SCAN BOX === */
-#tab-nhanhang .scan-box {
+#tab-.scan-box {
   background: var(--bg);
   border: 1.5px dashed var(--border-strong);
   border-radius: 10px;
@@ -2982,7 +2982,7 @@ html, body { height: 100%; }
 }
 .scan-box:hover { border-color: var(--vc-blue); background: var(--vc-blue-bg); }
 
-#tab-nhanhang .scanner-container {
+#tab-.scanner-container {
   background: var(--bg);
   border: 1.5px dashed var(--border-strong);
   border-radius: 10px;
@@ -2990,20 +2990,20 @@ html, body { height: 100%; }
   position: relative;
   transition: all 0.15s;
 }
-#tab-nhanhang .scanner-idle {
+#tab-.scanner-idle {
   text-align: center;
   padding: 8px;
   cursor: pointer;
 }
 .scanner-container:has(.scanner-idle:hover) { border-color: var(--vc-blue); background: var(--vc-blue-bg); }
-#tab-nhanhang .scanner-idle .scan-icon {
+#tab-.scanner-idle .scan-icon {
   font-family: 'JetBrains Mono', monospace;
   font-size: 28px;
   letter-spacing: 2px;
   color: var(--text-2);
   margin-bottom: 8px;
 }
-#tab-nhanhang #scanner-viewport {
+#tab-#scanner-viewport {
   position: relative;
   width: 100%;
   max-width: 480px;
@@ -3013,13 +3013,13 @@ html, body { height: 100%; }
   border-radius: 8px;
   overflow: hidden;
 }
-#tab-nhanhang #scanner-viewport video {
+#tab-#scanner-viewport video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-#tab-nhanhang .scanner-close-btn {
+#tab-.scanner-close-btn {
   position: absolute;
   top: 10px; right: 10px;
   width: 36px; height: 36px;
@@ -3034,7 +3034,7 @@ html, body { height: 100%; }
   display: flex; align-items: center; justify-content: center;
 }
 .scanner-close-btn:hover { background: rgba(0,0,0,0.85); }
-#tab-nhanhang .scanner-overlay-frame {
+#tab-.scanner-overlay-frame {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -3047,7 +3047,7 @@ html, body { height: 100%; }
   display: none;
 }
 .scanner-container.active .scanner-overlay-frame { display: block; }
-#tab-nhanhang .scanner-status {
+#tab-.scanner-status {
   text-align: center;
   margin-top: 10px;
   font-size: 12px;
@@ -3055,7 +3055,7 @@ html, body { height: 100%; }
   font-family: 'JetBrains Mono', monospace;
 }
 .scanner-status.detected { color: var(--success); font-weight: 600; }
-#tab-nhanhang .scan-icon {
+#tab-.scan-icon {
   font-family: 'JetBrains Mono', monospace;
   font-size: 28px;
   letter-spacing: 2px;
@@ -3065,13 +3065,13 @@ html, body { height: 100%; }
 .scan-hint { font-size: 12px; color: var(--text-2); }
 
 /* === FORM === */
-#tab-nhanhang .form-row {
+#tab-.form-row {
   display: flex; align-items: center; gap: 12px;
   font-size: 13px;
   flex-wrap: wrap;
 }
 .form-row label { color: var(--text-2); font-size: 12px; }
-#tab-nhanhang .form-row select, #tab-nhanhang .form-row input[type="text"], #tab-nhanhang .form-row input[type="number"] {
+#tab-.form-row select, #tab-.form-row input[type="text"], #tab-.form-row input[type="number"] {
   padding: 6px 10px;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
@@ -3081,7 +3081,7 @@ html, body { height: 100%; }
 }
 .form-row input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
 
-#tab-nhanhang .cell-input {
+#tab-.cell-input {
   width: 60px;
   padding: 3px 6px;
   text-align: right;
@@ -3098,7 +3098,7 @@ html, body { height: 100%; }
 .cell-input-wide { width: 130px; }
 
 /* === CONFIG BAR === */
-#tab-nhanhang .config-bar {
+#tab-.config-bar {
   background: var(--bg);
   padding: 10px 14px;
   border-radius: 8px;
@@ -3107,7 +3107,7 @@ html, body { height: 100%; }
 }
 
 /* === ACTION BAR === */
-#tab-nhanhang .action-bar {
+#tab-.action-bar {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 14px;
   background: var(--info-bg);
@@ -3125,7 +3125,7 @@ html, body { height: 100%; }
 .diff-pct { font-size: 10px; display: block; margin-top: 1px; }
 
 /* === BANNER === */
-#tab-nhanhang .banner {
+#tab-.banner {
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 13px;
@@ -3138,7 +3138,7 @@ html, body { height: 100%; }
 .banner-info { background: var(--info-bg); color: var(--info); }
 
 /* === JOURNAL ENTRY === */
-#tab-nhanhang .journal {
+#tab-.journal {
   background: var(--bg);
   border-radius: 8px;
   padding: 12px 14px;
@@ -3149,7 +3149,7 @@ html, body { height: 100%; }
 .j-row.total { padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--border-strong); font-weight: 600; }
 
 /* === TOAST === */
-#tab-nhanhang .toast {
+#tab-.toast {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -3171,7 +3171,7 @@ html, body { height: 100%; }
 .toast.danger { background: var(--danger); }
 
 /* === DETAIL GRID === */
-#tab-nhanhang .detail-grid {
+#tab-.detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px 18px;
@@ -4213,7 +4213,7 @@ hr::before {
 
       <div class="ls-foot">
         <span>VOS 2.73.27</span>
-        <span>© 2026 VICOMART</span>
+        <span>© 2026 AIPOS-PRO</span>
       </div>
     </div>
   </div>
@@ -4249,8 +4249,8 @@ hr::before {
       </span>
     </div>
     <div>
-      <div class="header-title">VICOMART</div>
-      <div class="header-sub">Purchase Order Management · Vicomart Retail System</div>
+      <div class="header-title">AIPOS-PRO</div>
+      <div class="header-sub">Quản lý Đặt Hàng NCC</div>
     </div>
   </div>
 
@@ -4400,8 +4400,8 @@ hr::before {
   </button>
   <button class="tab-btn" onclick="switchTab('cn-tab',this)">💳 Công Nợ</button>
   <button class="tab-btn" onclick="switchTab('qlncc',this)">🏭 Nhà Cung Cấp</button>
-  <!-- Tab Theo dõi giao hàng: ẩn — dùng URL riêng nhanhang.vicomart.vn -->
-  <button class="tab-btn" onclick="switchTab('nhanhang',this)" style="display:none;">🚚 Theo dõi giao hàng</button>
+  <!-- Tab Theo dõi giao hàng: ẩn — dùng URL riêng  -->
+  <button class="tab-btn" onclick="switchTab(',this)" style="display:none;">🚚 Theo dõi giao hàng</button>
   <!-- Tab ẩn — vẫn cần để switchTab hoạt động -->
   <div class="conf-total" id="conf-hdr" style="margin-left:auto;"></div>
 </div>
@@ -4512,7 +4512,7 @@ hr::before {
   <!-- ═══ HEADLINE ═══ -->
   <div class="v4-headline">
     <div>
-      <div class="v4-headline-title">📊 Bảng Điều Hành Vicomart</div>
+      <div class="v4-headline-title">📊 Bảng Điều Hành</div>
       <div class="v4-headline-sub">Cập nhật realtime · <span id="tq-ao-kpis-time"></span></div>
     </div>
     <div class="v4-headline-actions">
@@ -4770,7 +4770,7 @@ hr::before {
     <div class="v4-sec">
       <div class="v4-sec-hdr">
         <div class="v4-sec-title">📍 So Sánh Chi Nhánh</div>
-        <span style="font-size:11px; color:var(--text-secondary); font-family:var(--font-cond); letter-spacing:0.5px">Doanh thu thực từ POS Vicomart</span>
+        <span style="font-size:11px; color:var(--text-secondary); font-family:var(--font-cond); letter-spacing:0.5px">Doanh thu từ POS</span>
       </div>
       <div class="v4-sec-body">
         <div class="v4-cmp-col" id="v4-cmp-list"><!-- populated by v4RenderRealTables --></div>
@@ -5218,7 +5218,7 @@ hr::before {
 
     if (!SISD || !SISD.ncc) {
       list.innerHTML = `<div style="padding:28px 20px;text-align:center;color:#888;font-size:12px;font-style:italic;">
-        ⏳ Đang chờ data doanh thu từ POS Vicomart...<br>
+        ⏳ Đang chờ data doanh thu từ POS...<br>
         <span style="font-size:10px;color:#aaa;">Vào tab <b>Doanh Thu</b> để đồng bộ</span>
       </div>`;
       return;
@@ -5276,7 +5276,7 @@ hr::before {
 
     if (!SISD) {
       list.innerHTML = `<div style="padding:28px 20px;text-align:center;color:#888;font-size:12px;font-style:italic;">
-        ⏳ Đang chờ data doanh thu từ POS Vicomart...
+        ⏳ Đang chờ data doanh thu từ POS...
       </div>`;
       return;
     }
@@ -7001,7 +7001,7 @@ hr::before {
 <!-- ====================================================
      TAB: NHAN HANG - Tich hop tu nhan-hang.html v1.0
 ==================================================== -->
-<div id="tab-nhanhang" class="tab-panel">
+<div id="tab- class="tab-panel">
   <div class="content">
 
 
@@ -7009,7 +7009,7 @@ hr::before {
 <div class="topnav">
   <div class="brand">
     <div class="brand-logo">VC</div>
-    <span>VICOMART · Nhận hàng</span>
+    <span>AIPOS-PRO · Nhận hàng</span>
   </div>
   <nav class="tabs" id="tabs">
     <button class="tab active" data-view="dashboard" data-roles="giam_doc,manager_ch,ke_toan,phu_trach_mua">Tổng quan</button>
@@ -7935,7 +7935,7 @@ hr::before {
               <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                 <input type="checkbox" id="notif-email" style="width:16px;height:16px;cursor:pointer;">
                 <div><div style="font-size:12px;font-weight:600;">Email</div>
-                  <input id="notif-email-addr" placeholder="manager@vicomart.vn" style="margin-top:4px;width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;"></div>
+                  <input id="notif-email-addr" placeholder="email@congty.vn" style="margin-top:4px;width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;"></div>
               </label>
               <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                 <input type="checkbox" id="notif-telegram" style="width:16px;height:16px;cursor:pointer;">
@@ -8143,7 +8143,7 @@ hr::before {
                 <div><label style="display:block;font-size:10px;font-weight:600;color:#64748b;margin-bottom:3px;">Logo (URL hoặc Base64)</label>
                   <input id="print-logo" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;"></div>
                 <div><label style="display:block;font-size:10px;font-weight:600;color:#64748b;margin-bottom:3px;">Tên công ty in trên đơn</label>
-                  <input id="print-company" value="CTCP VICOMART RETAIL" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit;"></div>
+                  <input id="print-company" value="" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit;"></div>
                 <div><label style="display:block;font-size:10px;font-weight:600;color:#64748b;margin-bottom:3px;">MST</label>
                   <input id="print-mst" value="3301744382" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:monospace;"></div>
                 <div><label style="display:block;font-size:10px;font-weight:600;color:#64748b;margin-bottom:3px;">Địa chỉ</label>
@@ -8167,7 +8167,7 @@ hr::before {
             <div style="font-weight:700;font-size:13px;color:#0071CE;margin-bottom:12px;">👁 Preview Mẫu In</div>
             <div id="print-preview" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-size:11px;font-family:'Inter',sans-serif;min-height:300px;">
               <div style="text-align:center;border-bottom:2px solid #0071CE;padding-bottom:12px;margin-bottom:12px;">
-                <div style="font-size:14px;font-weight:900;color:#0071CE;">CTCP VICOMART RETAIL</div>
+                <div style="font-size:14px;font-weight:900;color:#0071CE;"></div>
                 <div style="font-size:10px;color:#64748b;">MST: 3301744382</div>
                 <div style="font-size:13px;font-weight:800;margin-top:8px;color:#0f172a;">PHIẾU ĐẶT HÀNG NCC</div>
                 <div style="font-size:10px;color:#888;margin-top:2px;">Số PO: PO-2026-XXXX · Ngày: 21/05/2026</div>
@@ -8191,7 +8191,7 @@ hr::before {
               </table>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;text-align:center;font-size:10px;">
                 <div><div style="border-top:1px solid #94a3b8;padding-top:4px;margin-top:30px;">Đại diện NCC ký tên</div></div>
-                <div><div style="border-top:1px solid #94a3b8;padding-top:4px;margin-top:30px;">Đại diện Vicomart ký tên</div></div>
+                <div><div style="border-top:1px solid #94a3b8;padding-top:4px;margin-top:30px;">Đại diện Cty ký tên</div></div>
               </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:12px;">
@@ -8307,7 +8307,7 @@ const VStore = (() => {
     'pk_ncc_products',     // Cache SP Pancake (lưu cloud riêng qua fms_config)
     'pk_ban_by_ncc',       // Aggregate BÁN (tính lại từ PK_NCC_DATA)
     'pk_ncc_sync_time',    // Thời điểm sync gần nhất
-    'vicomart_ver_history',// Lịch sử phiên bản
+    'aipos_ver_history',// Lịch sử phiên bản
   ]);
 
   return {
@@ -8384,22 +8384,22 @@ const Tenant = (() => {
   function detect() {
     const host = window.location.hostname;
 
-    // Production: ncc.vicomart.vn, pb.ncc.vicomart.vn, store123.ncc.vicomart.vn
+    // Production: ncc., pb.ncc., store123.ncc.
     const subdomain = host.split('.')[0];
 
     // Map subdomain → tenant_id
     const TENANT_MAP = {
-      'ncc':       'vicomart_main',
-      'pb':        'vicomart_phu_bai',
-      'vt':        'vicomart_vinh_thanh',
-      'ta':        'vicomart_thuan_an',
-      'localhost': 'vicomart_main',
-      '127':       'vicomart_main',
+      'ncc':       'aipos_default',
+      'pb':        'aipos_branch_pb',
+      'vt':        'aipos_branch_vt',
+      'ta':        'aipos_branch_ta',
+      'localhost': 'aipos_default',
+      '127':       'aipos_default',
     };
 
     const tenantId = TENANT_MAP[subdomain]
       || localStorage.getItem('tenant_id')
-      || 'vicomart_main';
+      || 'aipos_default';
 
     return tenantId;
   }
@@ -8414,21 +8414,21 @@ const Tenant = (() => {
             .select('*')
             .eq('tenant_id', tenantId)
             .maybeSingle();
-          _current = data || { tenant_id: tenantId, name: 'VICOMART', plan: 'basic' };
+          _current = data || { tenant_id: tenantId, name: '', plan: 'basic' };
         } else {
-          _current = { tenant_id: tenantId, name: 'VICOMART', plan: 'basic' };
+          _current = { tenant_id: tenantId, name: '', plan: 'basic' };
         }
         localStorage.setItem('tenant_id', tenantId);
         console.log('[Tenant] Initialized:', _current.tenant_id, '| Plan:', _current.plan);
       } catch(e) {
-        _current = { tenant_id: tenantId, name: 'VICOMART', plan: 'basic' };
+        _current = { tenant_id: tenantId, name: '', plan: 'basic' };
         _logError('Tenant.init', e);
       }
       return _current;
     },
 
-    get id()    { return _current?.tenant_id || 'vicomart_main'; },
-    get name()  { return _current?.name || 'VICOMART'; },
+    get id()    { return _current?.tenant_id || 'aipos_default'; },
+    get name()  { return _current?.name || 'Cửa hàng'; },
     get plan()  { return _current?.plan || 'basic'; },
     get data()  { return _current; },
 
@@ -8450,7 +8450,7 @@ const Tenant = (() => {
     requirePlan(feature, minPlan = 'pro') {
       if (!this.canUse(feature)) {
         const PLAN_NAMES = { basic: 'Basic', pro: 'Pro', enterprise: 'Enterprise' };
-        toast.warn(`🔒 Tính năng này yêu cầu gói ${PLAN_NAMES[minPlan]}. Nâng cấp tại vicomart.vn/upgrade`);
+        toast.warn(`🔒 Tính năng này yêu cầu gói ${PLAN_NAMES[minPlan]}. Nâng cấp tại aipos-pro.vn/upgrade`);
         return false;
       }
       return true;
@@ -8484,9 +8484,9 @@ const Tenant = (() => {
 // );
 //
 // -- Thêm tenant_id vào các bảng chính
-// ALTER TABLE orders      ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'vicomart_main';
-// ALTER TABLE suppliers   ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'vicomart_main';
-// ALTER TABLE audit_log   ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'vicomart_main';
+// ALTER TABLE orders      ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'aipos_default';
+// ALTER TABLE suppliers   ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'aipos_default';
+// ALTER TABLE audit_log   ADD COLUMN IF NOT EXISTS tenant_id TEXT DEFAULT 'aipos_default';
 //
 // -- RLS tự động filter theo tenant
 // CREATE POLICY "orders_tenant" ON orders FOR ALL TO authenticated
@@ -11706,12 +11706,12 @@ function aoBudgetReportImportTemplate() {
 // ── Lưu/Load confirmedOrders localStorage ──
 function _saveOrdersLocal() {
   try {
-    localStorage.setItem('vicomart_orders', JSON.stringify(confirmedOrders));
+    localStorage.setItem('aipos_orders', JSON.stringify(confirmedOrders));
   } catch(e) {}
 }
 function _loadOrdersLocal() {
   try {
-    const saved = localStorage.getItem('vicomart_orders');
+    const saved = localStorage.getItem('aipos_orders');
     if(saved) {
       const parsed = JSON.parse(saved);
       // Merge vào confirmedOrders, không overwrite đơn đã có
@@ -14526,7 +14526,7 @@ function copyZaloOrder(id, e) {
   let amt = (o.amount||0).toLocaleString('vi-VN');
   // Tạo nội dung đơn hàng
   let msg = 
-`📦 ĐƠN ĐẶT HÀNG - VICOMART
+`📦 ĐƠN ĐẶT HÀNG
 ━━━━━━━━━━━━━━━━━
 🏭 NCC: ${s.name}
 🏪 Chi nhánh: ${cnLabel}
@@ -14535,7 +14535,7 @@ function copyZaloOrder(id, e) {
 ⏰ Hạn TT: NET ${o.net||s.net||30} ngày${dueStr?' ('+dueStr+')':''}
 ━━━━━━━━━━━━━━━━━
 ✅ Vui lòng xác nhận đơn hàng
-📞 Liên hệ: Vicomart`;
+📞 Liên hệ: ${T.name}`;
 
   // Copy vào clipboard
   navigator.clipboard.writeText(msg).then(()=>{
@@ -15876,13 +15876,13 @@ async function xnSyncAllToCloud() {
 
 async function cancelOrder(ok){
   // v2.73.32 FIX: Đổi DELETE → UPDATE status='cancelled'
-  // → App nhanhang vẫn thấy đơn ở section "Đã hủy"
+  // → App vẫn thấy đơn ở section "Đã hủy"
   // → Có thể hoàn tác từ app hoặc web
   // ok = orderKey (ví dụ "3_pb")
   let o = confirmedOrders[ok];
   if(!o) return;
 
-  // Hỏi lý do hủy (giống app nhanhang)
+  // Hỏi lý do hủy (giống app 
   const reasons = [
     'NCC không giao được',
     'Hết hàng NCC',
@@ -19912,14 +19912,14 @@ const LOGIN_PASS_SUFFIX = '123';
 //
 //   ROOT CAUSE:
 //   1. cancelOrder của web → DELETE row khỏi orders table
-//      → App nhanhang KHÔNG thấy đơn nữa, không hoàn tác được
+//      → App KHÔNG thấy đơn nữa, không hoàn tác được
 //   2. Boot load orders chỉ check status='received'/'cancelled', KHÔNG check
 //      'pending'. Khi app hoàn tác (status: cancelled→pending), web load lại
 //      → local cache cũ giữ deliveryStatus='huy' → đơn vẫn ở section "Đã hủy"
 //
 //   FIX:
 //   ✅ cancelOrder web giờ UPDATE status='cancelled' (không DELETE)
-//      → Giữ row, app nhanhang vẫn thấy ở section "Đã hủy"
+//      → Giữ row, app vẫn thấy ở section "Đã hủy"
 //      → Web/app đều có thể hoàn tác
 //   ✅ cancelOrder web ghi đầy đủ: cancel_reason, cancelled_at, cancelled_by
 //      → Sync schema chuẩn với app
@@ -20029,7 +20029,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //   - Section Chỉnh sửa: số tiền, chi nhánh, NET, ngày đặt, ngày giao
 //   - 3 nút: Hủy / Xóa đơn / Lưu thay đổi
 //
-// v2.73.28 (24/04/2026) — FULL SYNC với app Nhận Hàng (nhanhang.vicomart.vn)
+// v2.73.28 (24/04/2026) — FULL SYNC Nhận Hàng
 //   🔗 Web NCC giờ tiếp nhận đầy đủ data từ app Nhận Hàng:
 //      ✅ Status change: app confirm 'received' → web tự set deliveryStatus='dagiao'
 //      ✅ Received amount: app điền số thực nhận → web dùng làm actualAmounts
@@ -20120,7 +20120,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //      Design:
 //      • Vị trí: fixed bottom-right (24px from edge)
 //      • Kích thước: 48x48px circle
-//      • Background: gradient navy Vicomart (#0071CE → #005aa3)
+//      • Background: gradient navy AIPOS (#0071CE → #005aa3)
 //      • Icon: ↑ arrow up (20px, bold)
 //      • Shadow: 0 4px 12px rgba(navy, .4)
 //      • Hover: lift -3px + shadow lớn hơn
@@ -21099,7 +21099,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //      GIỮ LẠI (các UI/CSS changes không ảnh hưởng logic tính số):
 //      • v2.54 Hybrid palette Costco navy + Walmart yellow
 //      • v2.56 Yellow bg tabbar + ẩn ticker
-//      • v2.57 VICOMART title
+//      • v2.57 AIPOS title
 //      • v2.58 Coin logo ngôi sao 4 cánh
 // v2.60 (21/04/2026)
 //   🔧 FIX root cause Vốn 7n lệch — SIS thiếu 3 fields để match PK
@@ -21152,7 +21152,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //        • NCC_COGS_CACHE in-memory (không localStorage) → reload auto
 //          recompute với logic mới, không cần clear manual
 // v2.58 (21/04/2026)
-//   🪙 Coin logo: chữ "V" → ngôi sao 4 cánh navy (logo Vicomart)
+//   🪙 Coin logo: chữ "V" → ngôi sao 4 cánh navy (logo AIPOS)
 //      HTML: <span>V</span> → <span><svg>4-point star</svg></span>
 //            path: M16 2.5 L18.2 13.8 L29.5 16 L18.2 18.2 L16 29.5
 //                  L13.8 18.2 L2.5 16 L13.8 13.8 Z (diamond burst)
@@ -21162,7 +21162,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //           giống đồng xu vàng cổ điển như ảnh hình 1
 //           Animation 2.8s → 3s (slower, sang trọng hơn)
 // v2.57 (21/04/2026)
-//   🎨 Header branding: "AUTO ORDER — Đặt Hàng Tự Động" → "VICOMART"
+//   🎨 Header branding: "AUTO ORDER — Đặt Hàng Tự Động" → "AIPOS-PRO"
 //   🪙 Logo chữ V tĩnh → đồng xu vàng gradient xoay tròn
 //      Kỹ thuật: container rotate CW 2.8s + span text rotate CCW cùng tốc độ
 //                → chữ V đứng yên ở giữa, gradient sweep xoay quanh
@@ -21323,7 +21323,7 @@ const APP_VERSION = '2.73.48';
 // Check localStorage version vs hardcoded APP_VERSION
 // Nếu user vừa login mà localStorage lưu version cũ → show banner nhắc Ctrl+Shift+R
 try {
-  const _storedVer = localStorage.getItem('vicomart_app_version');
+  const _storedVer = localStorage.getItem('aipos_app_version');
   if (_storedVer && _storedVer !== APP_VERSION) {
     console.log('[VERSION] Detected update: ' + _storedVer + ' → ' + APP_VERSION);
     // Show banner sau 2s (để UI init xong)
@@ -21340,7 +21340,7 @@ try {
       } catch(e) {}
     }, 2000);
   }
-  localStorage.setItem('vicomart_app_version', APP_VERSION);
+  localStorage.setItem('aipos_app_version', APP_VERSION);
 } catch(e) { console.warn('[VERSION]', e.message); }
 
 function buildQuickBtns(){
@@ -21950,7 +21950,7 @@ let BRANCHES = [
    addr:'Thuận An, Phú Vang, TT-Huế',   ql:'QL Thuận An',   manager:'ta_ql',
    ds:453451668, ncc:48, active:true, status:'active',
    nsField:'thuan_an', banField:'ban_ta',
-   whId:'a83381ca-b5b8-4a0a-9cc3-f095b4ad8943', // Văn Phòng VicoMart (tạm)
+   whId:'a83381ca-b5b8-4a0a-9cc3-f095b4ad8943', // Kho chính (tạm)
    ns_tuan: 0,
   },
   // CN mới thêm vào đây — nsField: null (dùng ns_by_branch từ Supabase)
@@ -23460,7 +23460,7 @@ function initQTTab(){
 </script>
 
 <script>
-// ═══════════════ EXPORT / IMPORT — VICOMART ═══════════════
+// ═══════════════ EXPORT / IMPORT ═══════════════
 (function(){
 
 
@@ -24610,7 +24610,7 @@ function exportBC(){
 if(typeof switchBC !== 'undefined') window.switchBC = switchBC;
 </script>
 <script>
-// VICOMART — EXPORT / IMPORT / PRINT  v2
+// EXPORT / IMPORT / PRINT  v2
 // Load SheetJS via separate CDN tag
 
 function _dlXLSX(rows, sheetName, fileName) {
@@ -24696,7 +24696,7 @@ function _printSection(tabId, title) {
   w.document.write('@page{size:A4 landscape;margin:15mm;}');
   w.document.write('</style></head><body>');
   w.document.write('<div class="print-header">');
-  w.document.write('<div class="print-title">VICOMART &mdash; ' + title + '</div>');
+  w.document.write('<div class="print-title">AIPOS-PRO &mdash; ' + title + '</div>');
   w.document.write('<div class="print-meta">In luc: ' + printDate + (user ? ' | Nguoi in: ' + user : '') + '</div>');
   w.document.write('</div>');
   w.document.write(clone.innerHTML);
@@ -24726,7 +24726,7 @@ window.exportTQ = function() {
     rows.push(['NS Thang ' + lab, elT ? elT.textContent.trim() : '0', '']);
     rows.push(['NS Tuan ' + lab, elU ? elU.value||'0' : '0', '']);
   });
-  _dlXLSX(rows, 'Tong Quan', 'vicomart_tong_quan_' + today + '.xlsx');
+  _dlXLSX(rows, 'Tong Quan', 'tong_quan_' + today + '.xlsx');
 };
 window.printTQ = function() { _printSection('tab-tq', 'Tong Quan'); };
 
@@ -24741,7 +24741,7 @@ window.exportDH = function() {
                s.ns_tuan||0, s.phu_bai||0, s.vinh_thanh||0, s.thuan_an||0,
                s.tinh_trang||'', s.uu_tien||'']);
   });
-  _dlXLSX(rows, 'Dat Hang', 'vicomart_dat_hang.xlsx');
+  _dlXLSX(rows, 'Dat Hang', 'dat_hang.xlsx');
 };
 window.importDH = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -24784,7 +24784,7 @@ window.exportNSCSV = function() {
       getVal(r._idx,'ghi_chu')||''
     ]);
   });
-  _dlXLSX(rows, 'Ngan Sach', 'vicomart_ngan_sach.xlsx');
+  _dlXLSX(rows, 'Ngan Sach', 'ngan_sach.xlsx');
 };
 window.importNSExcel = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -24822,7 +24822,7 @@ window.exportCN = function() {
     rows.push([o.id||'',o.name||'',o.cn||'',o.amount||0,o.net||'',
                o.date||'',o.due||'',o.status||'Da xac nhan']);
   });
-  _dlXLSX(rows, 'Cong No', 'vicomart_cong_no.xlsx');
+  _dlXLSX(rows, 'Cong No', 'cong_no.xlsx');
 };
 window.importCN = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -24859,7 +24859,7 @@ window.exportDT = function() {
     var daysLeft = isNaN(due) ? '' : Math.ceil((due - now) / 86400000);
     rows.push([o.name||'', o.cn||'', o.amount||0, o.due||'', daysLeft, o.status||'']);
   });
-  _dlXLSX(rows, 'Dong Tien', 'vicomart_dong_tien.xlsx');
+  _dlXLSX(rows, 'Dong Tien', 'dong_tien.xlsx');
 };
 window.printDT = function() { _printSection('tab-dt', 'Dong Tien'); };
 
@@ -24872,7 +24872,7 @@ window.exportXN = function() {
     rows.push([o.id||'',o.name||'',o.cn||'',o.amount||0,o.net||'',
                o.date||'',o.due||'',o.status||'Da xac nhan']);
   });
-  _dlXLSX(rows, 'Xac Nhan', 'vicomart_xac_nhan.xlsx');
+  _dlXLSX(rows, 'Xac Nhan', 'xac_nhan.xlsx');
 };
 window.importXN = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -24906,7 +24906,7 @@ window.exportQLNO = function() {
   data.forEach(function(d) {
     rows.push([d.name||'',d.cn||'',d.amount||0,d.date||'',d.due||'',d.daysLeft||0,d.status||'']);
   });
-  _dlXLSX(rows, 'Quan Ly No', 'vicomart_quan_ly_no.xlsx');
+  _dlXLSX(rows, 'Quan Ly No', 'quan_ly_no.xlsx');
 };
 window.importQLNO = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -24940,7 +24940,7 @@ window.exportQLNCC = function() {
                s.ns_tuan||0,s.phu_bai||0,s.vinh_thanh||0,s.thuan_an||0,
                s.ns_thang||0,s.tinh_trang||'',s.uu_tien||'']);
   });
-  _dlXLSX(rows, 'Danh Sach NCC', 'vicomart_danh_sach_ncc.xlsx');
+  _dlXLSX(rows, 'Danh Sach NCC', 'danh_sach_ncc.xlsx');
 };
 window.importQLNCC = function(inp) {
   var file = inp.files[0]; if (!file) return; inp.value = '';
@@ -25093,7 +25093,7 @@ window.exportQT = function() {
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows2), 'Chi Nhanh');
   if (rows1.length < 2 && rows2.length < 2) { alert('Khong co du lieu.'); return; }
-  XLSX.writeFile(wb, 'vicomart_quan_tri_ht.xlsx');
+  XLSX.writeFile(wb, 'quan_tri_ht.xlsx');
 };
 window.printQT = function() { _printSection('tab-qt', 'Quan Tri He Thong'); };
 
@@ -26768,7 +26768,7 @@ async function supaSaveOrder(orderObj) {
       const d = new Date(_isoDate); d.setDate(d.getDate()+_net);
       return d.toISOString().slice(0,10);
     })();
-    const _tenantId = (typeof Tenant !== 'undefined' ? Tenant.id : null) || 'vicomart_main';
+    const _tenantId = (typeof Tenant !== 'undefined' ? Tenant.id : null) || 'aipos_default';
 
     // Schema đồng nhất với bảng orders thực tế
     const row = {
@@ -26825,7 +26825,7 @@ async function resetAllOrders() {
   try {
     if (supa) await supa.from('orders').delete().neq('order_key', '__never__');
     confirmedOrders = {}; orderAmounts = {};
-    localStorage.removeItem('vicomart_orders');
+    localStorage.removeItem('aipos_orders');
     if (typeof _saveOrdersLocal === 'function') _saveOrdersLocal();
     if (typeof renderBC === 'function') renderBC();
     if (typeof renderXacNhan === 'function') renderXacNhan();
@@ -27017,7 +27017,7 @@ let _pwdCache = {}; // username -> bcrypt hash (không phải plain text)
 // Khi có backend thật → chuyển sang bcrypt server-side
 async function hashPassword(password) {
   const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'VICOMART_SALT_2026');
+  const data = encoder.encode(password + 'AIPOS_SALT_2026');
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -27435,7 +27435,7 @@ async function supaSaveActivityLog(entry) {
 function supaSubscribeRealtime() {
   if(!supa) return;
 
-  _realtimeSub = supa.channel('vicomart-sync-v2')
+  _realtimeSub = supa.channel('aipos-sync-v2')
 
     // ── ĐƠN ĐẶT HÀNG ──────────────────────────────────────────
     .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
@@ -27889,7 +27889,7 @@ function supaSubscribeRealtime() {
             name:row.supplier_name, amount:row.amount, net:row.net, cn:row.chi_nhanh,
             date:row.order_date, due:row.due_date, orderDow:row.order_dow, orderDateISO:row.order_date_iso };
 
-          // v2.73.28: SYNC từ app Nhận Hàng (nhanhang.html)
+          // v2.73.28: SYNC từ app Nhận Hàng (html)
           // App update orders.status/received_amount/cancel_reason — web NCC tiếp nhận
           if (ok) {
             if (row.status === 'received') {
@@ -28283,7 +28283,7 @@ const fmtVND = v => v > 0 ? v.toLocaleString('vi-VN') + 'đ' : '—';
 
 // ════════════════════════════════════════════════════════════════
 
-// 🔧 RESTORED FUNCTIONS — port from ncc.vicomart.vn production
+// 🔧 RESTORED FUNCTIONS — port from production
 // (Tab NCC + supplier list + KPIs + render rely on these)
 // ════════════════════════════════════════════════════════════════
 
@@ -28742,7 +28742,7 @@ function pkNccRenderTonCao(data) {
     <td style="font-weight:700;color:#e53935">${p.name}</td>
     <td style="color:#0071CE;font-size:11px">${p.supplier||'—'}</td>
     <td>${fv(p.sell)}</td>
-    <td style="font-size:11px;color:#888888">${p.shopName||"Vicomart"}</td>
+    <td style="font-size:11px;color:#888888">${p.shopName||"Cửa hàng"}</td>
   </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:#0071CE">✅ Không có SP hết hàng</td></tr>';
 
   document.getElementById('pk-ncc-low').innerHTML = low.map((p,i)=>`<tr>
@@ -28751,7 +28751,7 @@ function pkNccRenderTonCao(data) {
     <td style="color:#0071CE;font-size:11px">${p.supplier||'—'}</td>
     <td style="font-weight:800;color:#e53935">${p.stock}</td>
     <td>${fv(p.sell)}</td>
-    <td style="font-size:11px;color:#888888">${p.shopName||"Vicomart"}</td>
+    <td style="font-size:11px;color:#888888">${p.shopName||"Cửa hàng"}</td>
   </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:16px;color:#0071CE">✅ Không có SP tồn thấp</td></tr>';
 }
 
@@ -32848,7 +32848,7 @@ async function poeCopyImage() {
       ? new Date(delivDateISO + 'T00:00:00').toLocaleDateString('vi-VN')
       : (() => { const d = new Date(); d.setDate(d.getDate() + (nccInfo.net || 3)); return d.toLocaleDateString('vi-VN'); })();
     const branchBadge = document.getElementById('poe-branch-badge')?.textContent || '';
-    const shipAddr = (typeof _getShipAddressForPO === 'function') ? _getShipAddressForPO() : 'Vicomart';
+    const shipAddr = (typeof _getShipAddressForPO === 'function') ? _getShipAddressForPO() : 'Cửa hàng';
 
     const fmtVND = v => v > 0 ? v.toLocaleString('vi-VN') + 'đ' : '—';
     let totalQty = 0, totalVal = 0;
@@ -32884,7 +32884,7 @@ async function poeCopyImage() {
         + '<div style="background:#0071CE;color:#fff;padding:20px 28px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'
           + '<div>'
             + '<div style="font-size:36px;font-weight:800;letter-spacing:4px;line-height:1">PURCHASE ORDER</div>'
-            + '<div style="font-size:18px;margin-top:6px;opacity:0.95">VICOMART — HỆ THỐNG SIÊU THỊ · Tel: 0964.343.393</div>'
+            + '<div style="font-size:18px;margin-top:6px;opacity:0.95">AIPOS-PRO · Tel: 0964.343.393</div>'
           + '</div>'
           + '<div style="text-align:right">'
             + '<div style="font-size:26px;font-weight:800;letter-spacing:2px">' + poNo + '</div>'
@@ -32927,7 +32927,7 @@ async function poeCopyImage() {
             + '</div>'
           + '</div>'
           + '<div style="text-align:center;font-size:14px;color:#888;border-top:1px solid #E0E0E0;padding-top:12px;margin-top:20px">'
-            + 'PO: ' + poNo + '  |  Ngày: ' + today + '  |  VICOMART © ' + new Date().getFullYear() + '  |  order@vicomart.vn'
+            + 'PO: ' + poNo + '  |  Ngày: ' + today + '  |  AIPOS-PRO © ' + new Date().getFullYear() + '  |  '
           + '</div>'
         ) : '')
       + '</div>';
@@ -37022,7 +37022,7 @@ function _aoRenderSimpleCards(lst, branchFilter, isHutHang) {
     if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
     return (words[0][0] + words[1][0]).toUpperCase();
   };
-  const _isInHouse = (name) => /vicomart|cửa hàng|^ch\s/i.test(name || '');
+  const _isInHouse = (name) => /aipos|cửa hàng|^ch\s/i.test(name || '');
 
   // Lookup SUPPLIERS for subtitle + lead time
   const _supLookup = {};
@@ -37331,7 +37331,7 @@ function _aoRenderSimpleCards(lst, branchFilter, isHutHang) {
 
   // Nav bar
   html += '<div class="aocv7-nav">'
-    + '<div class="logo"><span class="spark">✦</span>vicomart</div>'
+    + '<div class="logo"><span class="spark">✦</span>AIPOS-PRO</div>'
     + '<div class="info">Save Money. Live Better. · Hiển thị <b>' + rows.length + ' trong ' + totalNccCount + '</b> NCC · Sắp xếp: <b>Khẩn cấp ↓</b></div>'
     + '<button class="cfg-btn" onclick="abOpenSubTab()" title="Mở tab Cấu Hình → NS Hàng Loạt — chọn công thức ALDI (Vốn × 1.15) hoặc Sweet Spot (Bán × 70%)">⚙️ Cấu hình NS hàng loạt</button>'
     + '<div class="pickup">📍 Giao đến ' + brLabel + '</div>'
@@ -37820,9 +37820,9 @@ function ao2ExportSingle(ncc) {
   // R1: Title
   rows.push(['PURCHASE ORDER','','','','','','','','']);
   // R2: Company
-  rows.push(['VICOMART — HỆ THỐNG SIÊU THỊ','','','','','','','','']);
+  rows.push(['AIPOS-PRO','','','','','','','','']);
   // R3: Address
-  rows.push(['Phú Bài · Vinh Thanh · Thuận An, Thừa Thiên Huế | Tel: 0964.343.393 | order@vicomart.vn','','','','','','','','']);
+  rows.push(['Phú Bài · Vinh Thanh · Thuận An, Thừa Thiên Huế | Tel: 0964.343.393 | ','','','','','','','','']);
   // R4: spacer
   rows.push(['','','','','','','','','']);
 
@@ -37890,7 +37890,7 @@ function ao2ExportSingle(ncc) {
   rows.push(['','','','','','','','','']);
 
   // Signatures
-  rows.push(['ĐẠI DIỆN NHÀ CUNG CẤP','','','','ĐẠI DIỆN VICOMART','','','','']);
+  rows.push(['ĐẠI DIỆN NHÀ CUNG CẤP','','','','ĐẠI DIỆN MUA HÀNG','','','','']);
   rows.push(['','','','','','','','','']);
   rows.push(['','','','','','','','','']);
   rows.push(['Họ tên: _______________________','','','','Họ tên: _______________________','','','','']);
@@ -38059,15 +38059,15 @@ function ao2ExportSingle(ncc) {
 // Nếu "Tất cả" hoặc rỗng → trả địa chỉ ghi "Tất cả chi nhánh"
 function _getShipAddressForPO() {
   const FULL_ADDR_MAP = {
-    pb: 'VICOMART PHÚ BÀI — 02 Sóng Hồng, Phường Phú Bài, TX. Hương Thủy, Thừa Thiên Huế',
-    vt: 'VICOMART VINH THANH — Vinh Thanh, Huyện Phú Vang, Thừa Thiên Huế',
-    ta: 'VICOMART THUẬN AN — Thị trấn Thuận An, Huyện Phú Vang, Thừa Thiên Huế'
+    pb: 'Chi nhánh Phú Bài — 02 Sóng Hồng, Phường Phú Bài, TX. Hương Thủy, Thừa Thiên Huế',
+    vt: 'Chi nhánh Vinh Thành — Vinh Thanh, Huyện Phú Vang, Thừa Thiên Huế',
+    ta: 'Chi nhánh Thuận An — Thị trấn Thuận An, Huyện Phú Vang, Thừa Thiên Huế'
   };
   try {
     const sel = document.getElementById('ao-po-branch');
     const val = (sel?.value || '').toLowerCase().trim();
     if (!val || val === '' || val === 'all') {
-      return 'Tất cả chi nhánh Vicomart (PB · VT · TA) — đơn phân phối theo cấu hình';
+      return 'Tất cả chi nhánh (PB · VT · TA) — đơn phân phối theo cấu hình';
     }
     // Match key trong BRANCHES
     if (FULL_ADDR_MAP[val]) return FULL_ADDR_MAP[val];
@@ -38076,10 +38076,10 @@ function _getShipAddressForPO() {
       x.key === val || (x.name||'').toLowerCase() === val || (x.code||'').toLowerCase() === val
     );
     if (b) {
-      return 'VICOMART ' + (b.name||'').toUpperCase() + ' — ' + (b.addr || '');
+      return 'CN ' + (b.name||'').toUpperCase() + ' — ' + (b.addr || '');
     }
   } catch(e) { console.warn('_getShipAddressForPO err:', e); }
-  return 'VICOMART — Thừa Thiên Huế';
+  return ' — Thừa Thiên Huế';
 }
 window._getShipAddressForPO = _getShipAddressForPO;
 
@@ -38229,8 +38229,8 @@ function ao2BuildPDFHtml(ncc) {
   <!-- Header -->
   <div class="header-banner"><h1>PURCHASE ORDER</h1></div>
   <div class="company-block">
-    <h2>VICOMART — HỆ THỐNG SIÊU THỊ</h2>
-    <p>Tel: 0964.343.393 | Email: order@vicomart.vn | vicomart.vn</p>
+    <h2>AIPOS-PRO</h2>
+    <p></p>
   </div>
 
   <!-- Supplier + PO -->
@@ -38307,14 +38307,14 @@ function ao2BuildPDFHtml(ncc) {
       <div class="sig-name">Họ tên: _________________________<br>Ngày ký: ____/____/________</div>
     </div>
     <div class="sig-box">
-      <div class="sig-hdr">ĐẠI DIỆN VICOMART</div>
+      <div class="sig-hdr">ĐẠI DIỆN MUA HÀNG</div>
       <div class="sig-body"></div>
       <div class="sig-name">Họ tên: _________________________<br>Ngày ký: ____/____/________</div>
     </div>
   </div>
 
   <div class="footer">
-    PO: ${poNo} | Ngày: ${today} | VICOMART © ${new Date().getFullYear()} | Mọi thắc mắc: order@vicomart.vn
+    PO: ${poNo} | Ngày: ${today} | AIPOS-PRO © ${new Date().getFullYear()} | Mọi thắc mắc: 
   </div>
 </div>
 </body>
@@ -38662,7 +38662,7 @@ async function ao2CopyImagePO(ncc) {
     <div style="background:#0071CE;padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="color:#fff;font-size:20px;font-weight:900;letter-spacing:1px">PURCHASE ORDER</div>
-        <div style="color:#0071CE;font-size:11px;margin-top:2px">VICOMART — HỆ THỐNG SIÊU THỊ</div>
+        <div style="color:#0071CE;font-size:11px;margin-top:2px">AIPOS-PRO</div>
       </div>
       <div style="text-align:right">
         <div style="color:#fff;font-weight:800;font-size:13px">${poNo}</div>
@@ -38711,7 +38711,7 @@ async function ao2CopyImagePO(ncc) {
     ${note?`<div style="padding:10px 18px;background:#fff8e1;border-top:1px solid #ffe082;font-size:12px;color:#888888">📝 ${note}</div>`:''}
     <div style="padding:10px 18px;background:#f5f5f5;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:11px;color:#999">Vui lòng xác nhận và giao hàng đúng hạn</div>
-      <div style="font-size:11px;color:#0071CE;font-weight:700">VICOMART 🏪</div>
+      <div style="font-size:11px;color:#0071CE;font-weight:700">🏪</div>
     </div>`;
 
   document.body.appendChild(div);
@@ -38756,7 +38756,7 @@ function ao2CopyZalo(ncc) {
   const poNo    = `PO-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(ni+1).padStart(3,'0')}`;
   const today   = new Date().toLocaleDateString('vi-VN');
 
-  let msg = `📋 ĐƠN ĐẶT HÀNG — VICOMART\n`;
+  let msg = `📋 ĐƠN ĐẶT HÀNG\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `🏷️ *${poNo}*\n`;
   msg += `🤝 NCC: *${ncc}*\n`;
@@ -38773,7 +38773,7 @@ function ao2CopyZalo(ncc) {
   const totalVal = items.reduce((s,a)=>s+a.qtyOrder*(a.cost||0),0);
   if (totalVal>0) msg += `💰 Ước tính: *${(totalVal/1e6).toFixed(2)}M đ*\n`;
   if (note) msg += `📝 ${note}\n`;
-  msg += `\n✅ Vui lòng xác nhận & giao hàng đúng hạn!\nVicomart 🏪`;
+  msg += `\n✅ Vui lòng xác nhận & giao hàng đúng hạn!\n🏪`;
 
   navigator.clipboard.writeText(msg).then(()=>{
     showToast('✅ Copy Zalo: '+ncc, 'success');
@@ -39169,7 +39169,7 @@ function aoExportAllPOExcel() {
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sumRows), 'Tổng Hợp');
 
-  XLSX.writeFile(wb, `PO_Vicomart_${today}.xlsx`);
+  XLSX.writeFile(wb, `PO_${today}.xlsx`);
   showToast(`✅ Xuất ${window._aoPOGroups.length} PO thành công!`, 'success');
   addAuditAO('Xuất Excel tất cả PO', `${window._aoPOGroups.length} PO · ${window._aoPOGroups.reduce((s,p)=>s+p.lines.length,0)} SKU`);
 }
@@ -39209,7 +39209,7 @@ function aoCopyZaloSingle(pi) {
   const note = document.getElementById(`po-note-${pi}`)?.value || '';
   const fv = v => v > 0 ? v.toLocaleString('vi') : '0';
 
-  let msg = `📋 ĐƠN ĐẶT HÀNG — VICOMART\n`;
+  let msg = `📋 ĐƠN ĐẶT HÀNG\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `🏷️ Mã PO: *${po.po_number}*\n`;
   msg += `🤝 NCC: *${po.supplier_name}*\n`;
@@ -39225,7 +39225,7 @@ function aoCopyZaloSingle(pi) {
   msg += `📦 Tổng: *${fv(po.total_qty)} SP*\n`;
   if (po.total_amount > 0) msg += `💰 Giá trị ước tính: *${(po.total_amount/1e6).toFixed(2)}M đ*\n`;
   if (note) msg += `📝 Ghi chú: ${note}\n`;
-  msg += `\n✅ Vui lòng xác nhận và giao hàng đúng hạn!\nVicomart 🏪`;
+  msg += `\n✅ Vui lòng xác nhận và giao hàng đúng hạn!\n🏪`;
 
   navigator.clipboard.writeText(msg).then(()=>{
     showToast('✅ Copy Zalo: ' + po.po_number, 'success');
@@ -39362,7 +39362,7 @@ async function aoCopyImagePO(pi) {
     <div style="background:#0071CE;padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="color:#fff;font-size:20px;font-weight:900;letter-spacing:1px">PURCHASE ORDER</div>
-        <div style="color:#0071CE;font-size:11px;margin-top:2px">VICOMART — HỆ THỐNG SIÊU THỊ</div>
+        <div style="color:#0071CE;font-size:11px;margin-top:2px">AIPOS-PRO</div>
       </div>
       <div style="text-align:right">
         <div style="color:#fff;font-weight:800;font-size:13px">${po.po_number}</div>
@@ -39424,7 +39424,7 @@ async function aoCopyImagePO(pi) {
     ${note ? `<div style="padding:10px 18px;background:#fff8e1;border-top:1px solid #ffe082;font-size:12px;color:#888888">📝 ${note}</div>` : ''}
     <div style="padding:10px 18px;background:#f5f5f5;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:11px;color:#999">Vui lòng xác nhận và giao hàng đúng hạn</div>
-      <div style="font-size:11px;color:#0071CE;font-weight:700">VICOMART 🏪</div>
+      <div style="font-size:11px;color:#0071CE;font-weight:700">🏪</div>
     </div>`;
 
   document.body.appendChild(div);
@@ -39564,7 +39564,7 @@ function aoExportPOExcel() {
 
   // Header thông tin đơn hàng
   const headerRows = [
-    ['ĐƠN ĐẶT HÀNG — VICOMART'],
+    ['ĐƠN ĐẶT HÀNG'],
     [],
     ['Mã PO:',       poNo,           'Ngày tạo:', today],
     ['Nhà cung cấp:', po.ncc,         'Điều khoản:', nccInfo.dk || '—'],
@@ -39699,7 +39699,7 @@ function aoExportExcel() {
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsAlert), 'Cảnh Báo');
 
-  XLSX.writeFile(wb, `AutoOrder_Vicomart_${today}.xlsx`);
+  XLSX.writeFile(wb, `AutoOrder_${today}.xlsx`);
   showToast('✅ Đã xuất Excel Auto Order đầy đủ', 'success');
   addAuditAO('Xuất Excel tổng hợp', `${AO_ANALYSIS.filter(a=>a.needOrder).length} SP · ${Object.keys(byNCC).length} NCC`);
 }
@@ -39712,7 +39712,7 @@ function aoCopyZaloPO() {
   const poNo  = 'PO-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
   const nccInfo = (typeof ncc_data !== 'undefined' ? ncc_data : []).find(n=>n.name===po.ncc)||{};
 
-  let msg = `📋 ĐƠN ĐẶT HÀNG — VICOMART\n`;
+  let msg = `📋 ĐƠN ĐẶT HÀNG\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `📅 Ngày: ${today}\n`;
   msg += `🏷️ Mã PO: ${poNo}\n`;
@@ -39730,7 +39730,7 @@ function aoCopyZaloPO() {
   msg += `📦 Tổng: ${totalQty.toLocaleString('vi')} sản phẩm\n`;
   const note = document.getElementById('ao-po-note')?.value;
   if (note) msg += `📝 Ghi chú: ${note}\n`;
-  msg += `\n✅ Vui lòng xác nhận đơn và giao hàng sớm!\nVicomart — ${new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}`;
+  msg += `\n✅ Vui lòng xác nhận đơn và giao hàng sớm!\n— ${new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}`;
 
   navigator.clipboard.writeText(msg).then(()=>{
     showToast('✅ Đã copy đơn hàng ' + po.ncc + ' vào clipboard!', 'success');
@@ -43272,7 +43272,7 @@ async function phCopyImagePO(poNo) {
     <div style="background:#0071CE;padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="color:#fff;font-size:20px;font-weight:900;letter-spacing:1px">PURCHASE ORDER</div>
-        <div style="color:#0071CE;font-size:11px;margin-top:2px">VICOMART — HỆ THỐNG SIÊU THỊ</div>
+        <div style="color:#0071CE;font-size:11px;margin-top:2px">AIPOS-PRO</div>
       </div>
       <div style="text-align:right">
         <div style="color:#fff;font-weight:800;font-size:13px">${poNo}</div>
@@ -43328,7 +43328,7 @@ async function phCopyImagePO(poNo) {
     ${p.note?`<div style="padding:10px 18px;background:#fff8e1;border-top:1px solid #ffe082;font-size:12px;color:#888888">📝 ${p.note}</div>`:''}
     <div style="padding:10px 18px;background:#f5f5f5;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:11px;color:#999">Vui lòng xác nhận và giao hàng đúng hạn</div>
-      <div style="font-size:11px;color:#0071CE;font-weight:700">VICOMART 🏪</div>
+      <div style="font-size:11px;color:#0071CE;font-weight:700">🏪</div>
     </div>`;
 
   document.body.appendChild(div);
@@ -43376,7 +43376,7 @@ async function phSendToNCC(poNo) {
   if (!p) return;
   const fv = v => v > 0 ? v.toLocaleString('vi')+'đ' : '—';
 
-  let msg = `📋 ĐƠN ĐẶT HÀNG — VICOMART\n`;
+  let msg = `📋 ĐƠN ĐẶT HÀNG\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `🏷️ *${poNo}*\n`;
   msg += `🤝 NCC: *${p.ncc_name}*\n`;
@@ -43390,7 +43390,7 @@ async function phSendToNCC(poNo) {
   msg += `📦 Tổng: *${p.total_qty} SP*\n`;
   if (p.total_value > 0) msg += `💰 Giá trị: *${fv(p.total_value)}*\n`;
   if (p.note) msg += `📝 ${p.note}\n`;
-  msg += `\n✅ Vui lòng xác nhận!\nVicomart 🏪`;
+  msg += `\n✅ Vui lòng xác nhận!\n🏪`;
 
   try {
     await navigator.clipboard.writeText(msg);
@@ -43469,7 +43469,7 @@ async function installPWA() {
   _pwaInstallPrompt.prompt();
   const { outcome } = await _pwaInstallPrompt.userChoice;
   if (outcome === "accepted") {
-    if (typeof toast !== "undefined") toast.ok("✅ Đã cài đặt VICOMART NCC!");
+    if (typeof toast !== "undefined") toast.ok("✅ Đã cài đặt AIPOS-PRO NCC!");
   }
   _pwaInstallPrompt = null;
 }
@@ -43478,7 +43478,7 @@ window.addEventListener("appinstalled", () => {
   _pwaInstallPrompt = null;
   const installBtn = document.getElementById("pwa-install-btn");
   if (installBtn) installBtn.style.display = "none";
-  if (typeof toast !== "undefined") toast.ok("✅ VICOMART NCC đã được cài đặt!");
+  if (typeof toast !== "undefined") toast.ok("✅ AIPOS-PRO NCC đã được cài đặt!");
 });
 // ════════════════════════════════════════════════════════════════
 // PK MAP — Map tên NCC hệ thống ↔ tên NCC Pancake
@@ -45333,9 +45333,9 @@ function sisRenderBranch(){
     ?getActiveBranches().some(function(b){return b.key==='ta';})
     :false;
   var branches=[
-    {n:'VICOMART PHÚ BÀI',   ds:d.pb_ds||d.pb||0, dt:d.pb_dt||0, orders:d.pb_orders||0, qty:d.pb_qty||0, c:'#42a5f5', _isReal:!!(d.pb_orders||d._isReal)},
-    {n:'VICOMART VINH THANH', ds:d.vt_ds||d.vt||0, dt:d.vt_dt||0, orders:d.vt_orders||0, qty:d.vt_qty||0, c:'#26a69a'},
-  ].concat(taOn?[{n:'VICOMART THUẬN AN', ds:d.ta_ds||d.ta||0, dt:d.ta_dt||0, orders:d.ta_orders||0, qty:d.ta_qty||0, c:'#ce93d8'}]:[]);
+    {n:'Chi nhánh Phú Bài',   ds:d.pb_ds||d.pb||0, dt:d.pb_dt||0, orders:d.pb_orders||0, qty:d.pb_qty||0, c:'#42a5f5', _isReal:!!(d.pb_orders||d._isReal)},
+    {n:'Chi nhánh Vinh Thành', ds:d.vt_ds||d.vt||0, dt:d.vt_dt||0, orders:d.vt_orders||0, qty:d.vt_qty||0, c:'#26a69a'},
+  ].concat(taOn?[{n:'Chi nhánh Thuận An', ds:d.ta_ds||d.ta||0, dt:d.ta_dt||0, orders:d.ta_orders||0, qty:d.ta_qty||0, c:'#ce93d8'}]:[]);
   var sumDs=branches.reduce(function(s,b){return s+b.ds;},0)||1;
   var sumDt=branches.reduce(function(s,b){return s+b.dt;},0);
   var sumOrders=branches.reduce(function(s,b){return s+b.orders;},0);
@@ -46950,7 +46950,7 @@ function aoDebugShow() {
       return opt ? opt.text : 'Tất cả';
     })();
     win.document.write(`
-      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Daily Briefing — Vicomart NCC</title>
+      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Daily Briefing — NCC</title>
       <style>
         body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:20px;color:#222;margin:0;}
         h1{font-size:20px;color:#0071CE;margin:0 0 4px;}
@@ -46961,7 +46961,7 @@ function aoDebugShow() {
         @media print{button{display:none;}}
       </style></head><body>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <h1>📊 Daily Briefing — Vicomart NCC</h1>
+        <h1>📊 Daily Briefing — NCC</h1>
         <button onclick="window.print()" style="padding:6px 14px;background:#0071CE;color:#fff;border:0;border-radius:4px;cursor:pointer;">🖨 In</button>
       </div>
       <div class="meta">📅 ${now} · 🏪 ${_esc(branchName)}</div>
@@ -47750,7 +47750,7 @@ function aoDebugShow() {
     el.innerHTML = ''
       + '<div style="max-width:480px;width:90%;text-align:center;padding:40px 20px">'
       +   '<div style="font-size:56px;margin-bottom:10px;line-height:1;animation:v297pulse 1.6s ease-in-out infinite">🛒</div>'
-      +   '<div style="font-size:30px;font-weight:900;letter-spacing:-0.5px;margin-bottom:4px">VICOMART</div>'
+      +   '<div style="font-size:30px;font-weight:900;letter-spacing:-0.5px;margin-bottom:4px">AIPOS-PRO</div>'
       +   '<div style="font-size:12px;font-weight:500;opacity:0.85;letter-spacing:2px;text-transform:uppercase;margin-bottom:30px">Đang đồng bộ dữ liệu</div>'
 
       +   '<div style="background:rgba(255,255,255,0.18);border-radius:14px;height:12px;overflow:hidden;margin-bottom:14px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)">'
@@ -49531,7 +49531,7 @@ function aoDebugShow() {
       const deadStock = (brief.deadStock || []).slice(0, 3);
       const incomingPO = (brief.incomingPO || []).slice(0, 3);
 
-      const prompt = `Bạn là trợ lý AI cho Giám đốc siêu thị Vicomart. Viết Morning Briefing ngắn gọn (5-7 câu) bằng tiếng Việt, tone chuyên nghiệp nhẹ nhàng.
+      const prompt = `Bạn là trợ lý AI cho Giám đốc chuỗi bán lẻ. Viết Morning Briefing ngắn gọn (5-7 câu) bằng tiếng Việt, tone chuyên nghiệp nhẹ nhàng.
 
 Dữ liệu hôm nay (${brief.date}):
 - Doanh thu hôm qua: ${dtFmt}đ
@@ -51019,9 +51019,9 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
       post += '   💸 ' + _vnd(x.sell) + ' → ' + _vnd(x.suggestedSell) + ' (giảm ' + Math.abs(x.changePct) + '%)\n';
       post += '   📦 Còn ' + x.stock + ' SP\n\n';
     });
-    post += '🛒 Đến ngay 3 siêu thị Vicomart: Phú Bài · Vinh Thành · Thuận An\n';
+    post += '🛒 Đến ngay 3 chuỗi bán lẻ: Phú Bài · Vinh Thành · Thuận An\n';
     post += '📞 Hotline đặt giao: (Hotline của bạn)\n';
-    post += '#Vicomart #FlashSale #Giamgia';
+    post += '#AIPOS #FlashSale #Giamgia';
 
     try {
       navigator.clipboard.writeText(post);
@@ -51227,7 +51227,7 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
         id: 'tpl_debt',
         name: 'Thông báo công nợ quá hạn',
         category: 'urgent',
-        content: 'Chào {name},\n\nVicomart xin thông báo có khoản công nợ đã quá hạn:\n• NCC: {ncc}\n• Số tiền: {amount}\n• Quá hạn: {days} ngày\n\nVui lòng kiểm tra và xử lý ngay.\n\nCảm ơn!'
+        content: 'Chào {name},\n\nXin thông báo có khoản công nợ đã quá hạn:\n• NCC: {ncc}\n• Số tiền: {amount}\n• Quá hạn: {days} ngày\n\nVui lòng kiểm tra và xử lý ngay.\n\nCảm ơn!'
       },
       {
         id: 'tpl_supply',
@@ -51251,13 +51251,13 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
         id: 'tpl_flash',
         name: 'Flash sale dead stock',
         category: 'marketing',
-        content: '🔥 FLASH SALE CUỐI TUẦN tại Vicomart!\n\n{products}\n\n📍 3 siêu thị: Phú Bài · Vinh Thành · Thuận An\n📞 Hotline: {hotline}\n\n#Vicomart #FlashSale'
+        content: '🔥 FLASH SALE CUỐI TUẦN!\n\n{products}\n\n📍 3 siêu thị: Phú Bài · Vinh Thành · Thuận An\n📞 Hotline: {hotline}\n\n#AIPOS #FlashSale'
       },
       {
         id: 'tpl_order',
         name: 'Đặt hàng NCC (copy từ AUTO ORDER)',
         category: 'operations',
-        content: 'Chào {ncc},\n\nVicomart đặt hàng:\n{items}\n\nTổng: {total}\nGiao: CN {branch}\nHẹn giao: {delivery}\n\nCảm ơn!'
+        content: 'Chào {ncc},\n\nĐặt hàng:\n{items}\n\nTổng: {total}\nGiao: CN {branch}\nHẹn giao: {delivery}\n\nCảm ơn!'
       }
     ],
     rules: [
@@ -51551,7 +51551,7 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
       const n = new Notification('🔔 ' + title, {
         body,
         icon: '/favicon.ico',
-        tag: 'vicomart-' + Date.now(),
+        tag: 'aipos-' + Date.now(),
         badge: '/favicon.ico',
         requireInteraction: true
       });
@@ -51949,7 +51949,7 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
   };
 
   window.znTestNotification = function() {
-    const ok = _sendBrowserNotification('Test notification', 'Đây là thông báo test từ Vicomart NCC.', '🔔');
+    const ok = _sendBrowserNotification('Test notification', 'Đây là thông báo test từ AIPOS-PRO NCC.', '🔔');
     if (ok) znShowToast('✅ Đã gửi test notification');
     else znShowToast('⚠️ Không thể gửi - Kiểm tra quyền trong cài đặt trình duyệt');
   };
@@ -52251,7 +52251,7 @@ Yêu cầu: 1 câu chào + tình hình doanh thu + điểm cần chú ý nhất 
 
   // ── Call Edge Function ──
   async function _callVisionAPI(base64, mediaType) {
-    const prompt = `Bạn là trợ lý AI giúp đọc hóa đơn/phiếu giao hàng từ nhà cung cấp (NCC) cho siêu thị Vicomart ở Việt Nam.
+    const prompt = `Bạn là trợ lý AI giúp đọc hóa đơn/phiếu giao hàng từ nhà cung cấp (NCC) cho chuỗi bán lẻ ở Việt Nam.
 
 Từ ảnh hóa đơn này, hãy trích xuất thông tin và trả về JSON thuần (KHÔNG có markdown, KHÔNG có code block):
 
@@ -52797,7 +52797,7 @@ Trả JSON ngay:`;
         // Call save function if exists
         if (typeof saveConfOrders === 'function') saveConfOrders();
         else if (typeof saveOrders === 'function') saveOrders();
-        else localStorage.setItem('vicomart_orders', JSON.stringify(window.confirmedOrders));
+        else localStorage.setItem('aipos_orders', JSON.stringify(window.confirmedOrders));
       }
 
       // Add to history
@@ -55541,13 +55541,13 @@ console.log('[NCC App] Nhan Hang module loaded');
       
       if (error) throw error;
       
-      // Update STATE in nhanhang module
+      // Update STATE in module
       if (typeof window.STATE !== 'undefined' && Array.isArray(data)) {
         const mapped = data.map(mapOrderToReceiving);
         window.STATE.incomingOrders = mapped;
         console.log('[Receiving Bridge] ✓ Loaded ' + mapped.length + ' incoming orders');
         
-        // Re-render if currently in nhanhang tab
+        // Re-render if currently in tab
         if (typeof window.renderIncoming === 'function') {
           window.renderIncoming();
         }
@@ -55908,7 +55908,7 @@ console.log('[NCC App] Nhan Hang module loaded');
   if (typeof origSwitchTab === 'function') {
     window.switchTab = function(id, btn) {
       const result = origSwitchTab.apply(this, arguments);
-      if (id === 'nhanhang') {
+      if (id === ') {
         setTimeout(() => {
           if (!isInitialized) initBridge();
           loadAll();
@@ -55950,7 +55950,7 @@ console.log('[NCC App] Nhan Hang module loaded');
   if (orig) {
     window.switchTab = function(id, el) {
       const r = orig.apply(this, arguments);
-      if (id === 'nhanhang' && typeof window.nhanHangInit === 'function') {
+      if (id === ' && typeof window.nhanHangInit === 'function') {
         setTimeout(function() { window.nhanHangInit(); }, 50);
       }
       return r;
@@ -55958,7 +55958,7 @@ console.log('[NCC App] Nhan Hang module loaded');
   }
   
   document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.tab-btn[onclick*="nhanhang"]');
+    const btn = e.target.closest('.tab-btn[onclick*="]');
     if (btn && typeof window.nhanHangInit === 'function') {
       setTimeout(function() { window.nhanHangInit(); }, 100);
     }
@@ -56916,7 +56916,7 @@ function _doExportXLSX(data) {
   // Column widths
   ws['!cols'] = [8,35,15,7,25,10,10,10,10,8,8,9,13,12,12,10].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb, ws, 'Hàng Hóa');
-  const fname = `vicomart_hanghoa_loc_${new Date().toISOString().slice(0,10)}.xlsx`;
+  const fname = `hanghoa_loc_${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, fname);
 }
 
@@ -57280,14 +57280,14 @@ function _hhBuildCSV(rows) {
 function hhBulkExportCSV() {
   const data=window.PK_NCC_DATA||[]; if(!data.length){alert('Chưa có dữ liệu.');return;}
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([_hhBuildCSV(data)],{type:'text/csv;charset=utf-8'}));
-  a.download=`vicomart_hanghoa_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  a.download=`hanghoa_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   const el=document.getElementById('hh-bulk-export-info'); if(el) el.textContent=`✅ Đã xuất ${data.length.toLocaleString('vi')} SP`;
 }
 window.hhBulkExportCSV=hhBulkExportCSV;
 function hhBulkExportFiltered() {
   const data=window.PK_NCC_FILTERED||window.PK_NCC_DATA||[]; if(!data.length){alert('Chưa có dữ liệu.');return;}
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([_hhBuildCSV(data)],{type:'text/csv;charset=utf-8'}));
-  a.download=`vicomart_hanghoa_filtered_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  a.download=`hanghoa_filtered_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   const el=document.getElementById('hh-bulk-export-info'); if(el) el.textContent=`✅ Xuất ${data.length.toLocaleString('vi')} SP đang lọc`;
 }
 window.hhBulkExportFiltered=hhBulkExportFiltered;
@@ -57298,7 +57298,7 @@ function hhBulkExportXLSX() {
   data.forEach(p=>rows.push(_BULK_COLS.map(c=>c==='cost'?(p.cost||p.priceNhap||0):c==='price'?(p.sell||p.priceBan||0):c==='unit'?(p.unit||p.dvt||''):c==='min_stock'?(p.minStock||p.min_stock||0):c==='display_min'?(p.displayMin||p.display_min||0):c==='active'?(p.active!==false?'true':'false'):(p[c]!==undefined&&p[c]!==null?p[c]:''))));
   const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[10,35,20,20,8,12,12,25,10,10,6,25,8].map(w=>({wch:w}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Hàng Hóa');
-  XLSX.writeFile(wb,`vicomart_hanghoa_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb,`hanghoa_${new Date().toISOString().slice(0,10)}.xlsx`);
   const el=document.getElementById('hh-bulk-export-info'); if(el) el.textContent=`✅ Xuất Excel ${data.length.toLocaleString('vi')} SP`;
 }
 window.hhBulkExportXLSX=hhBulkExportXLSX;
