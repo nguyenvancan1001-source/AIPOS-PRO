@@ -1244,8 +1244,11 @@ body.in-pos .fab-fs{display:inline-flex}
         <button class="sb-nav-item" data-view="purchase-order" onclick="switchSidebarView('purchase-order')">
           <span class="sb-icon">📥</span>Nhập kho
         </button>
+        <button class="sb-nav-item" data-view="tax-reports" onclick="switchSidebarView('tax-reports')">
+          <span class="sb-icon">📋</span>Báo cáo thuế
+        </button>
         <button class="sb-nav-item" data-view="adv-reports" onclick="switchSidebarView('adv-reports')">
-          <span class="sb-icon">📈</span>Báo cáo NC
+          <span class="sb-icon">📈</span>Báo cáo nâng cao
         </button>
         <button class="sb-nav-item" data-view="team-mgmt" onclick="switchSidebarView('team-mgmt')">
           <span class="sb-icon">👥</span>Đội ngũ
@@ -7215,7 +7218,8 @@ const MGMT_TABS = [
   { id: 'returns', label: '↺ Trả hàng' },
   { id: 'writeoff', label: '🗑️ Hủy hàng' },
   { id: 'promos-active', label: '🎁 KM đang chạy' },
-  { id: 'adv-reports', label: '📈 Báo cáo NC' },
+  { id: 'tax-reports', label: '📋 Báo cáo thuế' },
+  { id: 'adv-reports', label: '📈 Báo cáo nâng cao' },
   { id: 'stocktake', label: '📋 Kiểm kê' },
   { id: 'stock-adjust', label: '⚖️ Điều chỉnh' },
   { id: 'purchase-order', label: '📥 Nhập kho' },
@@ -7277,6 +7281,7 @@ function renderMgmtTab(tab) {
   if (tab === 'returns') return renderReturnsTab();
   if (tab === 'writeoff') return renderWriteoffTab();
   if (tab === 'promos-active') return renderActivePromosTab();
+  if (tab === 'tax-reports') return renderTaxReportsTab();
   if (tab === 'adv-reports') return renderAdvReportsTab();
   if (tab === 'stocktake') return renderStocktakeTab();
   if (tab === 'stock-adjust') return renderStockAdjustTab();
@@ -9124,21 +9129,78 @@ function filterCustomers(q) {
 }
 
 function renderReturnsTab() {
-  return `
-    <div class="return-search-box">
-      <div style="font-size:13px;font-weight:600;margin-bottom:7px">Tìm hoá đơn cần trả hàng</div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="returnSearchCode" placeholder="Mã HĐ (VD: 20260427-074523) hoặc SĐT khách" style="flex:1;padding:9px 11px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;font-family:var(--font-num)">
-        <button class="btn btn-primary" onclick="searchReturnTx()">🔍 Tìm</button>
+  /* --- Giao dịch gần nhất (trả nhanh) --- */
+  const recentTxs = state.transactions
+    .filter(t => t.kind !== 'return' && t.kind !== 'writeoff')
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 8);
+
+  const recentCards = recentTxs.length ? recentTxs.map(t => {
+    const d = new Date(t.createdAt);
+    const time = d.toLocaleTimeString('vi',{hour:'2-digit',minute:'2-digit'});
+    const date = d.toLocaleDateString('vi',{day:'2-digit',month:'2-digit'});
+    const itemCount = t.items.reduce((s,i)=>s+i.qty, 0);
+    const custName = t.customer?.name || t.customer?.phone || 'Khách lẻ';
+    /* Check trả rồi hay chưa */
+    const returned = state.transactions.filter(r => r.kind==='return' && r.originalTxId===t.id);
+    const isPartial = returned.length > 0;
+    return `<div onclick="quickReturnSelect('${t.id}')" style="
+      display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:10px;
+      border:1px solid ${isPartial?'#FDE68A':'#E5E7EB'};cursor:pointer;transition:all .15s;
+      ${isPartial?'background:#FFFBEB':''}
+    " onmouseover="this.style.borderColor='#3B82F6';this.style.boxShadow='0 2px 8px rgba(59,130,246,.12)'" onmouseout="this.style.borderColor='${isPartial?'#FDE68A':'#E5E7EB'}';this.style.boxShadow='none'">
+      <div style="width:40px;height:40px;border-radius:10px;background:${isPartial?'#FEF3C7':'#EFF6FF'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${isPartial?'⚠️':'🧾'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span style="font-weight:700;color:var(--blue);font-size:12px;font-family:var(--font-num)">${escapeHtml(t.code)}</span>
+          ${isPartial?'<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:#FDE68A;color:#92400E;font-weight:600">Đã trả 1 phần</span>':''}
+        </div>
+        <div style="font-size:12px;color:#6B7280">${custName} · ${itemCount} SP · ${date} ${time}</div>
       </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:14px;font-weight:700;color:var(--navy-dark)">${fmt.money(t.total)}</div>
+        <div style="font-size:10px;color:#9CA3AF">${t.method==='cash'?'Tiền mặt':t.method==='transfer'?'CK':'Khác'}</div>
+      </div>
+      <div style="color:#9CA3AF;font-size:16px;flex-shrink:0">›</div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:30px;color:#9CA3AF;font-size:13px">Chưa có giao dịch nào</div>';
+
+  return `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px;max-width:360px">
+        <input type="text" id="returnSearchCode" placeholder="Tìm mã HĐ hoặc SĐT khách..." onkeydown="if(event.key==='Enter')searchReturnTx()"
+          style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:var(--font-num);background:#F9FAFB;outline:none;box-sizing:border-box">
+        <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:15px;pointer-events:none">🔍</span>
+      </div>
+      <button class="btn btn-primary" onclick="searchReturnTx()" style="padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600">Tìm hoá đơn</button>
     </div>
     <div id="returnSearchResult"></div>
+    <div id="returnQuickSection">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--navy-dark)">⚡ Trả nhanh — chọn hoá đơn gần nhất</div>
+        <div style="flex:1;height:1px;background:#E5E7EB"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">${recentCards}</div>
+    </div>
   `;
+}
+
+function quickReturnSelect(txId) {
+  const tx = state.transactions.find(t => t.id === txId);
+  if (!tx) return;
+  /* Ẩn section trả nhanh, hiện flow trả hàng */
+  const quickSec = $('#returnQuickSection');
+  if (quickSec) quickSec.style.display = 'none';
+  const wrap = $('#returnSearchResult');
+  if (wrap) wrap.innerHTML = renderReturnFlow(tx);
 }
 
 function searchReturnTx() {
   const q = $('#returnSearchCode').value.trim().toLowerCase();
   if (!q) { toast('Nhập mã HĐ hoặc SĐT', 'warning'); return; }
+  /* Ẩn section trả nhanh khi tìm */
+  const quickSec = $('#returnQuickSection');
+  if (quickSec) quickSec.style.display = 'none';
   let txs = state.transactions.filter(t =>
     t.kind !== 'return' && (
       t.code.toLowerCase().includes(q) ||
@@ -11342,6 +11404,380 @@ function getRptTransactions() {
   return state.transactions.filter(t => t.createdAt >= r.from && t.createdAt < r.to && t.branch === branch);
 }
 
+/* ============================================================
+   BÁO CÁO THUẾ — Tab chính riêng
+   Theo mẫu biểu thuế Việt Nam: 01/GTGT, PL 01-1, PL 01-2, BC26
+   ============================================================ */
+let _taxRptRange = 'month';
+let _taxRptSub = 'tokhai-01gtgt';
+
+function renderTaxReportsTab() {
+  const ranges = [
+    { id:'month', label:'Tháng này' },
+    { id:'quarter', label:'Quý này' },
+    { id:'prev-month', label:'Tháng trước' },
+    { id:'prev-quarter', label:'Quý trước' },
+    { id:'custom', label:'Tuỳ chọn' }
+  ];
+  const subs = [
+    { id:'tokhai-01gtgt', label:'Tờ khai 01/GTGT' },
+    { id:'pl01-1-banra', label:'PL 01-1 Bán ra' },
+    { id:'pl01-2-muavao', label:'PL 01-2 Mua vào' },
+    { id:'bc26-sudung-hd', label:'BC26 Sử dụng HĐ' },
+    { id:'thue-tncn', label:'Thuế TNCN' }
+  ];
+
+  const rangeHtml = ranges.map(r =>
+    `<button class="rpt-range-btn${_taxRptRange===r.id?' active':''}" onclick="_taxRptRange='${r.id}';switchMgmtTab('tax-reports')">${r.label}</button>`
+  ).join('');
+  const subHtml = subs.map(s =>
+    `<button class="rpt-sub-btn${_taxRptSub===s.id?' active':''}" onclick="_taxRptSub='${s.id}';switchMgmtTab('tax-reports')">${s.label}</button>`
+  ).join('');
+
+  const txns = getTaxTransactions();
+  const range = getTaxReportRange();
+  let content = '';
+
+  if (_taxRptSub === 'tokhai-01gtgt') content = renderToKhai01GTGT(txns, range);
+  else if (_taxRptSub === 'pl01-1-banra') content = renderPL011BanRa(txns, range);
+  else if (_taxRptSub === 'pl01-2-muavao') content = renderPL012MuaVao(range);
+  else if (_taxRptSub === 'bc26-sudung-hd') content = renderBC26(txns, range);
+  else if (_taxRptSub === 'thue-tncn') content = renderThueTNCN(range);
+
+  return `<div class="mgmt-section">
+    <h3 style="margin:0 0 12px">📋 Báo cáo thuế</h3>
+    <div class="rpt-range-bar">${rangeHtml}</div>
+    <div class="rpt-sub-bar" style="margin:8px 0 16px;display:flex;gap:4px;flex-wrap:wrap">${subHtml}</div>
+    ${content}
+  </div>`;
+}
+
+function getTaxReportRange() {
+  const now = new Date();
+  let from, to, label;
+  if (_taxRptRange === 'month') {
+    from = new Date(now.getFullYear(), now.getMonth(), 1);
+    to = new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59);
+    label = `Tháng ${now.getMonth()+1}/${now.getFullYear()}`;
+  } else if (_taxRptRange === 'quarter') {
+    const q = Math.floor(now.getMonth()/3);
+    from = new Date(now.getFullYear(), q*3, 1);
+    to = new Date(now.getFullYear(), q*3+3, 0, 23,59,59);
+    label = `Quý ${q+1}/${now.getFullYear()}`;
+  } else if (_taxRptRange === 'prev-month') {
+    from = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    to = new Date(now.getFullYear(), now.getMonth(), 0, 23,59,59);
+    label = `Tháng ${now.getMonth() || 12}/${now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear()}`;
+  } else if (_taxRptRange === 'prev-quarter') {
+    const q = Math.floor(now.getMonth()/3) - 1;
+    const y = q < 0 ? now.getFullYear()-1 : now.getFullYear();
+    const qn = q < 0 ? 3 : q;
+    from = new Date(y, qn*3, 1);
+    to = new Date(y, qn*3+3, 0, 23,59,59);
+    label = `Quý ${qn+1}/${y}`;
+  } else {
+    from = new Date(now.getFullYear(), now.getMonth(), 1);
+    to = new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59);
+    label = `Tháng ${now.getMonth()+1}/${now.getFullYear()}`;
+  }
+  return { from: from.toISOString(), to: to.toISOString(), label };
+}
+
+function getTaxTransactions() {
+  const r = getTaxReportRange();
+  return state.transactions.filter(t =>
+    t.createdAt >= r.from && t.createdAt <= r.to && t.status !== 'voided'
+  );
+}
+
+const _fmtVND = v => (v||0).toLocaleString('vi') + 'đ';
+const _fmtDate = d => d ? new Date(d).toLocaleDateString('vi') : '';
+
+/* ── Phân loại thuế suất từ sản phẩm ── */
+function classifyVatItems(txns) {
+  const groups = { 0: {rate:0, rev:0, vat:0, count:0}, 5: {rate:5, rev:0, vat:0, count:0}, 8: {rate:8, rev:0, vat:0, count:0}, 10: {rate:10, rev:0, vat:0, count:0} };
+  let totalRev = 0, totalVat = 0, invoiced = 0, notInvoiced = 0;
+
+  txns.forEach(t => {
+    const items = t.items || [];
+    items.forEach(item => {
+      const vatPct = item.vatRate != null ? item.vatRate : 8; // default 8%
+      const lineTotal = (item.price || 0) * (item.qty || 1);
+      const rate = vatPct / 100;
+      const beforeVat = Math.round(lineTotal / (1 + rate));
+      const vatAmt = lineTotal - beforeVat;
+      if (groups[vatPct]) {
+        groups[vatPct].rev += beforeVat;
+        groups[vatPct].vat += vatAmt;
+        groups[vatPct].count++;
+      } else {
+        // Fallback to 8%
+        groups[8].rev += beforeVat;
+        groups[8].vat += vatAmt;
+        groups[8].count++;
+      }
+    });
+    // If no items breakdown, use total
+    if (items.length === 0) {
+      const amount = (t.total || 0) - (t.discount || 0);
+      const bv = Math.round(amount / 1.08);
+      groups[8].rev += bv;
+      groups[8].vat += amount - bv;
+      groups[8].count++;
+    }
+    totalRev += (t.total || 0) - (t.discount || 0);
+    if (t.einvoice) invoiced++; else notInvoiced++;
+  });
+
+  Object.values(groups).forEach(g => { totalVat += g.vat; });
+  const totalBeforeVat = Object.values(groups).reduce((s,g) => s + g.rev, 0);
+  return { groups, totalRev, totalBeforeVat, totalVat, invoiced, notInvoiced };
+}
+
+/* ══════════════════════════════════════════
+   TỜ KHAI 01/GTGT — Tờ khai thuế GTGT
+   (Theo TT80/2021/TT-BTC, mẫu 01/GTGT)
+   ══════════════════════════════════════════ */
+function renderToKhai01GTGT(txns, range) {
+  const d = classifyVatItems(txns);
+  const tenantName = state.tenantConfig?.company_name || state.tenantConfig?.store_name || '—';
+  const mst = state.tenantConfig?.tax_id || '—';
+
+  return `
+  <div style="border:1px solid var(--gray-200);border-radius:10px;padding:16px;background:var(--gray-50)">
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--gray-500)">Mẫu số: 01/GTGT</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy-dark)">TỜ KHAI THUẾ GIÁ TRỊ GIA TĂNG</div>
+      <div style="font-size:12px;color:var(--gray-500)">(Theo phương pháp khấu trừ)</div>
+      <div style="font-size:12px;color:var(--navy);font-weight:600;margin-top:4px">Kỳ tính thuế: ${range.label}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:14px;padding:10px;background:white;border-radius:8px">
+      <div><span style="color:var(--gray-500)">Tên NNT:</span> <strong>${tenantName}</strong></div>
+      <div><span style="color:var(--gray-500)">MST:</span> <strong>${mst}</strong></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:var(--navy);margin:10px 0 6px">A. THUẾ GTGT ĐẦU RA</div>
+    <div class="mgmt-table-wrap"><table class="mgmt-table">
+      <thead><tr><th>Chỉ tiêu</th><th class="tr">Giá trị HHDV (chưa thuế)</th><th class="tr">Thuế GTGT</th></tr></thead>
+      <tbody>
+        <tr><td>[21] Hàng hoá, dịch vụ chịu thuế suất 0%</td><td class="tr num">${_fmtVND(d.groups[0].rev)}</td><td class="tr num">${_fmtVND(0)}</td></tr>
+        <tr><td>[22] Hàng hoá, dịch vụ chịu thuế suất 5%</td><td class="tr num">${_fmtVND(d.groups[5].rev)}</td><td class="tr num">${_fmtVND(d.groups[5].vat)}</td></tr>
+        <tr><td>[23] Hàng hoá, dịch vụ chịu thuế suất 8%</td><td class="tr num">${_fmtVND(d.groups[8].rev)}</td><td class="tr num">${_fmtVND(d.groups[8].vat)}</td></tr>
+        <tr><td>[24] Hàng hoá, dịch vụ chịu thuế suất 10%</td><td class="tr num">${_fmtVND(d.groups[10].rev)}</td><td class="tr num">${_fmtVND(d.groups[10].vat)}</td></tr>
+        <tr style="font-weight:700;background:var(--navy-light)">
+          <td>[25] Tổng doanh thu & thuế GTGT đầu ra</td>
+          <td class="tr num">${_fmtVND(d.totalBeforeVat)}</td>
+          <td class="tr num" style="color:var(--red)">${_fmtVND(d.totalVat)}</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div style="font-size:12px;font-weight:600;color:var(--navy);margin:14px 0 6px">B. THUẾ GTGT ĐẦU VÀO</div>
+    <div class="mgmt-table-wrap"><table class="mgmt-table">
+      <thead><tr><th>Chỉ tiêu</th><th class="tr">Giá trị HHDV (chưa thuế)</th><th class="tr">Thuế GTGT</th></tr></thead>
+      <tbody>
+        <tr><td>[31] Thuế GTGT đầu vào được khấu trừ</td><td class="tr num" style="color:var(--gray-400)">— (từ module NCC)</td><td class="tr num" style="color:var(--gray-400)">—</td></tr>
+      </tbody>
+    </table></div>
+
+    <div style="font-size:12px;font-weight:600;color:var(--navy);margin:14px 0 6px">C. THUẾ GTGT PHẢI NỘP</div>
+    <div class="mgmt-table-wrap"><table class="mgmt-table">
+      <tbody>
+        <tr><td>[40a] Thuế GTGT phải nộp = [25] − [31]</td><td class="tr num" style="font-weight:700;color:var(--red);font-size:14px">${_fmtVND(d.totalVat)}</td></tr>
+      </tbody>
+    </table></div>
+
+    <div style="margin-top:10px;font-size:11px;color:var(--gray-400);line-height:1.6">
+      * Số liệu tự động tổng hợp từ dữ liệu bán hàng POS.<br>
+      * Thuế GTGT đầu vào cần bổ sung từ module Kho & NCC.<br>
+      * Mẫu tham chiếu TT80/2021/TT-BTC. Dữ liệu chính thức nộp qua thuedientu.gdt.gov.vn
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   PL 01-1/GTGT — Bảng kê hoá đơn bán ra
+   ══════════════════════════════════════════ */
+function renderPL011BanRa(txns, range) {
+  let sumBeforeVat = 0, sumVat = 0;
+  const rows = txns.map((t, i) => {
+    const amount = (t.total || 0) - (t.discount || 0);
+    const vatRate = 0.08;
+    const beforeVat = Math.round(amount / (1 + vatRate));
+    const vat = amount - beforeVat;
+    sumBeforeVat += beforeVat;
+    sumVat += vat;
+    const invNo = t.einvoice?.number || '';
+    const invDate = t.einvoice?.date ? _fmtDate(t.einvoice.date) : _fmtDate(t.createdAt);
+    const buyer = t.customer?.name || 'Khách lẻ';
+    const buyerTax = t.customer?.taxId || '';
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="font-size:11px">${invNo || (t.code||'—')}</td>
+      <td style="font-size:11px">${invDate}</td>
+      <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${buyer}">${buyer}</td>
+      <td style="font-size:11px">${buyerTax}</td>
+      <td class="tr num">${_fmtVND(beforeVat)}</td>
+      <td class="tc" style="font-size:11px">8%</td>
+      <td class="tr num">${_fmtVND(vat)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div style="border:1px solid var(--gray-200);border-radius:10px;padding:16px;background:var(--gray-50)">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--gray-500)">Phụ lục 01-1/GTGT</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy-dark)">BẢNG KÊ HOÁ ĐƠN, CHỨNG TỪ HÀNG HOÁ, DỊCH VỤ BÁN RA</div>
+      <div style="font-size:12px;color:var(--navy);font-weight:600;margin-top:4px">Kỳ: ${range.label} · ${txns.length} hoá đơn</div>
+    </div>
+    <div class="mgmt-table-wrap" style="max-height:500px"><table class="mgmt-table">
+      <thead><tr>
+        <th>STT</th><th>Số HĐ</th><th>Ngày</th><th>Tên người mua</th><th>MST người mua</th>
+        <th class="tr">Doanh thu chưa thuế</th><th class="tc">Thuế suất</th><th class="tr">Thuế GTGT</th>
+      </tr></thead>
+      <tbody>
+        ${rows || '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:30px">Chưa có dữ liệu</td></tr>'}
+        ${txns.length > 0 ? `<tr style="font-weight:700;background:var(--navy-light)">
+          <td colspan="5" style="text-align:right">TỔNG CỘNG</td>
+          <td class="tr num">${_fmtVND(sumBeforeVat)}</td>
+          <td></td>
+          <td class="tr num" style="color:var(--red)">${_fmtVND(sumVat)}</td>
+        </tr>` : ''}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   PL 01-2/GTGT — Bảng kê hoá đơn mua vào
+   ══════════════════════════════════════════ */
+function renderPL012MuaVao(range) {
+  return `
+  <div style="border:1px solid var(--gray-200);border-radius:10px;padding:16px;background:var(--gray-50)">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--gray-500)">Phụ lục 01-2/GTGT</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy-dark)">BẢNG KÊ HOÁ ĐƠN, CHỨNG TỪ HÀNG HOÁ, DỊCH VỤ MUA VÀO</div>
+      <div style="font-size:12px;color:var(--navy);font-weight:600;margin-top:4px">Kỳ: ${range.label}</div>
+    </div>
+    <div class="mgmt-table-wrap"><table class="mgmt-table">
+      <thead><tr>
+        <th>STT</th><th>Số HĐ</th><th>Ngày</th><th>Tên người bán</th><th>MST người bán</th>
+        <th class="tr">Giá trị chưa thuế</th><th class="tc">Thuế suất</th><th class="tr">Thuế GTGT</th>
+      </tr></thead>
+      <tbody>
+        <tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:30px">
+          <div style="font-size:28px;margin-bottom:8px">📥</div>
+          Dữ liệu mua vào từ hoá đơn nhập hàng NCC.<br>
+          <span style="font-size:11px">Liên kết module Kho & NCC để tự động tổng hợp.</span>
+        </td></tr>
+      </tbody>
+    </table></div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   BC26/HĐ — Báo cáo tình hình sử dụng hoá đơn
+   (Theo NĐ123/2020/NĐ-CP, TT78/2021/TT-BTC)
+   ══════════════════════════════════════════ */
+function renderBC26(txns, range) {
+  const invoiced = txns.filter(t => t.einvoice);
+  const notInvoiced = txns.filter(t => !t.einvoice);
+
+  // Simulate invoice number ranges
+  let fromNo = '—', toNo = '—', totalUsed = invoiced.length, totalCancelled = 0;
+  if (invoiced.length > 0) {
+    const nums = invoiced.map(t => parseInt(t.einvoice?.number || '0')).filter(n => n > 0).sort((a,b) => a-b);
+    if (nums.length > 0) { fromNo = nums[0]; toNo = nums[nums.length-1]; }
+    totalCancelled = invoiced.filter(t => t.einvoice?.status === 'cancelled').length;
+  }
+
+  return `
+  <div style="border:1px solid var(--gray-200);border-radius:10px;padding:16px;background:var(--gray-50)">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--gray-500)">Mẫu BC26/HĐ</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy-dark)">BÁO CÁO TÌNH HÌNH SỬ DỤNG HOÁ ĐƠN</div>
+      <div style="font-size:12px;color:var(--navy);font-weight:600;margin-top:4px">Kỳ: ${range.label}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">
+      <div style="background:var(--navy-light);padding:12px;border-radius:8px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--navy-dark)">${txns.length}</div>
+        <div style="font-size:11px;color:var(--gray-500)">Tổng đơn hàng</div>
+      </div>
+      <div style="background:var(--green-light);padding:12px;border-radius:8px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--green)">${invoiced.length}</div>
+        <div style="font-size:11px;color:var(--gray-500)">Đã xuất HĐĐT</div>
+      </div>
+      <div style="background:var(--orange-light);padding:12px;border-radius:8px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--orange)">${notInvoiced.length}</div>
+        <div style="font-size:11px;color:var(--gray-500)">Chưa xuất HĐĐT</div>
+      </div>
+      <div style="background:var(--red-light);padding:12px;border-radius:8px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--red)">${totalCancelled}</div>
+        <div style="font-size:11px;color:var(--gray-500)">HĐ đã huỷ</div>
+      </div>
+    </div>
+
+    <div class="mgmt-table-wrap"><table class="mgmt-table">
+      <thead><tr><th>Loại hoá đơn</th><th class="tc">Từ số</th><th class="tc">Đến số</th><th class="tr">Đã sử dụng</th><th class="tr">Đã huỷ</th><th class="tr">Còn tồn</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>HĐĐT (Hoá đơn điện tử)</td>
+          <td class="tc">${fromNo}</td>
+          <td class="tc">${toNo}</td>
+          <td class="tr num">${totalUsed}</td>
+          <td class="tr num">${totalCancelled}</td>
+          <td class="tr num">—</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    ${notInvoiced.length > 0 ? `
+    <div style="font-size:12px;font-weight:600;color:var(--orange);margin:12px 0 6px">⚠️ ${notInvoiced.length} đơn chưa xuất HĐĐT:</div>
+    <div class="mgmt-table-wrap" style="max-height:250px"><table class="mgmt-table">
+      <thead><tr><th>STT</th><th>Mã đơn POS</th><th>Ngày</th><th>Khách hàng</th><th class="tr">Thành tiền</th></tr></thead>
+      <tbody>${notInvoiced.map((t,i) => `<tr>
+        <td>${i+1}</td><td>${t.code||'—'}</td>
+        <td style="font-size:11px">${_fmtDate(t.createdAt)}</td>
+        <td>${t.customer?.name || 'Khách lẻ'}</td>
+        <td class="tr num">${_fmtVND((t.total||0)-(t.discount||0))}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>` : ''}
+
+    <div style="margin-top:10px;font-size:11px;color:var(--gray-400)">
+      * Theo NĐ123/2020/NĐ-CP, TT78/2021/TT-BTC. BC26 nộp quý qua thuedientu.gdt.gov.vn
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   THUẾ TNCN — Tổng hợp tạm tính TNCN
+   ══════════════════════════════════════════ */
+function renderThueTNCN(range) {
+  return `
+  <div style="border:1px solid var(--gray-200);border-radius:10px;padding:16px;background:var(--gray-50)">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--gray-500)">Tham chiếu: 05/KK-TNCN</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy-dark)">THUẾ THU NHẬP CÁ NHÂN</div>
+      <div style="font-size:12px;color:var(--navy);font-weight:600;margin-top:4px">Kỳ: ${range.label}</div>
+    </div>
+    <div style="text-align:center;padding:30px;color:var(--gray-400)">
+      <div style="font-size:28px;margin-bottom:8px">👥</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Dữ liệu từ module Nhân sự & Lương</div>
+      <div style="font-size:12px;line-height:1.6">
+        Báo cáo thuế TNCN tổng hợp từ bảng lương hàng tháng.<br>
+        Bao gồm: Thu nhập chịu thuế, giảm trừ gia cảnh,<br>
+        thuế TNCN tạm khấu trừ theo biểu luỹ tiến.<br><br>
+        <span style="color:var(--navy)">Liên kết module Lương để tự động tổng hợp.</span>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--gray-400)">
+      * Giảm trừ bản thân: 11.000.000đ/tháng. Người phụ thuộc: 4.400.000đ/người/tháng.<br>
+      * Kê khai theo TT80/2021/TT-BTC, nộp qua thuedientu.gdt.gov.vn
+    </div>
+  </div>`;
+}
+
 function renderAdvReportsTab() {
   const ranges = [
     {id:'today',l:'Hôm nay'},{id:'yesterday',l:'Hôm qua'},{id:'7days',l:'7 ngày'},
@@ -11999,15 +12435,19 @@ function showPosScreen() {
   $('#screen-login').style.display = 'none';
   $('#screen-shift').style.display = 'none';
   $('#screen-pos').style.display = 'flex';
-  // Populate Walmart-style header
-  $('#hdrCashierName').textContent = state.user.name + ` (${state.user.code})`;
-  const branchOverride = state.branchConfig?.[state.shift.branch];
-  const branchName = (branchOverride?.name || BRANCHES[state.shift.branch].name);
-  $('#hdrBranchSub').textContent = branchName;
-  $('#hdrRegister').textContent = state.shift.branch;
-  $('#hdrShift').textContent = SHIFT_LABELS[state.shift.type];
-  $('#hdrShiftStart').textContent = fmt.time(state.shift.startedAt);
+  // ── Always start clock first ──
   startHeaderClock();
+  // Populate Walmart-style header
+  try {
+    $('#hdrCashierName').textContent = (state.user?.name || '—') + (state.user?.code ? ` (${state.user.code})` : '');
+    const brCode = state.shift?.branch || '';
+    const branchOverride = state.branchConfig?.[brCode];
+    const branchName = branchOverride?.name || BRANCHES[brCode]?.name || ('Chi nhánh ' + (brCode || '—'));
+    $('#hdrBranchSub').textContent = branchName;
+    $('#hdrRegister').textContent = brCode || '—';
+    $('#hdrShift').textContent = SHIFT_LABELS[state.shift?.type] || state.shift?.type || '—';
+    $('#hdrShiftStart').textContent = state.shift?.startedAt ? fmt.time(state.shift.startedAt) : '—';
+  } catch(e) { console.warn('[POS] showPosScreen header error:', e.message); }
   // Load all configs from storage
   state.einvoiceConfig = Storage.get('vcm_pos_einvoice_cfg') || null;
   state.storeConfig = Storage.get(CONFIG.storageKeys.storeConfig) || {...CONFIG.defaults.store};
@@ -12750,6 +13190,7 @@ function getMgmtViewTitle(viewId) {
     'stocktake': '📋 Kiểm kê',
     'stock-adjust': '⚖️ Điều chỉnh tồn',
     'purchase-order': '📥 Nhập kho',
+    'tax-reports': '📋 Báo cáo thuế',
     'adv-reports': '📈 Báo cáo nâng cao',
     'team-mgmt': '👥 Đội ngũ',
   };
