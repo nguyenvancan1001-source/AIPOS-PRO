@@ -216,10 +216,10 @@
   .plan-pick .pk-name{font-size:13px;font-weight:700;color:#f1f5f9;}
   .plan-pick .pk-price{font-size:11px;color:#60a5fa;font-weight:600;margin-top:2px;}
   .plan-pick .pk-info{font-size:10px;color:#94a3b8;margin-top:4px;line-height:1.4;}
-  .hddt-pick label{padding:10px 8px!important;background:#0c1527!important;position:relative;}
-  .hddt-pick label::after{content:'';position:absolute;top:6px;right:6px;width:20px;height:20px;border:2px solid #475569;border-radius:50%;transition:all .2s;}
-  .hddt-pick label.selected{background:rgba(59,130,246,.15)!important;border-color:#3b82f6!important;}
-  .hddt-pick label.selected::after{content:'✓';background:#3b82f6;border-color:#3b82f6;color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:20px;}
+  .hddt-pick .hddt-opt{flex:1;padding:10px 8px;background:#0c1527;position:relative;border:2px solid #475569;border-radius:12px;cursor:pointer;text-align:center;transition:border-color .2s,background .2s;}
+  .hddt-pick .hddt-opt::after{content:'';position:absolute;top:6px;right:6px;width:20px;height:20px;border:2px solid #475569;border-radius:50%;transition:all .2s;pointer-events:none;}
+  .hddt-pick .hddt-opt.selected{background:rgba(59,130,246,.15);border-color:#3b82f6;}
+  .hddt-pick .hddt-opt.selected::after{content:'✓';background:#3b82f6;border-color:#3b82f6;color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:20px;}
   .hddt-pick .pk-name{font-size:11px!important;}
   .hddt-pick .pk-price{font-size:10px!important;}
   .hddt-pick .pk-icon{font-size:16px!important;margin-bottom:3px!important;}
@@ -518,18 +518,18 @@
         <label>📄 Gói Hoá đơn điện tử (HĐĐT) <span style="font-weight:400;color:#94a3b8">— không bắt buộc</span></label>
         <div class="plan-pick hddt-pick">
           <input type="hidden" id="regHddtVal" value="none">
-          <label onclick="selectHddt(this,'5000')"><input type="radio" name="regHddtRadio" value="5000">
+          <div class="hddt-opt" data-val="5000" onclick="selectHddt(this,'5000')">
             <div class="pk-icon">📄</div><div class="pk-name">5.000 HĐ</div>
             <div class="pk-price">100đ/HĐ · 500.000đ</div>
-          </label>
-          <label onclick="selectHddt(this,'10000')"><input type="radio" name="regHddtRadio" value="10000">
+          </div>
+          <div class="hddt-opt" data-val="10000" onclick="selectHddt(this,'10000')">
             <div class="pk-icon">📄📄</div><div class="pk-name">10.000 HĐ</div>
             <div class="pk-price">90đ/HĐ · 900.000đ <span style="color:#4ade80">▼10%</span></div>
-          </label>
-          <label onclick="selectHddt(this,'20000')"><input type="radio" name="regHddtRadio" value="20000">
+          </div>
+          <div class="hddt-opt" data-val="20000" onclick="selectHddt(this,'20000')">
             <div class="pk-icon">📄📄📄</div><div class="pk-name">20.000 HĐ</div>
             <div class="pk-price">80đ/HĐ · 1.600.000đ <span style="color:#4ade80">▼20%</span></div>
-          </label>
+          </div>
         </div>
       </div>
       <div class="field"><label>Loại hình đăng ký *</label>
@@ -981,26 +981,22 @@ function highlightSelectedPlan() {
     hddtWrap.style.display = (plan === 'standard' || plan === 'premium') ? '' : 'none';
     // Reset HĐĐT if switching to basic
     if (plan === 'basic') {
-      document.querySelectorAll('.hddt-pick input[type=radio]').forEach(r => r.checked = false);
-      document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
+      document.querySelectorAll('.hddt-pick .hddt-opt').forEach(o => o.classList.remove('selected'));
       const hidden = document.getElementById('regHddtVal');
       if (hidden) hidden.value = 'none';
     }
   }
 }
-function selectHddt(lbl, val) {
-  const radio = lbl.querySelector('input[type=radio]');
+function selectHddt(el, val) {
   const hidden = document.getElementById('regHddtVal');
-  if (lbl.classList.contains('selected')) {
+  if (el.classList.contains('selected')) {
     // Bỏ chọn (toggle off)
-    if (radio) radio.checked = false;
-    lbl.classList.remove('selected');
+    el.classList.remove('selected');
     if (hidden) hidden.value = 'none';
   } else {
     // Chọn gói mới
-    document.querySelectorAll('.hddt-pick label').forEach(l => { l.classList.remove('selected'); const r = l.querySelector('input[type=radio]'); if (r) r.checked = false; });
-    if (radio) radio.checked = true;
-    lbl.classList.add('selected');
+    document.querySelectorAll('.hddt-pick .hddt-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
     if (hidden) hidden.value = val;
   }
 }
@@ -1014,8 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   highlightSelectedPlan(); // highlight default checked (Cơ bản)
   // Init HĐĐT default — no package selected
-  document.querySelectorAll('.hddt-pick input[type=radio]').forEach(r => r.checked = false);
-  document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
+  document.querySelectorAll('.hddt-pick .hddt-opt').forEach(o => o.classList.remove('selected'));
   const hdHidden = document.getElementById('regHddtVal');
   if (hdHidden) hdHidden.value = 'none';
   // Default billing = yearly

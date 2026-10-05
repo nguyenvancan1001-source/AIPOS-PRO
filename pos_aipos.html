@@ -7260,7 +7260,8 @@ function switchMgmtTab(tab) {
     const tabDef = MGMT_TABS.find(t => b.textContent.includes(t.label.split(' ').slice(1).join(' ')));
     if (tabDef) b.classList.toggle('active', tabDef.id === tab);
   });
-  $('#mgmtTabContent').innerHTML = renderMgmtTab(tab);
+  const target = $('#mgmtTabContent') || $('#mgmtInlineContent');
+  if (target) target.innerHTML = renderMgmtTab(tab);
 }
 
 function renderMgmtTab(tab) {
@@ -7291,6 +7292,9 @@ function renderMgmtTab(tab) {
 let _onlineFilter = 'all';
 let _onlineSearch = '';
 
+/* helper — render vào đúng container (inline hoặc modal) */
+function _reRenderOnline(){ const t=$('#mgmtTabContent')||$('#mgmtInlineContent'); if(t) t.innerHTML=renderMgmtTab('online-orders'); }
+
 function renderOnlineOrdersTab() {
   const orders = state.onlineOrders || [];
   const filtered = orders.filter(o => {
@@ -7305,80 +7309,115 @@ function renderOnlineOrdersTab() {
   const counts = { all: orders.length, new: 0, processing: 0, ready: 0, delivered: 0, cancelled: 0 };
   orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
 
-  const statusLabels = {
-    all: '📋 Tất cả', new: '🔴 Mới', processing: '🟡 Đang xử lý',
-    ready: '🟢 Sẵn giao', delivered: '✅ Đã giao', cancelled: '❌ Đã huỷ'
+  const statusMap = {
+    all:{ icon:'📋', label:'Tất cả', color:'#3B82F6' },
+    new:{ icon:'', label:'Mới', color:'#DC2626' },
+    processing:{ icon:'', label:'Xử lý', color:'#F59E0B' },
+    ready:{ icon:'', label:'Sẵn giao', color:'#16A34A' },
+    delivered:{ icon:'', label:'Đã giao', color:'#6B7280' },
+    cancelled:{ icon:'', label:'Huỷ', color:'#9CA3AF' }
   };
-  const statusColors = { new:'#DC2626', processing:'#F59E0B', ready:'#16A34A', delivered:'#6B7280', cancelled:'#9CA3AF' };
 
-  const filterBtns = Object.entries(statusLabels).map(([k,v]) =>
-    `<button class="category-tab${_onlineFilter===k?' active':''}" onclick="_onlineFilter='${k}';$('#mgmtTabContent').innerHTML=renderOnlineOrdersTab()">${v} (${counts[k]||0})</button>`
-  ).join('');
+  /* --- KPI cards --- */
+  const newCount = counts.new, procCount = counts.processing, readyCount = counts.ready;
+  const todayTotal = orders.filter(o=>o.status==='delivered').reduce((s,o)=>s+o.total,0);
+  const kpis = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+      <div style="background:#FEF2F2;border-radius:10px;padding:12px 14px;border-left:4px solid #DC2626">
+        <div style="font-size:22px;font-weight:700;color:#DC2626">${newCount}</div>
+        <div style="font-size:11px;color:#6B7280">Đơn mới chờ duyệt</div>
+      </div>
+      <div style="background:#FFFBEB;border-radius:10px;padding:12px 14px;border-left:4px solid #F59E0B">
+        <div style="font-size:22px;font-weight:700;color:#F59E0B">${procCount}</div>
+        <div style="font-size:11px;color:#6B7280">Đang xử lý</div>
+      </div>
+      <div style="background:#F0FDF4;border-radius:10px;padding:12px 14px;border-left:4px solid #16A34A">
+        <div style="font-size:22px;font-weight:700;color:#16A34A">${readyCount}</div>
+        <div style="font-size:11px;color:#6B7280">Sẵn giao</div>
+      </div>
+      <div style="background:#EFF6FF;border-radius:10px;padding:12px 14px;border-left:4px solid #3B82F6">
+        <div style="font-size:22px;font-weight:700;color:#3B82F6">${fmt(todayTotal)}</div>
+        <div style="font-size:11px;color:#6B7280">DT đã giao</div>
+      </div>
+    </div>`;
 
-  let rows = '';
+  /* --- filter tabs --- */
+  const filterBtns = Object.entries(statusMap).map(([k,v]) => {
+    const cnt = counts[k]||0;
+    const isActive = _onlineFilter===k;
+    return `<button onclick="_onlineFilter='${k}';_reRenderOnline()" style="
+      display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;border:1.5px solid ${isActive?v.color:'#E5E7EB'};
+      background:${isActive?v.color:'#fff'};color:${isActive?'#fff':v.color};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;
+      ${cnt>0&&k==='new'&&!isActive?'animation:pulse 2s infinite':''}
+    ">${v.label}<span style="background:${isActive?'rgba(255,255,255,.25)':'#F3F4F6'};color:${isActive?'#fff':'#6B7280'};padding:1px 7px;border-radius:10px;font-size:11px">${cnt}</span></button>`;
+  }).join('');
+
+  /* --- rows --- */
+  let content = '';
   if (!filtered.length) {
-    rows = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--mute)">
-      ${orders.length ? 'Không có đơn phù hợp bộ lọc' : '📭 Chưa có đơn online nào.<br><span style="font-size:12px">Đơn hàng từ SaleMe sẽ hiển thị tại đây khi có khách đặt.</span>'}
-    </td></tr>`;
+    content = `<div style="text-align:center;padding:50px 20px">
+      <div style="font-size:48px;margin-bottom:12px">${orders.length?'🔍':'📭'}</div>
+      <div style="font-size:15px;font-weight:600;color:var(--navy-dark);margin-bottom:4px">${orders.length?'Không tìm thấy đơn hàng':'Chưa có đơn online'}</div>
+      <div style="font-size:12px;color:#9CA3AF">${orders.length?'Thử đổi bộ lọc hoặc từ khoá khác':'Đơn từ SaleMe sẽ hiển thị tại đây khi có khách đặt'}</div>
+    </div>`;
   } else {
     filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-    rows = filtered.map(o => {
+    const cards = filtered.map(o => {
       const d = new Date(o.createdAt);
       const time = d.toLocaleTimeString('vi',{hour:'2-digit',minute:'2-digit'});
       const date = d.toLocaleDateString('vi',{day:'2-digit',month:'2-digit'});
       const itemCount = o.items.reduce((s,i) => s+i.qty, 0);
-      const stColor = statusColors[o.status] || '#6B7280';
-      const stLabel = {new:'Mới',processing:'Đang xử lý',ready:'Sẵn giao',delivered:'Đã giao',cancelled:'Đã huỷ'}[o.status]||o.status;
+      const st = statusMap[o.status]||statusMap.new;
+      const stLabel = st.label;
+      const stColor = st.color;
+      const payLabel = o.paymentMethod==='cod'?'COD':o.paymentMethod==='transfer'?'Chuyển khoản':'Online';
 
       let actions = '';
       if (o.status === 'new') {
-        actions = `<button class="btn-edit" onclick="confirmOnlineOrder('${o.id}')" title="Xác nhận">✅</button>
-          <button class="btn-edit" onclick="rejectOnlineOrder('${o.id}')" title="Từ chối" style="color:#DC2626">❌</button>`;
+        actions = `<button onclick="confirmOnlineOrder('${o.id}')" style="background:#16A34A;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Xác nhận</button>
+          <button onclick="rejectOnlineOrder('${o.id}')" style="background:#FEE2E2;color:#DC2626;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Từ chối</button>`;
       } else if (o.status === 'processing') {
-        actions = `<button class="btn-edit" onclick="readyOnlineOrder('${o.id}')" title="Sẵn sàng giao">📦</button>
-          <button class="btn-edit" onclick="printOnlineOrder('${o.id}')" title="In phiếu">🖨️</button>`;
+        actions = `<button onclick="readyOnlineOrder('${o.id}')" style="background:#3B82F6;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Sẵn giao</button>
+          <button onclick="printOnlineOrder('${o.id}')" style="background:#F3F4F6;color:#374151;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">In phiếu</button>`;
       } else if (o.status === 'ready') {
-        actions = `<button class="btn-edit" onclick="deliverOnlineOrder('${o.id}')" title="Đã giao">🚚</button>
-          <button class="btn-edit" onclick="printOnlineOrder('${o.id}')" title="In phiếu">🖨️</button>`;
+        actions = `<button onclick="deliverOnlineOrder('${o.id}')" style="background:#16A34A;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Đã giao</button>
+          <button onclick="printOnlineOrder('${o.id}')" style="background:#F3F4F6;color:#374151;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">In phiếu</button>`;
       } else {
-        actions = `<button class="btn-edit" onclick="viewOnlineOrder('${o.id}')" title="Xem chi tiết">👁️</button>`;
+        actions = `<button onclick="viewOnlineOrder('${o.id}')" style="background:#F3F4F6;color:#374151;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Chi tiết</button>`;
       }
 
-      return `<tr>
-        <td><strong style="color:var(--blue)">${o.code}</strong><br><span style="font-size:11px;color:var(--mute)">${date} ${time}</span></td>
-        <td>${o.customerName}<br><span style="font-size:11px;color:var(--mute)">${o.customerPhone||'—'}</span></td>
-        <td style="text-align:center">${itemCount}</td>
-        <td style="text-align:right;font-weight:600">${fmt(o.total)}</td>
-        <td>${o.paymentMethod==='cod'?'💵 COD':o.paymentMethod==='transfer'?'🏦 CK':'💳 Online'}</td>
-        <td><span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:${stColor}">${stLabel}</span></td>
-        <td style="white-space:nowrap">${actions}</td>
-      </tr>`;
+      return `<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#fff;border-radius:10px;border:1px solid #E5E7EB;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)'" onmouseout="this.style.boxShadow='none'">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-weight:700;color:var(--blue);font-size:13px">${o.code}</span>
+            <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:${stColor}">${stLabel}</span>
+            <span style="font-size:11px;color:#9CA3AF">${date} ${time}</span>
+          </div>
+          <div style="font-size:13px;color:#374151">${o.customerName} <span style="color:#9CA3AF;font-size:11px">${o.customerPhone||''}</span></div>
+        </div>
+        <div style="text-align:right;min-width:90px">
+          <div style="font-size:15px;font-weight:700;color:var(--navy-dark)">${fmt(o.total)}</div>
+          <div style="font-size:10px;color:#9CA3AF">${itemCount} SP · ${payLabel}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">${actions}</div>
+      </div>`;
     }).join('');
+    content = `<div style="display:flex;flex-direction:column;gap:8px">${cards}</div>`;
   }
 
   return `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-      <h3 style="margin:0;flex-shrink:0">🛒 Đơn hàng online — SaleMe</h3>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:180px;max-width:300px">
+        <input type="text" placeholder="Tìm mã đơn, tên KH, SĐT..." value="${_onlineSearch}" oninput="_onlineSearch=this.value;_reRenderOnline()"
+          style="width:100%;padding:8px 12px 8px 34px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;background:#F9FAFB;outline:none;box-sizing:border-box">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:14px;pointer-events:none">🔍</span>
+      </div>
       <div style="flex:1"></div>
-      <input type="text" placeholder="🔍 Tìm mã đơn, tên KH, SĐT..." value="${_onlineSearch}" oninput="_onlineSearch=this.value;$('#mgmtTabContent').innerHTML=renderOnlineOrdersTab()"
-        style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:240px">
-      <button class="btn-sm" onclick="refreshOnlineOrders()" style="background:var(--blue);color:#fff;padding:7px 14px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:12px">🔄 Làm mới</button>
-      <button class="btn-sm" onclick="addDemoOnlineOrder()" style="background:var(--orange);color:#fff;padding:7px 14px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:12px">+ Demo</button>
+      <button onclick="refreshOnlineOrders()" style="display:inline-flex;align-items:center;gap:4px;background:#EFF6FF;color:#3B82F6;padding:8px 14px;border-radius:8px;border:1px solid #BFDBFE;font-weight:600;cursor:pointer;font-size:12px">🔄 Làm mới</button>
     </div>
+    ${kpis}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${filterBtns}</div>
-    <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Mã đơn</th><th>Khách hàng</th><th style="text-align:center">SP</th><th style="text-align:right">Tổng tiền</th>
-        <th>Thanh toán</th><th>Trạng thái</th><th>Thao tác</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    </div>
-    <div style="margin-top:14px;padding:14px;background:var(--row-alt);border-radius:10px;font-size:12px;color:var(--mute)">
-      💡 <strong>Lưu ý:</strong> Đơn từ SaleMe sẽ tự động đồng bộ. Khi xác nhận đơn, tồn kho sẽ tự trừ.
-      Nhấn <strong>🔄 Làm mới</strong> để kiểm tra đơn mới. Trong tương lai sẽ có thông báo real-time.
-    </div>`;
+    ${content}`;
 }
 
 function confirmOnlineOrder(id) {
@@ -7398,7 +7437,7 @@ function confirmOnlineOrder(id) {
   Storage.set('vcm_pos_products', state.products);
   Storage.set('vcm_pos_online_orders', state.onlineOrders);
   toast(`✅ Đã xác nhận đơn ${o.code}`, 'ok');
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 function rejectOnlineOrder(id) {
@@ -7411,7 +7450,7 @@ function rejectOnlineOrder(id) {
   o.cancelledAt = new Date().toISOString();
   Storage.set('vcm_pos_online_orders', state.onlineOrders);
   toast(`❌ Đã từ chối đơn ${o.code}`, 'warn');
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 function readyOnlineOrder(id) {
@@ -7421,7 +7460,7 @@ function readyOnlineOrder(id) {
   o.readyAt = new Date().toISOString();
   Storage.set('vcm_pos_online_orders', state.onlineOrders);
   toast(`📦 Đơn ${o.code} sẵn sàng giao`, 'ok');
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 function deliverOnlineOrder(id) {
@@ -7449,7 +7488,7 @@ function deliverOnlineOrder(id) {
   state.transactions.push(tx);
   Storage.set('vcm_pos_transactions', state.transactions);
 
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 function viewOnlineOrder(id) {
@@ -7536,7 +7575,7 @@ function addDemoOnlineOrder() {
   state.onlineOrders.push(order);
   Storage.set('vcm_pos_online_orders', state.onlineOrders);
   toast(`🔔 Đơn mới từ SaleMe: ${order.code} — ${order.customerName}`, 'ok', 3000);
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 function refreshOnlineOrders() {
@@ -7544,7 +7583,7 @@ function refreshOnlineOrders() {
   // Hiện tại reload từ localStorage
   state.onlineOrders = Storage.get('vcm_pos_online_orders') || [];
   toast('🔄 Đã làm mới danh sách đơn online', 'info', 1500);
-  $('#mgmtTabContent').innerHTML = renderOnlineOrdersTab();
+  _reRenderOnline();
 }
 
 /* ============================================================
@@ -9656,7 +9695,7 @@ async function confirmWriteoff() {
     await syncTxToSupabase(woTx);
     items.forEach(it => { const p = state.products.find(x=>x.sku===it.sku); if(p) p.stock -= it.qty; });
     toast('✅ Đã hủy ' + items.length + ' mặt hàng + ghi kế toán (Nợ 811/Có 156)', 'success');
-    $('#mgmtTabContent').innerHTML = renderMgmtTab('writeoff');
+    const _t = $('#mgmtTabContent') || $('#mgmtInlineContent'); if(_t) _t.innerHTML = renderMgmtTab('writeoff');
   } catch(e) { toast('Lỗi: ' + (e.message||e), 'error'); }
 }
 
