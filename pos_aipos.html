@@ -9817,6 +9817,8 @@ let _poReceiveFilter = 'all'; // all | overdue | today | upcoming | received
 let _poPayFilter = 'unpaid';  // unpaid | overdue | paid | all
 let _poReceiveData = null;   // temp receive data
 let _poLoaded = false;
+let _poCreateTab = 'items';  // 'items' | 'summary' — tabs in create/receive forms
+let _poReceiptType = 'purchase'; // purchase | return | transfer | other
 
 // ── Load POs + Suppliers từ Supabase ──
 async function poLoadFromDB() {
@@ -9839,9 +9841,17 @@ async function poLoadFromDB() {
         nccName: r.ncc_name || '',
         nccCode: r.ncc_code || '',
         status: r.status || 'draft',
+        receiptType: r.receipt_type || 'purchase',
+        shippingNo: r.shipping_no || '',
         items: r.items || [],
         totalQty: r.total_qty || 0,
         totalValue: parseFloat(r.total_value) || 0,
+        shippingCost: parseFloat(r.shipping_cost) || 0,
+        insuranceCost: parseFloat(r.insurance_cost) || 0,
+        vatRate: parseFloat(r.vat_rate) || 0,
+        vatAmount: parseFloat(r.vat_amount) || 0,
+        grandTotal: parseFloat(r.grand_total) || 0,
+        qcChecks: r.qc_checks || {},
         note: r.note || '',
         delivDate: r.deliv_date || '',
         createdBy: r.created_by,
@@ -9890,9 +9900,17 @@ async function poSaveToDB(po) {
     ncc_name: po.nccName || '',
     ncc_code: po.nccCode || '',
     status: po.status,
+    receipt_type: po.receiptType || 'purchase',
+    shipping_no: po.shippingNo || '',
     items: po.items,
     total_qty: po.items.reduce((s, it) => s + (it.qty || 0), 0),
     total_value: po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0),
+    shipping_cost: po.shippingCost || 0,
+    insurance_cost: po.insuranceCost || 0,
+    vat_rate: po.vatRate || 0,
+    vat_amount: po.vatAmount || 0,
+    grand_total: po.grandTotal || 0,
+    qc_checks: po.qcChecks || {},
     note: po.note || '',
     deliv_date: po.delivDate || null,
     sent_at: po.sentAt || null,
@@ -10056,24 +10074,112 @@ function poRenderCreateForm() {
     `<option value="${s.id}">${escapeHtml(s.name)}${s.code ? ' · ' + escapeHtml(s.code) : ''}${s.paymentNet ? ' · NET ' + s.paymentNet : ''}</option>`
   ).join('');
 
+  const unitOptions = ['Cái','Thùng','Kg','Hộp','Chai','Lon','Gói','Túi','Lốc','Bịch','Lít'].map(u => `<option value="${u}">${u}</option>`).join('');
   const itemRows = _poItems.map((item, idx) => `<tr>
     <td style="font-size:11px">${escapeHtml(item.sku)}</td>
     <td><strong style="font-size:11px">${escapeHtml(item.name)}</strong></td>
-    <td style="text-align:right"><input type="number" min="1" value="${item.qty}" onchange="_poItems[${idx}].qty=parseInt(this.value)||1;poRefreshCreateItems()" style="width:65px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px"></td>
-    <td style="text-align:right"><input type="number" min="0" value="${item.cost}" onchange="_poItems[${idx}].cost=parseInt(this.value)||0;poRefreshCreateItems()" style="width:90px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace"></td>
+    <td><select onchange="_poItems[${idx}].unit=this.value" style="width:70px;padding:3px 4px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px">${['Cái','Thùng','Kg','Hộp','Chai','Lon','Gói','Túi','Lốc','Bịch','Lít'].map(u => `<option value="${u}"${item.unit === u ? ' selected' : ''}>${u}</option>`).join('')}</select></td>
+    <td style="text-align:right"><input type="number" min="1" value="${item.qty}" onchange="_poItems[${idx}].qty=parseInt(this.value)||1;poRefreshCreateItems()" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px"></td>
+    <td style="text-align:right"><input type="number" min="0" value="${item.cost}" onchange="_poItems[${idx}].cost=parseInt(this.value)||0;poRefreshCreateItems()" style="width:85px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace"></td>
     <td class="tr" style="font-weight:600">${fmt.money(item.qty * item.cost)}</td>
     <td style="text-align:center"><button onclick="_poItems.splice(${idx},1);poRefreshCreateItems()" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 6px" title="Xóa">✕</button></td>
   </tr>`).join('');
   const total = _poItems.reduce((s, i) => s + i.qty * i.cost, 0);
   const totalQty = _poItems.reduce((s, i) => s + i.qty, 0);
 
+  // Cost summary calculations
+  const shippingCost = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
+  const insuranceCost = parseFloat(document.getElementById('poInsuranceCost')?.value) || 0;
+  const vatRate = parseFloat(document.getElementById('poVatRate')?.value) || 0;
+  const vatAmount = Math.round(total * vatRate / 100);
+  const grandTotal = total + shippingCost + insuranceCost + vatAmount;
+
   // Default delivery date: +2 days
   const defDeliv = (() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().slice(0, 10); })();
+
+  // Receipt type options
+  const receiptTypes = [
+    { v: 'purchase', l: 'Nhập từ Đơn Mua' },
+    { v: 'return', l: 'Nhập trả hàng' },
+    { v: 'transfer', l: 'Nhập điều chuyển' },
+    { v: 'other', l: 'Nhập khác' },
+  ];
+  const rtOptions = receiptTypes.map(r => `<option value="${r.v}"${_poReceiptType === r.v ? ' selected' : ''}>${r.l}</option>`).join('');
+
+  // Tab buttons for items/summary
+  const tabBtns = `<div style="display:flex;gap:4px;margin-bottom:10px">
+    <button class="btn ${_poCreateTab === 'items' ? 'btn-primary' : 'btn-outline'}" onclick="_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px;padding:4px 12px">📦 Chi Tiết Sản Phẩm</button>
+    <button class="btn ${_poCreateTab === 'summary' ? 'btn-primary' : 'btn-outline'}" onclick="_poCreateTab='summary';switchMgmtTab('purchase-order')" style="font-size:11px;padding:4px 12px">📊 Tóm Tắt & Tính Toán</button>
+  </div>`;
+
+  // Items tab content
+  const itemsTabContent = `
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Thêm sản phẩm vào phiếu</label>
+      <input type="text" id="poAddProduct" placeholder="Tìm SKU / barcode / tên SP..." oninput="poSearchProduct(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
+      <div id="poSearchResults" style="max-height:160px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:6px;margin-top:4px;display:none"></div>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px">
+      <table style="font-size:12px;margin:0;min-width:680px">
+        <thead><tr style="background:var(--gray-50)"><th>SKU</th><th>Tên SP</th><th style="width:75px">ĐVT</th><th class="tr" style="width:65px">SL</th><th class="tr" style="width:90px">Giá nhập</th><th class="tr" style="width:100px">Thành tiền</th><th style="width:35px"></th></tr></thead>
+        <tbody id="poCreateItemsBody">${itemRows || '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:20px">Chưa có SP — tìm và thêm ở trên</td></tr>'}</tbody>
+        <tfoot><tr style="background:var(--gray-50)">
+          <td colspan="3" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td>
+          <td class="tr" style="font-weight:700">${totalQty}</td>
+          <td></td>
+          <td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(total)}</td>
+          <td></td>
+        </tr></tfoot>
+      </table>
+    </div>`;
+
+  // Summary tab content
+  const summaryTabContent = `
+    <div style="border:1px solid var(--gray-200);border-radius:8px;padding:14px;margin-bottom:10px">
+      <h5 style="font-size:12px;font-weight:700;margin:0 0 10px;color:var(--navy)">📊 Tóm Tắt & Tính Toán</h5>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--gray-50);padding:10px 12px;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;margin-bottom:4px">Tổng tiền hàng</div>
+          <div style="font-size:16px;font-weight:700;color:var(--navy)">${fmt.money(total)}</div>
+          <div style="font-size:10px;color:var(--gray-400)">${totalQty} SP · ${_poItems.length} dòng</div>
+        </div>
+        <div style="background:var(--gray-50);padding:10px 12px;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;margin-bottom:4px">Tổng chi phí nhập</div>
+          <div style="font-size:16px;font-weight:700;color:var(--green)">${fmt.money(grandTotal)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Chi phí vận chuyển</label>
+          <input type="number" id="poShippingCost" min="0" value="${shippingCost}" onchange="poRefreshCreateItems()" placeholder="0" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Chi phí bảo hiểm</label>
+          <input type="number" id="poInsuranceCost" min="0" value="${insuranceCost}" onchange="poRefreshCreateItems()" placeholder="0" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Thuế VAT (%)</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" id="poVatRate" min="0" max="100" value="${vatRate}" onchange="poRefreshCreateItems()" placeholder="0" style="width:70px;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace">
+            <span style="font-size:11px;color:var(--gray-500)">= ${fmt.money(vatAmount)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:2px solid var(--gray-200)">
+        <table style="font-size:12px;margin:0;width:100%">
+          <tr><td style="color:var(--gray-600)">Tiền hàng</td><td class="tr" style="font-weight:600">${fmt.money(total)}</td></tr>
+          ${shippingCost > 0 ? `<tr><td style="color:var(--gray-600)">+ Vận chuyển</td><td class="tr">${fmt.money(shippingCost)}</td></tr>` : ''}
+          ${insuranceCost > 0 ? `<tr><td style="color:var(--gray-600)">+ Bảo hiểm</td><td class="tr">${fmt.money(insuranceCost)}</td></tr>` : ''}
+          ${vatAmount > 0 ? `<tr><td style="color:var(--gray-600)">+ VAT ${vatRate}%</td><td class="tr">${fmt.money(vatAmount)}</td></tr>` : ''}
+          <tr style="font-size:14px"><td style="font-weight:700;padding-top:6px">TỔNG CHI PHÍ NHẬP</td><td class="tr" style="font-weight:700;color:var(--green);padding-top:6px">${fmt.money(grandTotal)}</td></tr>
+        </table>
+      </div>
+    </div>`;
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h4 style="font-size:14px;font-weight:700;margin:0">📥 Tạo phiếu nhập hàng</h4>
-      <button class="btn btn-outline" onclick="_poView='list';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại</button>
+      <button class="btn btn-outline" onclick="_poView='list';_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại</button>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
@@ -10086,8 +10192,18 @@ function poRenderCreateForm() {
         <div id="poNccInfo" style="font-size:10px;color:var(--gray-500);margin-top:3px"></div>
       </div>
       <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Loại nhập</label>
+        <select id="poReceiptType" onchange="_poReceiptType=this.value" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px">
+          ${rtOptions}
+        </select>
+      </div>
+      <div>
         <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Chi nhánh nhận</label>
         <input type="text" id="poBranch" value="${escapeHtml(state.shift?.branch || 'PB')}" readonly style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;background:var(--gray-50);box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Số vận đơn</label>
+        <input type="text" id="poShippingNo" placeholder="VD: VN-2024-00123" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
       </div>
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Ngày dự kiến nhận</label>
@@ -10099,25 +10215,8 @@ function poRenderCreateForm() {
       </div>
     </div>
 
-    <div style="margin-bottom:10px">
-      <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Thêm sản phẩm vào phiếu</label>
-      <input type="text" id="poAddProduct" placeholder="Tìm SKU / barcode / tên SP..." oninput="poSearchProduct(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
-      <div id="poSearchResults" style="max-height:160px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:6px;margin-top:4px;display:none"></div>
-    </div>
-
-    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px">
-      <table style="font-size:12px;margin:0;min-width:580px">
-        <thead><tr style="background:var(--gray-50)"><th>SKU</th><th>Tên SP</th><th class="tr" style="width:70px">SL</th><th class="tr" style="width:100px">Giá nhập</th><th class="tr" style="width:100px">Thành tiền</th><th style="width:35px"></th></tr></thead>
-        <tbody id="poCreateItemsBody">${itemRows || '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:20px">Chưa có SP — tìm và thêm ở trên</td></tr>'}</tbody>
-        <tfoot><tr style="background:var(--gray-50)">
-          <td colspan="2" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td>
-          <td class="tr" style="font-weight:700">${totalQty}</td>
-          <td></td>
-          <td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(total)}</td>
-          <td></td>
-        </tr></tfoot>
-      </table>
-    </div>
+    ${tabBtns}
+    ${_poCreateTab === 'items' ? itemsTabContent : summaryTabContent}
 
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-outline" onclick="poCreateOrder('draft')" style="font-size:12px" ${_poItems.length === 0 ? 'disabled' : ''}>📝 Lưu nháp</button>
@@ -10163,7 +10262,7 @@ function poAddItem(sku) {
   if (_poItems.find(i => i.sku === sku)) { toast('SP đã có trong phiếu', 'warn'); return; }
   const p = state.products.find(x => x.sku === sku);
   if (!p) return;
-  _poItems.push({ sku: p.sku, name: p.name, qty: 1, cost: p.cost || 0 });
+  _poItems.push({ sku: p.sku, name: p.name, qty: 1, cost: p.cost || 0, unit: p.unit || 'Cái' });
   const el = document.getElementById('poSearchResults');
   if (el) { el.innerHTML = ''; el.style.display = 'none'; }
   const inp = document.getElementById('poAddProduct');
@@ -10182,6 +10281,15 @@ async function poCreateOrder(status) {
 
   const ncc = poFindNcc(nccId);
   const poNo = poGenNumber();
+  const receiptType = document.getElementById('poReceiptType')?.value || 'purchase';
+  const shippingNo = document.getElementById('poShippingNo')?.value?.trim() || '';
+  const shippingCostVal = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
+  const insuranceCostVal = parseFloat(document.getElementById('poInsuranceCost')?.value) || 0;
+  const vatRateVal = parseFloat(document.getElementById('poVatRate')?.value) || 0;
+  const itemsTotal = _poItems.reduce((s, i) => s + i.qty * i.cost, 0);
+  const vatAmountVal = Math.round(itemsTotal * vatRateVal / 100);
+  const grandTotalVal = itemsTotal + shippingCostVal + insuranceCostVal + vatAmountVal;
+
   const order = {
     id: null, // will be set by Supabase
     poNo,
@@ -10190,15 +10298,23 @@ async function poCreateOrder(status) {
     nccName: ncc?.name || '',
     nccCode: ncc?.code || '',
     status,
-    items: _poItems.map(i => ({ sku: i.sku, name: i.name, qty: i.qty, cost: i.cost, recv: 0 })),
+    receiptType,
+    shippingNo,
+    items: _poItems.map(i => ({ sku: i.sku, name: i.name, qty: i.qty, cost: i.cost, unit: i.unit || 'Cái', recv: 0 })),
     totalQty: _poItems.reduce((s, i) => s + i.qty, 0),
-    totalValue: _poItems.reduce((s, i) => s + i.qty * i.cost, 0),
+    totalValue: itemsTotal,
+    shippingCost: shippingCostVal,
+    insuranceCost: insuranceCostVal,
+    vatRate: vatRateVal,
+    vatAmount: vatAmountVal,
+    grandTotal: grandTotalVal,
     note,
     delivDate,
     createdBy: state.user?.id || null,
     approvedBy: null, approvedAt: null,
     sentAt: status === 'sent' ? new Date().toISOString() : null,
     receivedAt: null,
+    qcChecks: {},
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -10208,6 +10324,8 @@ async function poCreateOrder(status) {
   state.purchaseOrders.unshift(order);
   _poItems = [];
   _poView = 'list';
+  _poCreateTab = 'items';
+  _poReceiptType = 'purchase';
   addAuditLog('purchase_order', `Tạo phiếu nhập ${poNo} (${status}), ${order.items.length} SP, ${fmt.money(order.totalValue)}`);
   toast(`✓ Phiếu ${poNo} đã ${status === 'draft' ? 'lưu nháp' : 'tạo & gửi NCC'}`, 'success');
   switchMgmtTab('purchase-order');
@@ -10263,11 +10381,11 @@ function poRenderDetail(poId) {
   }).join('');
 
   // Action buttons
-  let actions = '';
-  if (po.status === 'draft') actions = `
+  let actions = `<button class="btn btn-outline" onclick="poPrintReceipt('${po.id}')" style="font-size:12px">🖨 In Phiếu</button>`;
+  if (po.status === 'draft') actions += `
     <button class="btn btn-primary" onclick="poSendDraft('${po.id}')" style="font-size:12px">📤 Gửi NCC</button>
     <button class="btn btn-outline" onclick="poCancelOrder('${po.id}')" style="font-size:12px;color:var(--red)">🗑 Xoá phiếu</button>`;
-  if (po.status === 'sent' || po.status === 'partial') actions = `
+  if (po.status === 'sent' || po.status === 'partial') actions += `
     <button class="btn btn-primary" onclick="poOpenReceive('${po.id}')" style="font-size:12px;background:var(--green)">📦 Nhận hàng</button>`;
 
   return `
@@ -10285,6 +10403,7 @@ function poRenderDetail(poId) {
       <div style="background:var(--gray-50);padding:8px 12px;border-radius:6px">
         <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase">Số phiếu</div>
         <div style="font-weight:600;font-family:monospace">${escapeHtml(po.poNo || po.id?.slice(0, 8) || '—')}</div>
+        <div style="font-size:10px;color:var(--gray-400)">${({'purchase':'Nhập từ Đơn Mua','return':'Nhập trả hàng','transfer':'Nhập điều chuyển','other':'Nhập khác'})[po.receiptType] || 'Nhập từ Đơn Mua'}</div>
       </div>
       <div style="background:var(--gray-50);padding:8px 12px;border-radius:6px">
         <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase">Nhà cung cấp</div>
@@ -10297,6 +10416,7 @@ function poRenderDetail(poId) {
         ${ncc?.paymentNet ? `<div style="font-size:10px;color:var(--gray-400)">NET ${ncc.paymentNet} ngày</div>` : ''}
       </div>
     </div>
+    ${po.shippingNo ? `<div style="font-size:10px;color:var(--navy);margin-bottom:4px">🚚 Số vận đơn: <strong>${escapeHtml(po.shippingNo)}</strong></div>` : ''}
 
     ${po.sentAt ? `<div style="font-size:10px;color:var(--green);margin-bottom:4px">📤 Đã gửi: ${fmt.date(po.sentAt)}</div>` : ''}
     ${po.receivedAt ? `<div style="font-size:10px;color:var(--green);margin-bottom:4px">📦 Đã nhận: ${fmt.date(po.receivedAt)}</div>` : ''}
@@ -10376,6 +10496,11 @@ function poOpenReceive(poId) {
   _poReceiveData._invoiceNo = '';
   _poReceiveData._invoiceDate = poTodayStr();
   _poReceiveData._recvNote = '';
+  _poReceiveData._qcChecks = po.qcChecks ? JSON.parse(JSON.stringify(po.qcChecks)) : { qty_ok: false, type_ok: false, package_ok: false, no_damage: false, standard_ok: false };
+  _poReceiveData._shippingCost = po.shippingCost || 0;
+  _poReceiveData._insuranceCost = po.insuranceCost || 0;
+  _poReceiveData._vatRate = po.vatRate || 0;
+  _poCreateTab = 'items';
   _poView = 'receive';
   _poEditId = poId;
   switchMgmtTab('purchase-order');
@@ -10386,6 +10511,13 @@ function poRenderReceiveForm() {
   const po = _poReceiveData;
   const ncc = poFindNcc(po.supplierId);
   const branch = state.shift?.branch || po.branch;
+
+  // Init QC checks if not set
+  if (!po._qcChecks) po._qcChecks = { qty_ok: false, type_ok: false, package_ok: false, no_damage: false, standard_ok: false };
+  // Init cost fields if not set
+  if (po._shippingCost === undefined) po._shippingCost = po.shippingCost || 0;
+  if (po._insuranceCost === undefined) po._insuranceCost = po.insuranceCost || 0;
+  if (po._vatRate === undefined) po._vatRate = po.vatRate || 0;
 
   const itemRows = po.items.map((it, idx) => {
     const need = it.qty - (it.recv || 0);
@@ -10408,6 +10540,7 @@ function poRenderReceiveForm() {
       <td style="text-align:center;font-size:10px;color:var(--gray-400)">${idx + 1}</td>
       <td style="font-family:monospace;font-size:10px">${escapeHtml(it.sku)}</td>
       <td style="font-size:11px"><strong>${escapeHtml(it.name || it.sku)}</strong></td>
+      <td style="font-size:10px;color:var(--gray-500);text-align:center">${escapeHtml(it.unit || 'Cái')}</td>
       <td class="tr">${need}</td>
       <td class="tr"><input type="number" min="0" value="${toRecv}" placeholder="${need}" onchange="_poReceiveData.items[${idx}]._toRecv=parseInt(this.value)||0;poRefreshReceive()" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-weight:600"></td>
       ${diffCell}
@@ -10416,43 +10549,129 @@ function poRenderReceiveForm() {
     </tr>`;
   }).join('');
 
-  return `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div>
-        <h4 style="font-size:14px;font-weight:700;margin:0">📦 Nhận hàng · ${escapeHtml(po.poNo || '')}</h4>
-        <div style="font-size:11px;color:var(--gray-500);margin-top:2px">NCC: ${escapeHtml(po.nccName || ncc?.name || '—')} · CN: ${escapeHtml(branch)}</div>
+  // Cost calculations for receive
+  const itemTotal = po.items.reduce((s, it) => s + (it._toRecv || 0) * (it.cost || 0), 0);
+  const vatAmount = Math.round(itemTotal * po._vatRate / 100);
+  const grandTotal = itemTotal + po._shippingCost + po._insuranceCost + vatAmount;
+
+  // QC checklist
+  const qcItems = [
+    { k: 'qty_ok', l: 'Đủ Số Lượng', icon: '📊' },
+    { k: 'type_ok', l: 'Đúng Loại Hàng', icon: '🏷' },
+    { k: 'package_ok', l: 'Bao Gói Nguyên Vẹn', icon: '📦' },
+    { k: 'no_damage', l: 'Không Hư Hỏng', icon: '✅' },
+    { k: 'standard_ok', l: 'Đạt Tiêu Chuẩn', icon: '⭐' },
+  ];
+  const qcAllPassed = qcItems.every(q => po._qcChecks[q.k]);
+  const qcPassedCount = qcItems.filter(q => po._qcChecks[q.k]).length;
+  const qcChecklist = `
+    <div style="border:1px solid ${qcAllPassed ? '#86efac' : '#fde68a'};border-radius:8px;padding:10px 14px;margin-bottom:12px;background:${qcAllPassed ? '#f0fdf4' : '#fffbeb'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h5 style="font-size:12px;font-weight:700;margin:0;color:${qcAllPassed ? '#065f46' : '#92400e'}">🔍 Kiểm Chất Lượng (${qcPassedCount}/${qcItems.length})</h5>
+        ${qcAllPassed ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">ĐẠT ✓</span>' : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">Chưa đạt</span>'}
       </div>
-      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại phiếu</button>
-    </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${qcItems.map(q => `<label style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;background:${po._qcChecks[q.k] ? '#d1fae5' : 'white'};border:1px solid ${po._qcChecks[q.k] ? '#86efac' : 'var(--gray-200)'}">
+          <input type="checkbox" ${po._qcChecks[q.k] ? 'checked' : ''} onchange="_poReceiveData._qcChecks.${q.k}=this.checked;poRefreshReceive()" style="accent-color:var(--green)">
+          <span>${q.icon} ${q.l}</span>
+        </label>`).join('')}
+      </div>
+    </div>`;
 
-    <div style="background:var(--gray-50);padding:8px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:16px;font-size:11px">
-      <span style="color:var(--navy);font-weight:700">1. Nhận vật lý</span>
-      <span style="color:var(--gray-400)">→</span>
-      <span style="color:var(--gray-400)">2. Đối chiếu hoá đơn</span>
-      <span style="color:var(--gray-400)">→</span>
-      <span style="color:var(--gray-400)">3. Cập nhật tồn</span>
-    </div>
+  // Receive tab buttons
+  const rcvTabBtns = `<div style="display:flex;gap:4px;margin-bottom:10px">
+    <button class="btn ${_poCreateTab === 'items' ? 'btn-primary' : 'btn-outline'}" onclick="_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px;padding:4px 12px">📦 Chi Tiết Sản Phẩm</button>
+    <button class="btn ${_poCreateTab === 'summary' ? 'btn-primary' : 'btn-outline'}" onclick="_poCreateTab='summary';switchMgmtTab('purchase-order')" style="font-size:11px;padding:4px 12px">📊 Tóm Tắt & Tính Toán</button>
+  </div>`;
 
-    <div style="background:#fef3c7;border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;margin-bottom:12px">
-      ⚠ Cửa hàng kiểm SL thực nhận + HSD. Giá do kế toán đối chiếu hoá đơn sau.
-    </div>
-
+  // Items tab for receive
+  const rcvItemsTab = `
     <div style="background:linear-gradient(135deg,#f0f4ff,#fafbff);border:1.5px dashed var(--navy);border-radius:8px;padding:12px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="poMockScan()">
       <div style="font-size:16px;letter-spacing:4px;color:var(--navy);font-weight:700">▮▯▮▮▯▮▯▮▮▯▮▮</div>
       <div style="font-size:10px;color:var(--gray-500);margin-top:4px">Bấm để giả lập quét barcode (demo). App thật sẽ mở camera.</div>
     </div>
-
     <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:12px">
-      <table style="font-size:12px;margin:0;min-width:700px">
+      <table style="font-size:12px;margin:0;min-width:750px">
         <thead><tr style="background:var(--gray-50)">
           <th style="width:30px;text-align:center">STT</th><th>SKU</th><th>Tên SP</th>
+          <th style="width:45px;text-align:center">ĐVT</th>
           <th class="tr" style="width:55px">SL HĐ</th><th class="tr" style="width:65px">SL nhận</th>
           <th style="width:55px;text-align:center">Lệch</th>
           <th style="width:110px">Hạn dùng</th><th style="width:70px;text-align:center">TT</th>
         </tr></thead>
         <tbody>${itemRows}</tbody>
       </table>
+    </div>`;
+
+  // Summary tab for receive
+  const rcvSummaryTab = `
+    <div style="border:1px solid var(--gray-200);border-radius:8px;padding:14px;margin-bottom:12px">
+      <h5 style="font-size:12px;font-weight:700;margin:0 0 10px;color:var(--navy)">📊 Tóm Tắt & Tính Toán</h5>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--gray-50);padding:10px 12px;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;margin-bottom:4px">Tiền hàng nhận</div>
+          <div style="font-size:16px;font-weight:700;color:var(--navy)">${fmt.money(itemTotal)}</div>
+        </div>
+        <div style="background:var(--gray-50);padding:10px 12px;border-radius:6px">
+          <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;margin-bottom:4px">Tổng chi phí nhập</div>
+          <div style="font-size:16px;font-weight:700;color:var(--green)">${fmt.money(grandTotal)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Chi phí vận chuyển</label>
+          <input type="number" min="0" value="${po._shippingCost}" onchange="_poReceiveData._shippingCost=parseFloat(this.value)||0;poRefreshReceive()" placeholder="0" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Chi phí bảo hiểm</label>
+          <input type="number" min="0" value="${po._insuranceCost}" onchange="_poReceiveData._insuranceCost=parseFloat(this.value)||0;poRefreshReceive()" placeholder="0" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Thuế VAT (%)</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" min="0" max="100" value="${po._vatRate}" onchange="_poReceiveData._vatRate=parseFloat(this.value)||0;poRefreshReceive()" placeholder="0" style="width:70px;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace">
+            <span style="font-size:11px;color:var(--gray-500)">= ${fmt.money(vatAmount)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:2px solid var(--gray-200)">
+        <table style="font-size:12px;margin:0;width:100%">
+          <tr><td style="color:var(--gray-600)">Tiền hàng nhận</td><td class="tr" style="font-weight:600">${fmt.money(itemTotal)}</td></tr>
+          ${po._shippingCost > 0 ? `<tr><td style="color:var(--gray-600)">+ Vận chuyển</td><td class="tr">${fmt.money(po._shippingCost)}</td></tr>` : ''}
+          ${po._insuranceCost > 0 ? `<tr><td style="color:var(--gray-600)">+ Bảo hiểm</td><td class="tr">${fmt.money(po._insuranceCost)}</td></tr>` : ''}
+          ${vatAmount > 0 ? `<tr><td style="color:var(--gray-600)">+ VAT ${po._vatRate}%</td><td class="tr">${fmt.money(vatAmount)}</td></tr>` : ''}
+          <tr style="font-size:14px"><td style="font-weight:700;padding-top:6px">TỔNG CHI PHÍ NHẬP</td><td class="tr" style="font-weight:700;color:var(--green);padding-top:6px">${fmt.money(grandTotal)}</td></tr>
+        </table>
+      </div>
+    </div>`;
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <h4 style="font-size:14px;font-weight:700;margin:0">📦 Nhận hàng · ${escapeHtml(po.poNo || '')}</h4>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:2px">NCC: ${escapeHtml(po.nccName || ncc?.name || '—')} · CN: ${escapeHtml(branch)}${po.shippingNo ? ' · VĐ: ' + escapeHtml(po.shippingNo) : ''}</div>
+      </div>
+      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại phiếu</button>
     </div>
+
+    <div style="background:var(--gray-50);padding:8px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:16px;font-size:11px">
+      <span style="color:var(--navy);font-weight:700">1. Nhận vật lý</span>
+      <span style="color:var(--gray-400)">→</span>
+      <span style="color:var(--gray-400)">2. Kiểm chất lượng</span>
+      <span style="color:var(--gray-400)">→</span>
+      <span style="color:var(--gray-400)">3. Đối chiếu hoá đơn</span>
+      <span style="color:var(--gray-400)">→</span>
+      <span style="color:var(--gray-400)">4. Cập nhật tồn</span>
+    </div>
+
+    <div style="background:#fef3c7;border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;margin-bottom:12px">
+      ⚠ Cửa hàng kiểm SL thực nhận + HSD + chất lượng. Giá do kế toán đối chiếu hoá đơn sau.
+    </div>
+
+    ${qcChecklist}
+
+    ${rcvTabBtns}
+    ${_poCreateTab === 'items' ? rcvItemsTab : rcvSummaryTab}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
       <div>
@@ -10471,8 +10690,9 @@ function poRenderReceiveForm() {
     </div>
 
     <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;switchMgmtTab('purchase-order')" style="font-size:12px">Huỷ</button>
-      <button class="btn btn-primary" onclick="poConfirmReceive()" style="font-size:12px;background:var(--green)">✓ Hoàn tất nhận hàng</button>
+      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:12px">Huỷ</button>
+      <button class="btn btn-outline" onclick="poPrintReceipt('${escapeHtml(po.poNo || '')}')" style="font-size:12px">🖨 In Phiếu</button>
+      <button class="btn btn-primary" onclick="poConfirmReceive()" style="font-size:12px;background:var(--green)">✓ Chấp Nhận & Lưu Kho</button>
     </div>
   `;
 }
@@ -10488,6 +10708,77 @@ function poMockScan() {
   next._toRecv = next.qty - (next.recv || 0);
   toast(`Đã quét: ${next.sku} · SL ${next._toRecv}`, 'success');
   switchMgmtTab('purchase-order');
+}
+
+// ── In Phiếu Nhập Kho ──
+function poPrintReceipt(poNoOrId) {
+  const po = state.purchaseOrders.find(o => o.poNo === poNoOrId || o.id === poNoOrId);
+  if (!po) { toast('Không tìm thấy phiếu để in', 'error'); return; }
+  const ncc = poFindNcc(po.supplierId) || poFindNcc(po.nccCode);
+  const total = po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0);
+  const totalRecv = po.items.reduce((s, it) => s + (it.recv || 0) * (it.cost || 0), 0);
+  const receiptTypeLabel = ({ purchase: 'Nhập từ Đơn Mua', return: 'Nhập trả hàng', transfer: 'Nhập điều chuyển', other: 'Nhập khác' })[po.receiptType] || 'Nhập từ Đơn Mua';
+  const qc = po.qcChecks || {};
+  const qcLabels = { qty_ok: 'Đủ Số Lượng', type_ok: 'Đúng Loại Hàng', package_ok: 'Bao Gói Nguyên Vẹn', no_damage: 'Không Hư Hỏng', standard_ok: 'Đạt Tiêu Chuẩn' };
+
+  const printHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>In Phiếu ${escapeHtml(po.poNo)}</title>
+<style>
+  body{font-family:'Segoe UI',sans-serif;padding:20px;font-size:12px;color:#333;max-width:800px;margin:auto}
+  h2{text-align:center;margin:0 0 4px;font-size:18px}
+  .sub{text-align:center;color:#666;font-size:11px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;margin-bottom:12px}
+  th,td{border:1px solid #ccc;padding:5px 8px;font-size:11px}
+  th{background:#f0f0f0;font-weight:600}
+  .tr{text-align:right}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:11px}
+  .info-grid div{padding:4px 0}
+  .info-grid .lbl{color:#666;font-size:10px}
+  .qc-row{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}
+  .qc-item{font-size:11px}
+  .footer{margin-top:24px;display:flex;justify-content:space-between;font-size:11px}
+  .sign-box{text-align:center;width:30%}
+  .sign-box .line{border-top:1px solid #333;margin-top:50px;padding-top:4px}
+  @media print{body{padding:10px}button{display:none!important}}
+</style></head><body>
+<h2>PHIẾU NHẬP KHO</h2>
+<div class="sub">${escapeHtml(po.poNo)} · ${receiptTypeLabel} · ${fmt.date(po.createdAt)}</div>
+<div class="info-grid">
+  <div><span class="lbl">Nhà cung cấp:</span> <strong>${escapeHtml(po.nccName || ncc?.name || '—')}</strong></div>
+  <div><span class="lbl">MST:</span> ${escapeHtml(ncc?.taxId || '—')}</div>
+  <div><span class="lbl">Chi nhánh:</span> ${escapeHtml(po.branch || '—')}</div>
+  <div><span class="lbl">Ngày giao:</span> ${po.delivDate ? fmt.date(po.delivDate) : '—'}</div>
+  ${po.shippingNo ? `<div><span class="lbl">Số vận đơn:</span> ${escapeHtml(po.shippingNo)}</div>` : ''}
+  <div><span class="lbl">Trạng thái:</span> ${po.status}</div>
+</div>
+<table>
+  <thead><tr><th style="width:30px">STT</th><th>SKU</th><th>Tên SP</th><th style="width:50px">ĐVT</th><th class="tr" style="width:55px">SL đặt</th><th class="tr" style="width:55px">SL nhận</th><th class="tr" style="width:80px">Đơn giá</th><th class="tr" style="width:90px">Thành tiền</th></tr></thead>
+  <tbody>${po.items.map((it, i) => `<tr>
+    <td style="text-align:center">${i+1}</td><td>${escapeHtml(it.sku)}</td><td>${escapeHtml(it.name||it.sku)}</td>
+    <td style="text-align:center">${escapeHtml(it.unit||'Cái')}</td>
+    <td class="tr">${it.qty}</td><td class="tr">${it.recv||0}</td>
+    <td class="tr">${fmt.money(it.cost)}</td><td class="tr">${fmt.money(it.qty*(it.cost||0))}</td>
+  </tr>`).join('')}</tbody>
+  <tfoot>
+    <tr><td colspan="4" class="tr"><strong>Tổng tiền hàng:</strong></td><td class="tr"><strong>${po.items.reduce((s,i)=>s+i.qty,0)}</strong></td><td class="tr">${po.items.reduce((s,i)=>s+(i.recv||0),0)}</td><td></td><td class="tr"><strong>${fmt.money(total)}</strong></td></tr>
+    ${(po.shippingCost||0)>0 ? `<tr><td colspan="7" class="tr">+ Vận chuyển</td><td class="tr">${fmt.money(po.shippingCost)}</td></tr>` : ''}
+    ${(po.insuranceCost||0)>0 ? `<tr><td colspan="7" class="tr">+ Bảo hiểm</td><td class="tr">${fmt.money(po.insuranceCost)}</td></tr>` : ''}
+    ${(po.vatAmount||0)>0 ? `<tr><td colspan="7" class="tr">+ VAT ${po.vatRate||0}%</td><td class="tr">${fmt.money(po.vatAmount)}</td></tr>` : ''}
+    ${(po.grandTotal||0)>0 ? `<tr><td colspan="7" class="tr"><strong>TỔNG CHI PHÍ NHẬP</strong></td><td class="tr"><strong>${fmt.money(po.grandTotal)}</strong></td></tr>` : ''}
+  </tfoot>
+</table>
+${Object.keys(qc).length > 0 ? `<div style="margin-bottom:12px"><strong style="font-size:11px">Kiểm chất lượng:</strong><div class="qc-row">${Object.entries(qcLabels).map(([k,v]) => `<span class="qc-item">${qc[k] ? '☑' : '☐'} ${v}</span>`).join('')}</div></div>` : ''}
+${po.note ? `<div style="margin-bottom:12px"><strong>Ghi chú:</strong> ${escapeHtml(po.note)}</div>` : ''}
+<div class="footer">
+  <div class="sign-box"><strong>Người giao</strong><div class="line">(Ký, ghi rõ họ tên)</div></div>
+  <div class="sign-box"><strong>Thủ kho</strong><div class="line">(Ký, ghi rõ họ tên)</div></div>
+  <div class="sign-box"><strong>Quản lý</strong><div class="line">(Ký, ghi rõ họ tên)</div></div>
+</div>
+<div style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨 In phiếu</button></div>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=850,height=700');
+  if (w) { w.document.write(printHtml); w.document.close(); }
+  else toast('Trình duyệt chặn popup — cho phép popup để in phiếu', 'error');
 }
 
 async function poConfirmReceive() {
@@ -10517,6 +10808,16 @@ async function poConfirmReceive() {
   po.status = allFull ? 'received' : 'partial';
   po.receivedAt = new Date().toISOString();
   po.updatedAt = new Date().toISOString();
+  // Save QC checks
+  if (_poReceiveData._qcChecks) po.qcChecks = _poReceiveData._qcChecks;
+  // Save cost data from receive form
+  if (_poReceiveData._shippingCost !== undefined) po.shippingCost = _poReceiveData._shippingCost;
+  if (_poReceiveData._insuranceCost !== undefined) po.insuranceCost = _poReceiveData._insuranceCost;
+  if (_poReceiveData._vatRate !== undefined) po.vatRate = _poReceiveData._vatRate;
+  const rcvItemTotal = po.items.reduce((s, it) => s + (it.recv || 0) * (it.cost || 0), 0);
+  po.vatAmount = Math.round(rcvItemTotal * (po.vatRate || 0) / 100);
+  po.grandTotal = rcvItemTotal + (po.shippingCost || 0) + (po.insuranceCost || 0) + po.vatAmount;
+
   const noteVal = _poReceiveData._recvNote || '';
   if (noteVal) po.note = (po.note ? po.note + '\n' : '') + '[Nhận] ' + noteVal;
 
