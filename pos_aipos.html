@@ -10182,45 +10182,53 @@ function poRenderCreateForm() {
       <button class="btn btn-outline" onclick="_poView='list';_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại</button>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Nhà cung cấp *</label>
-        <select id="poNccSelect" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px" onchange="poOnNccChange()">
-          <option value="">— Chọn NCC —</option>
-          ${nccOptions}
-        </select>
-        <div id="poNccInfo" style="font-size:10px;color:var(--gray-500);margin-top:3px"></div>
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start">
+      <!-- LEFT PANEL: Thông tin chung -->
+      <div style="border:1px solid var(--gray-200);border-radius:8px;padding:12px;background:var(--gray-50)">
+        <h5 style="font-size:11px;font-weight:700;margin:0 0 10px;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px">📋 Thông tin chung</h5>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Nhà cung cấp *</label>
+            <select id="poNccSelect" style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;box-sizing:border-box;background:white" onchange="poOnNccChange()">
+              <option value="">— Chọn NCC —</option>
+              ${nccOptions}
+            </select>
+            <div id="poNccInfo" style="font-size:9px;color:var(--gray-500);margin-top:2px"></div>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Loại nhập</label>
+            <select id="poReceiptType" onchange="_poReceiptType=this.value" style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;box-sizing:border-box;background:white">
+              ${rtOptions}
+            </select>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Chi nhánh nhận</label>
+            <input type="text" id="poBranch" value="${escapeHtml(state.shift?.branch || 'PB')}" readonly style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;background:var(--gray-100);box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Số vận đơn</label>
+            <input type="text" id="poShippingNo" placeholder="VD: VN-2024-00123" style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;box-sizing:border-box;background:white">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ngày dự kiến nhận</label>
+            <input type="date" id="poDelivDate" value="${defDeliv}" style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;box-sizing:border-box;background:white">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ghi chú</label>
+            <textarea id="poNote" rows="2" placeholder="VD: Giao trước 10h sáng..." style="width:100%;padding:6px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;box-sizing:border-box;resize:vertical;background:white"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--gray-200);display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="poCreateOrder('draft')" style="font-size:11px;flex:1;min-width:0" ${_poItems.length === 0 ? 'disabled' : ''}>📝 Lưu nháp</button>
+          <button class="btn btn-primary" onclick="poCreateOrder('sent')" style="font-size:11px;flex:1;min-width:0" ${_poItems.length === 0 ? 'disabled' : ''}>📤 Gửi NCC</button>
+        </div>
       </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Loại nhập</label>
-        <select id="poReceiptType" onchange="_poReceiptType=this.value" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px">
-          ${rtOptions}
-        </select>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Chi nhánh nhận</label>
-        <input type="text" id="poBranch" value="${escapeHtml(state.shift?.branch || 'PB')}" readonly style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;background:var(--gray-50);box-sizing:border-box">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Số vận đơn</label>
-        <input type="text" id="poShippingNo" placeholder="VD: VN-2024-00123" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Ngày dự kiến nhận</label>
-        <input type="date" id="poDelivDate" value="${defDeliv}" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Ghi chú</label>
-        <input type="text" id="poNote" placeholder="VD: Giao trước 10h sáng..." style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
-      </div>
-    </div>
 
-    ${tabBtns}
-    ${_poCreateTab === 'items' ? itemsTabContent : summaryTabContent}
-
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-outline" onclick="poCreateOrder('draft')" style="font-size:12px" ${_poItems.length === 0 ? 'disabled' : ''}>📝 Lưu nháp</button>
-      <button class="btn btn-primary" onclick="poCreateOrder('sent')" style="font-size:12px" ${_poItems.length === 0 ? 'disabled' : ''}>📤 Lưu & Gửi NCC</button>
+      <!-- RIGHT PANEL: Sản phẩm + Tóm tắt -->
+      <div style="min-width:0">
+        ${tabBtns}
+        ${_poCreateTab === 'items' ? itemsTabContent : summaryTabContent}
+      </div>
     </div>
   `;
 }
@@ -10654,7 +10662,7 @@ function poRenderReceiveForm() {
       <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại phiếu</button>
     </div>
 
-    <div style="background:var(--gray-50);padding:8px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:16px;font-size:11px">
+    <div style="background:var(--gray-50);padding:6px 14px;border-radius:8px;margin-bottom:10px;display:flex;gap:12px;font-size:10px;flex-wrap:wrap">
       <span style="color:var(--navy);font-weight:700">1. Nhận vật lý</span>
       <span style="color:var(--gray-400)">→</span>
       <span style="color:var(--gray-400)">2. Kiểm chất lượng</span>
@@ -10664,35 +10672,46 @@ function poRenderReceiveForm() {
       <span style="color:var(--gray-400)">4. Cập nhật tồn</span>
     </div>
 
-    <div style="background:#fef3c7;border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;margin-bottom:12px">
-      ⚠ Cửa hàng kiểm SL thực nhận + HSD + chất lượng. Giá do kế toán đối chiếu hoá đơn sau.
-    </div>
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start">
+      <!-- LEFT PANEL: QC + Hoá đơn + Ghi chú -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:#fef3c7;border-left:3px solid var(--orange);padding:6px 10px;border-radius:0 6px 6px 0;font-size:10px">
+          ⚠ Kiểm SL + HSD + chất lượng. Giá do kế toán đối chiếu HĐ sau.
+        </div>
 
-    ${qcChecklist}
+        ${qcChecklist}
 
-    ${rcvTabBtns}
-    ${_poCreateTab === 'items' ? rcvItemsTab : rcvSummaryTab}
+        <div style="border:1px solid var(--gray-200);border-radius:8px;padding:10px;background:var(--gray-50)">
+          <h5 style="font-size:11px;font-weight:700;margin:0 0 8px;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px">📄 Hoá đơn VAT</h5>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Số hoá đơn</label>
+              <input type="text" id="poRcvInvNo" value="${_poReceiveData._invoiceNo}" placeholder="VD: 0000228" onchange="_poReceiveData._invoiceNo=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;box-sizing:border-box;background:white">
+            </div>
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ngày HĐ</label>
+              <input type="date" id="poRcvInvDate" value="${_poReceiveData._invoiceDate}" onchange="_poReceiveData._invoiceDate=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;box-sizing:border-box;background:white">
+            </div>
+          </div>
+        </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div>
-        <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Số hoá đơn VAT</label>
-        <input type="text" id="poRcvInvNo" value="${_poReceiveData._invoiceNo}" placeholder="VD: 0000228" onchange="_poReceiveData._invoiceNo=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">
+        <div>
+          <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ghi chú nhận hàng</label>
+          <textarea id="poRcvNote" rows="2" placeholder="VD: Đủ hàng, hộp Choco Pie hơi móp 2 cái..." onchange="_poReceiveData._recvNote=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;box-sizing:border-box;resize:vertical;background:white">${_poReceiveData._recvNote || ''}</textarea>
+        </div>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:11px;flex:1;min-width:0">Huỷ</button>
+          <button class="btn btn-outline" onclick="poPrintReceipt('${escapeHtml(po.poNo || '')}')" style="font-size:11px;flex:1;min-width:0">🖨 In</button>
+          <button class="btn btn-primary" onclick="poConfirmReceive()" style="font-size:11px;flex:2;min-width:0;background:var(--green)">✓ Lưu Kho</button>
+        </div>
       </div>
-      <div>
-        <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ngày HĐ</label>
-        <input type="date" id="poRcvInvDate" value="${_poReceiveData._invoiceDate}" onchange="_poReceiveData._invoiceDate=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">
+
+      <!-- RIGHT PANEL: Sản phẩm + Tóm tắt -->
+      <div style="min-width:0">
+        ${rcvTabBtns}
+        ${_poCreateTab === 'items' ? rcvItemsTab : rcvSummaryTab}
       </div>
-    </div>
-
-    <div style="margin-bottom:12px">
-      <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ghi chú nhận hàng</label>
-      <textarea id="poRcvNote" rows="2" placeholder="VD: Đủ hàng, hộp Choco Pie hơi móp 2 cái..." onchange="_poReceiveData._recvNote=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">${_poReceiveData._recvNote || ''}</textarea>
-    </div>
-
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;_poCreateTab='items';switchMgmtTab('purchase-order')" style="font-size:12px">Huỷ</button>
-      <button class="btn btn-outline" onclick="poPrintReceipt('${escapeHtml(po.poNo || '')}')" style="font-size:12px">🖨 In Phiếu</button>
-      <button class="btn btn-primary" onclick="poConfirmReceive()" style="font-size:12px;background:var(--green)">✓ Chấp Nhận & Lưu Kho</button>
     </div>
   `;
 }
