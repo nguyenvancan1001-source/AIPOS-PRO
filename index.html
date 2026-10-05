@@ -313,6 +313,57 @@
   .adm-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center}
   .adm-modal-bg.show{display:flex}
   .adm-modal{background:#1e293b;border-radius:14px;padding:26px;width:440px;max-width:92vw;color:#f1f5f9}
+  /* ===== PLAN MANAGER MODAL ===== */
+  .pm-modal{background:#0f172a;border-radius:16px;padding:0;width:620px;max-width:95vw;color:#f1f5f9;overflow:hidden;max-height:92vh;overflow-y:auto}
+  .pm-header{padding:22px 24px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between}
+  .pm-header h3{font-size:17px;font-weight:700;color:#f1f5f9;margin:0}
+  .pm-close{background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px}
+  .pm-close:hover{background:rgba(255,255,255,.1);color:#fff}
+  .pm-body{padding:20px 24px 24px}
+  .pm-current{background:#1e293b;border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid rgba(255,255,255,.06)}
+  .pm-current-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .pm-plan-badge{font-size:11px;padding:3px 10px;border-radius:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+  .pm-usage{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .pm-usage-item{background:#0f172a;border-radius:8px;padding:10px;text-align:center}
+  .pm-usage-item .u-val{font-size:18px;font-weight:700;color:#f1f5f9}
+  .pm-usage-item .u-lbl{font-size:10px;color:#94a3b8;margin-top:2px}
+  .pm-usage-item .u-bar{height:4px;border-radius:2px;background:#334155;margin-top:6px;overflow:hidden}
+  .pm-usage-item .u-bar span{display:block;height:100%;border-radius:2px;transition:width .4s}
+  .pm-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
+  @media(max-width:600px){.pm-plans{grid-template-columns:1fr}.pm-usage{grid-template-columns:1fr}}
+  .pm-plan-card{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .25s;position:relative}
+  .pm-plan-card:hover{border-color:#60a5fa;transform:translateY(-2px)}
+  .pm-plan-card.current{border-color:#22c55e;cursor:default}
+  .pm-plan-card.current::after{content:'Đang dùng';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;font-size:9px;padding:2px 8px;border-radius:6px;font-weight:700}
+  .pm-plan-card .pm-icon{font-size:24px;margin-bottom:6px}
+  .pm-plan-card .pm-name{font-size:14px;font-weight:700;color:#f1f5f9}
+  .pm-plan-card .pm-price{font-size:20px;font-weight:800;color:#60a5fa;margin:6px 0 2px}
+  .pm-plan-card .pm-price sub{font-size:11px;font-weight:400;color:#94a3b8}
+  .pm-plan-card .pm-feats{list-style:none;padding:0;margin:10px 0 0;text-align:left;font-size:11px;color:#cbd5e1}
+  .pm-plan-card .pm-feats li{padding:3px 0;display:flex;align-items:center;gap:6px}
+  .pm-plan-card .pm-feats li::before{content:'✓';color:#4ade80;font-weight:700;font-size:12px}
+  .pm-plan-card .pm-feats li.no::before{content:'—';color:#64748b}
+  .pm-plan-card .pm-feats li.no{color:#64748b}
+  .pm-plan-card .pm-btn{margin-top:12px;padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;width:100%;transition:all .2s}
+  .pm-btn-upgrade{background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff}
+  .pm-btn-upgrade:hover{filter:brightness(1.15)}
+  .pm-btn-downgrade{background:#334155;color:#94a3b8}
+  .pm-btn-downgrade:hover{background:#475569;color:#fff}
+  .pm-btn-current{background:#1e3a2f;color:#4ade80;cursor:default}
+  .pm-history{margin-top:20px;border-top:1px solid rgba(255,255,255,.06);padding-top:16px}
+  .pm-history h4{font-size:13px;color:#94a3b8;margin-bottom:10px;font-weight:600}
+  .pm-hist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+  .pm-hist-dir{font-size:16px}
+  .pm-hist-text{flex:1;color:#cbd5e1}
+  .pm-hist-date{color:#64748b;font-size:11px}
+  .pm-confirm-overlay{position:absolute;inset:0;background:rgba(15,23,42,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:16px;z-index:10}
+  .pm-confirm-overlay h4{font-size:16px;color:#f1f5f9;margin-bottom:8px}
+  .pm-confirm-overlay p{font-size:13px;color:#94a3b8;text-align:center;margin-bottom:16px;line-height:1.6}
+  .pm-confirm-overlay .pm-violations{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#fca5a5;text-align:left;width:100%}
+  .pm-confirm-btns{display:flex;gap:10px}
+  .pm-confirm-btns button{padding:8px 20px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+  .pm-btn-yes{background:#2563eb;color:#fff}
+  .pm-btn-no{background:#334155;color:#94a3b8}
   .adm-modal h3{font-size:15px;margin-bottom:14px;color:var(--gold-l)}
   .adm-modal label{display:block;font-size:10px;color:#94a3b8;margin:10px 0 3px;text-transform:uppercase;letter-spacing:.5px}
   .adm-modal select,.adm-modal input[type=number]{width:100%;padding:8px 10px;border:1.5px solid #475569;border-radius:7px;background:#0f172a;color:#f1f5f9;font-size:12px}
@@ -572,6 +623,7 @@
     <span id="planBadge" class="plan-basic" style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.5px;margin-left:8px">BASIC</span>
     <div class="spacer"></div>
     <div class="user" id="userEmail"></div>
+    <button class="logout" id="planMgrBtn" style="background:rgba(168,85,247,.3);display:none;" onclick="openPlanManager()">📦 Quản lý gói</button>
     <button class="logout" id="branchMgrBtn" style="background:rgba(59,130,246,.25);display:none;" onclick="openBranchMgr()">⚙️ Cửa hàng</button>
     <button class="logout" id="backupBtn" style="background:rgba(11,122,59,.3);display:none;">💾 Sao lưu</button>
     <button class="logout" id="restoreBtn" style="background:rgba(181,69,63,.25);display:none;">♻️ Khôi phục</button>
@@ -734,6 +786,20 @@
       <button class="m-cancel" onclick="admCloseModal()">Hủy</button>
       <button class="m-save" onclick="admSaveEdit()">💾 Lưu</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== PLAN MANAGER MODAL ===== -->
+<div class="adm-modal-bg" id="planManagerModal">
+  <div class="pm-modal" style="position:relative">
+    <div class="pm-header">
+      <h3>📦 Quản lý gói dịch vụ</h3>
+      <button class="pm-close" onclick="closePlanManager()">×</button>
+    </div>
+    <div class="pm-body" id="pmBody">
+      <div style="text-align:center;padding:40px;color:#94a3b8">⏳ Đang tải...</div>
+    </div>
+    <div class="pm-confirm-overlay" id="pmConfirm" style="display:none"></div>
   </div>
 </div>
 
@@ -941,6 +1007,7 @@ async function enterHub(user) {
       document.getElementById('backupBtn').style.display = 'inline-block';
       document.getElementById('restoreBtn').style.display = 'inline-block';
       document.getElementById('branchMgrBtn').style.display = 'inline-block';
+      document.getElementById('planMgrBtn').style.display = 'inline-block';
     }
   } catch(e) {}
   // Check chi nhánh — chưa có thì onboard, có rồi thì hiện apps
@@ -1580,6 +1647,241 @@ function renderApps(features) {
       <span class="ds">${a.ds}</span><span class="go">Mở ứng dụng <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></span>`;
     grid.appendChild(el);
   });
+}
+
+/* ============================================================
+   PLAN MANAGER — Nâng / Hạ gói dịch vụ
+   ============================================================ */
+const PLAN_INFO = {
+  basic:    { icon:'🆓', name:'Trải nghiệm', monthly:'0đ', yearly:'0đ', color:'#64748b', maxUsers:3,   maxBranches:1,  maxProducts:500,
+              feats:['POS bán hàng','Tối đa 200 SP','1 user · 1 chi nhánh'],
+              noFeats:['Quản lý kho','NCC · Công nợ','HĐĐT','Kế toán'] },
+  standard: { icon:'⭐', name:'Cơ bản',      monthly:'100.000đ', yearly:'1.000.000đ', color:'#2563eb', maxUsers:10,  maxBranches:3,  maxProducts:5000,
+              feats:['POS + Kho + NCC','HĐĐT · 100đ/HĐ','Auto backup','5 users · 2 chi nhánh'],
+              noFeats:['Kế toán · TT99','Lương · TNCN','AI Assist'] },
+  premium:  { icon:'💎', name:'Toàn diện',   monthly:'500.000đ', yearly:'5.000.000đ', color:'#f59e0b', maxUsers:999, maxBranches:99, maxProducts:999999,
+              feats:['Tất cả tính năng','Kế toán · Sổ sách · TT99','Lương · TNCN · KPI','AI Assist · API','20 users · 10 chi nhánh'],
+              noFeats:[] }
+};
+const PLAN_ORDER = ['basic','standard','premium'];
+const PLAN_LABELS = { basic:'Trải nghiệm', standard:'Cơ bản', premium:'Toàn diện' };
+const DIR_ICONS = { upgrade:'⬆️', downgrade:'⬇️', same:'🔄' };
+
+let _pmUsage = null;
+let _pmHistory = [];
+
+async function openPlanManager() {
+  document.getElementById('planManagerModal').classList.add('show');
+  document.getElementById('pmBody').innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8">⏳ Đang tải thông tin gói...</div>';
+  try {
+    const [usageRes, histRes] = await Promise.all([
+      sb.rpc('get_plan_usage'),
+      sb.rpc('get_plan_history')
+    ]);
+    _pmUsage = usageRes.data || {};
+    _pmHistory = histRes.data || [];
+    _pmCycle = _pmUsage.billing_cycle || 'monthly';
+    renderPlanManager(_pmUsage, _pmHistory);
+  } catch(e) {
+    document.getElementById('pmBody').innerHTML = `<div style="text-align:center;padding:40px;color:#f87171">❌ Lỗi: ${e.message}</div>`;
+  }
+}
+
+function closePlanManager() {
+  document.getElementById('planManagerModal').classList.remove('show');
+  document.getElementById('pmConfirm').style.display = 'none';
+}
+
+let _pmCycle = 'monthly'; // toggle state
+
+function renderPlanManager(usage, history) {
+  const cur = usage.plan || 'basic';
+  const pi = PLAN_INFO[cur];
+  const curIdx = PLAN_ORDER.indexOf(cur);
+  _pmCycle = usage.billing_cycle || 'monthly';
+
+  // Expiry info
+  let expiryHtml = '';
+  if (usage.plan_expires_at) {
+    const exp = new Date(usage.plan_expires_at);
+    const now = new Date();
+    const daysLeft = Math.max(0, Math.ceil((exp - now) / 86400000));
+    const expColor = daysLeft <= 7 ? '#ef4444' : daysLeft <= 30 ? '#f59e0b' : '#22c55e';
+    expiryHtml = `<div style="font-size:12px;margin-top:6px;color:${expColor}">
+      ⏰ Hết hạn: ${exp.toLocaleDateString('vi')} (còn ${daysLeft} ngày)
+    </div>`;
+  }
+
+  // Usage bars
+  function usageBar(val, max, label) {
+    const pct = max >= 999 ? (val > 0 ? 15 : 0) : Math.min(100, Math.round(val/max*100));
+    const barColor = pct > 80 ? '#ef4444' : pct > 50 ? '#f59e0b' : '#22c55e';
+    const maxLabel = max >= 999 ? '∞' : max;
+    return `<div class="pm-usage-item">
+      <div class="u-val">${val} <span style="font-size:11px;color:#64748b;font-weight:400">/ ${maxLabel}</span></div>
+      <div class="u-lbl">${label}</div>
+      <div class="u-bar"><span style="width:${pct}%;background:${barColor}"></span></div>
+    </div>`;
+  }
+
+  // Cycle toggle
+  const cycleToggle = `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px">
+    <button onclick="_pmCycle='monthly';renderPlanManager(_pmUsage,_pmHistory)" style="padding:6px 16px;border-radius:8px;border:1px solid ${_pmCycle==='monthly'?'#3b82f6':'#334155'};background:${_pmCycle==='monthly'?'#1e3a5f':'transparent'};color:${_pmCycle==='monthly'?'#60a5fa':'#94a3b8'};cursor:pointer;font-size:13px;font-weight:600">Tháng</button>
+    <button onclick="_pmCycle='yearly';renderPlanManager(_pmUsage,_pmHistory)" style="padding:6px 16px;border-radius:8px;border:1px solid ${_pmCycle==='yearly'?'#3b82f6':'#334155'};background:${_pmCycle==='yearly'?'#1e3a5f':'transparent'};color:${_pmCycle==='yearly'?'#60a5fa':'#94a3b8'};cursor:pointer;font-size:13px;font-weight:600">Năm <span style="font-size:11px;color:#22c55e;margin-left:4px">-17%</span></button>
+  </div>`;
+
+  // Plan cards
+  const cycleSub = _pmCycle === 'yearly' ? '/năm' : '/tháng';
+  const cards = PLAN_ORDER.map((p, idx) => {
+    const info = PLAN_INFO[p];
+    const isCurrent = p === cur && _pmCycle === (usage.billing_cycle||'monthly');
+    const price = _pmCycle === 'yearly' ? info.yearly : info.monthly;
+    let btnHtml = '';
+    if (isCurrent) {
+      btnHtml = `<button class="pm-btn pm-btn-current" disabled>✓ Đang dùng</button>`;
+    } else if (idx > curIdx || (idx === curIdx && _pmCycle !== (usage.billing_cycle||'monthly'))) {
+      const dir = idx > curIdx ? 'upgrade' : 'same';
+      const label = idx > curIdx ? '⬆️ Nâng gói' : '🔄 Đổi chu kỳ';
+      btnHtml = `<button class="pm-btn pm-btn-upgrade" onclick="confirmPlanChange('${p}','${dir}')">${label}</button>`;
+    } else {
+      btnHtml = `<button class="pm-btn pm-btn-downgrade" onclick="confirmPlanChange('${p}','downgrade')">⬇️ Hạ gói</button>`;
+    }
+    const featList = info.feats.map(f => `<li>${f}</li>`).join('')
+      + info.noFeats.map(f => `<li class="no">${f}</li>`).join('');
+    return `<div class="pm-plan-card${isCurrent?' current':''}">
+      <div class="pm-icon">${info.icon}</div>
+      <div class="pm-name">${info.name}</div>
+      <div class="pm-price">${price}<sub>${cycleSub}</sub></div>
+      <ul class="pm-feats">${featList}</ul>
+      ${btnHtml}
+    </div>`;
+  }).join('');
+
+  // History
+  let histHtml = '';
+  if (history.length > 0) {
+    const items = history.map(h => {
+      const d = new Date(h.created_at);
+      const dateStr = d.toLocaleDateString('vi') + ' ' + d.toLocaleTimeString('vi',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="pm-hist-item">
+        <span class="pm-hist-dir">${DIR_ICONS[h.direction]||'🔄'}</span>
+        <span class="pm-hist-text"><strong>${PLAN_LABELS[h.old_plan]||h.old_plan}</strong> → <strong>${PLAN_LABELS[h.new_plan]||h.new_plan}</strong></span>
+        <span class="pm-hist-date">${dateStr}</span>
+      </div>`;
+    }).join('');
+    histHtml = `<div class="pm-history"><h4>📋 Lịch sử đổi gói</h4>${items}</div>`;
+  }
+
+  const curPrice = _pmCycle === 'yearly' ? pi.yearly : pi.monthly;
+  const curCycleLabel = (usage.billing_cycle||'monthly') === 'yearly' ? '/năm' : '/tháng';
+  document.getElementById('pmBody').innerHTML = `
+    <div class="pm-current">
+      <div class="pm-current-row">
+        <span style="font-size:13px;color:#94a3b8">Gói hiện tại:</span>
+        <span class="pm-plan-badge" style="background:${pi.color};color:#fff">${pi.name.toUpperCase()}</span>
+        <span style="font-size:14px;font-weight:700;color:#f1f5f9;margin-left:auto">${usage.billing_cycle==='yearly'?pi.yearly:pi.monthly}<span style="font-size:11px;color:#94a3b8;font-weight:400">${curCycleLabel}</span></span>
+      </div>
+      ${expiryHtml}
+      <div class="pm-usage">
+        ${usageBar(usage.users||0, pi.maxUsers, 'Người dùng')}
+        ${usageBar(usage.branches||0, pi.maxBranches, 'Chi nhánh')}
+        ${usageBar(usage.products||0, pi.maxProducts, 'Sản phẩm')}
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:8px">Chọn gói muốn chuyển sang:</div>
+    ${cycleToggle}
+    <div class="pm-plans">${cards}</div>
+    ${histHtml}
+  `;
+}
+
+function confirmPlanChange(newPlan, direction) {
+  const info = PLAN_INFO[newPlan];
+  const curInfo = PLAN_INFO[_pmUsage?.plan || 'basic'];
+  const dirLabel = direction === 'upgrade' ? '⬆️ NÂNG GÓI' : direction === 'downgrade' ? '⬇️ HẠ GÓI' : '🔄 ĐỔI CHU KỲ';
+  const dirColor = direction === 'upgrade' ? '#2563eb' : direction === 'downgrade' ? '#f59e0b' : '#8b5cf6';
+  const cycleSub = _pmCycle === 'yearly' ? '/năm' : '/tháng';
+  const price = _pmCycle === 'yearly' ? info.yearly : info.monthly;
+
+  let warningHtml = '';
+  if (direction === 'downgrade') {
+    const warnings = [];
+    if ((_pmUsage.users||0) > info.maxUsers) warnings.push(`👥 Người dùng: đang ${_pmUsage.users}, gói mới tối đa ${info.maxUsers}`);
+    if ((_pmUsage.branches||0) > info.maxBranches) warnings.push(`🏪 Chi nhánh: đang ${_pmUsage.branches}, gói mới tối đa ${info.maxBranches}`);
+    if ((_pmUsage.products||0) > info.maxProducts) warnings.push(`📦 Sản phẩm: đang ${_pmUsage.products}, gói mới tối đa ${info.maxProducts}`);
+    if (warnings.length > 0) {
+      warningHtml = `<div class="pm-violations">⚠️ <strong>Cảnh báo vượt giới hạn:</strong><br>${warnings.join('<br>')}<br><br>Cần giảm số lượng trước khi hạ gói.</div>`;
+    }
+  }
+
+  let noteHtml = '<p style="font-size:12px;color:#94a3b8;margin-top:8px">💡 Tiền gói cũ đã thanh toán sẽ không được hoàn lại.<br>Kỳ hạn mới tính từ ngày đổi.</p>';
+
+  document.getElementById('pmConfirm').innerHTML = `
+    <h4 style="color:${dirColor}">${dirLabel}</h4>
+    <p>Chuyển từ <strong>${curInfo.name}</strong> sang <strong>${info.name}</strong> (${_pmCycle === 'yearly' ? 'năm' : 'tháng'})<br>
+    Giá mới: <strong style="color:#60a5fa">${price}${cycleSub}</strong></p>
+    ${warningHtml}
+    ${noteHtml}
+    <div class="pm-confirm-btns">
+      <button class="pm-btn-no" onclick="document.getElementById('pmConfirm').style.display='none'">Huỷ</button>
+      <button class="pm-btn-yes" style="background:${dirColor}" onclick="executePlanChange('${newPlan}','${_pmCycle}')">✓ Xác nhận đổi gói</button>
+    </div>
+  `;
+  document.getElementById('pmConfirm').style.display = 'flex';
+}
+
+async function executePlanChange(newPlan, cycle) {
+  const btn = document.querySelector('#pmConfirm .pm-btn-yes');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xử lý...'; }
+  try {
+    const { data, error } = await sb.rpc('change_tenant_plan', { p_new_plan: newPlan, p_billing_cycle: cycle || _pmCycle });
+    if (error) throw error;
+    if (data && data.ok === false) {
+      // Show violations if any
+      let vHtml = '';
+      if (data.violations && data.violations.length > 0) {
+        vHtml = '<div class="pm-violations">' + data.violations.map(v => '⚠️ ' + v.msg).join('<br>') + '</div>';
+      }
+      document.getElementById('pmConfirm').innerHTML = `
+        <h4 style="color:#ef4444">❌ Không thể đổi gói</h4>
+        <p>${data.error}</p>
+        ${vHtml}
+        <div class="pm-confirm-btns">
+          <button class="pm-btn-no" onclick="document.getElementById('pmConfirm').style.display='none'">Đóng</button>
+        </div>
+      `;
+      return;
+    }
+    // Success!
+    const dirEmoji = data.direction === 'upgrade' ? '⬆️' : data.direction === 'downgrade' ? '⬇️' : '🔄';
+    const expDate = data.plan_expires_at ? new Date(data.plan_expires_at).toLocaleDateString('vi') : '';
+    const cycleLabel = data.billing_cycle === 'yearly' ? '1 năm' : '1 tháng';
+    document.getElementById('pmConfirm').innerHTML = `
+      <h4 style="color:#22c55e">✅ Đổi gói thành công!</h4>
+      <p>${dirEmoji} <strong>${PLAN_LABELS[data.old_plan]}</strong> → <strong>${PLAN_LABELS[data.new_plan]}</strong><br>
+      Chu kỳ: ${cycleLabel}${expDate ? ' · Hết hạn: '+expDate : ''}<br>
+      Các tính năng mới đã có hiệu lực ngay.</p>
+      <div class="pm-confirm-btns">
+        <button class="pm-btn-yes" style="background:#22c55e" onclick="document.getElementById('pmConfirm').style.display='none'; openPlanManager();">OK</button>
+      </div>
+    `;
+    // Update badge on hub
+    const badge = document.getElementById('planBadge');
+    if (badge) { badge.textContent = newPlan.toUpperCase(); badge.className = 'plan-' + newPlan; }
+    // Refresh features → re-render app grid
+    try {
+      const { data: f } = await sb.rpc('get_plan_features');
+      if (f) renderAppGrid(f);
+    } catch(e2) {}
+  } catch(e) {
+    document.getElementById('pmConfirm').innerHTML = `
+      <h4 style="color:#ef4444">❌ Lỗi</h4>
+      <p>${e.message}</p>
+      <div class="pm-confirm-btns">
+        <button class="pm-btn-no" onclick="document.getElementById('pmConfirm').style.display='none'">Đóng</button>
+      </div>
+    `;
+  }
 }
 </script>
 </body>
