@@ -9798,212 +9798,924 @@ function renderActivePromosTab() {
 }
 
 /* ============================================================
-   PURCHASE ORDER — Nhập kho / Phiếu nhập hàng
+   PURCHASE ORDER — Nhập kho / Phiếu nhập hàng (FULL — Supabase sync)
+   Tương đương module PO trong KHO app:
+   • Supabase purchase_orders + suppliers sync
+   • Workflow: draft → sent → partial → received
+   • Nhận hàng: kiểm SL, HSD, lệch SL
+   • Công nợ NCC tạm tính
+   • Realtime update
    ============================================================ */
 if (!state.purchaseOrders) state.purchaseOrders = [];
-let _poView = 'list'; // 'list' | 'create' | 'detail'
+if (!state.poSuppliers) state.poSuppliers = [];
+if (!state.poPayables) state.poPayables = [];
+let _poView = 'list';       // 'list' | 'create' | 'detail' | 'receive-list' | 'payables'
 let _poEditId = null;
 let _poItems = [];
+let _poFilter = 'all';      // all | draft | sent | partial | received
+let _poReceiveFilter = 'all'; // all | overdue | today | upcoming | received
+let _poPayFilter = 'unpaid';  // unpaid | overdue | paid | all
+let _poReceiveData = null;   // temp receive data
+let _poLoaded = false;
 
-function renderPurchaseOrderTab() {
-  if (_poView === 'create') return renderPOCreateForm();
-  if (_poView === 'detail' && _poEditId) return renderPODetail(_poEditId);
-  return renderPOList();
+// ── Load POs + Suppliers từ Supabase ──
+async function poLoadFromDB() {
+  if (!state.supabase) return;
+  try {
+    const branch = state.shift?.branch || 'PB';
+    // Load purchase orders
+    const { data: poData, error: poErr } = await state.supabase
+      .from('purchase_orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (poErr) throw poErr;
+    if (poData) {
+      state.purchaseOrders = poData.map(r => ({
+        id: r.id,
+        poNo: r.po_no,
+        branch: r.branch || branch,
+        supplierId: r.supplier_id,
+        nccName: r.ncc_name || '',
+        nccCode: r.ncc_code || '',
+        status: r.status || 'draft',
+        items: r.items || [],
+        totalQty: r.total_qty || 0,
+        totalValue: parseFloat(r.total_value) || 0,
+        note: r.note || '',
+        delivDate: r.deliv_date || '',
+        createdBy: r.created_by,
+        approvedBy: r.approved_by,
+        approvedAt: r.approved_at,
+        sentAt: r.sent_at,
+        receivedAt: r.received_at,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      }));
+    }
+    // Load suppliers
+    const { data: nccData, error: nccErr } = await state.supabase
+      .from('suppliers')
+      .select('*')
+      .eq('active', true)
+      .order('name');
+    if (!nccErr && nccData) {
+      state.poSuppliers = nccData.map(s => ({
+        id: s.id,
+        code: s.code || '',
+        name: s.name || '',
+        taxId: s.tax_id || '',
+        phone: s.phone || '',
+        email: s.email || '',
+        address: s.address || '',
+        paymentNet: s.payment_net || 30,
+        groupName: s.group_name || '',
+      }));
+    }
+    _poLoaded = true;
+    console.log(`[POS-PO] Loaded ${state.purchaseOrders.length} POs, ${state.poSuppliers.length} suppliers`);
+  } catch (err) {
+    console.error('[POS-PO] Load error:', err);
+    toast('⚠ Tải dữ liệu nhập kho lỗi: ' + err.message, 'error');
+  }
 }
 
-function renderPOList() {
-  const branch = state.shift?.branch || 'PB';
-  const orders = state.purchaseOrders.filter(o => o.branch === branch).sort((a,b) => b.createdAt - a.createdAt);
-  const pending = orders.filter(o => o.status === 'pending').length;
-  const totalValue = orders.filter(o => o.status === 'received').reduce((s,o) => s + o.totalValue, 0);
+// ── Save PO to Supabase ──
+async function poSaveToDB(po) {
+  if (!state.supabase) return;
+  const row = {
+    po_no: po.poNo,
+    branch: po.branch,
+    supplier_id: po.supplierId || null,
+    ncc_name: po.nccName || '',
+    ncc_code: po.nccCode || '',
+    status: po.status,
+    items: po.items,
+    total_qty: po.items.reduce((s, it) => s + (it.qty || 0), 0),
+    total_value: po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0),
+    note: po.note || '',
+    deliv_date: po.delivDate || null,
+    sent_at: po.sentAt || null,
+    received_at: po.receivedAt || null,
+    approved_at: po.approvedAt || null,
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    if (po.id && typeof po.id === 'string' && po.id.length > 10) {
+      // Existing PO — update
+      const { error } = await state.supabase.from('purchase_orders').update(row).eq('id', po.id);
+      if (error) throw error;
+    } else {
+      // New PO — insert
+      const { data, error } = await state.supabase.from('purchase_orders').insert(row).select().single();
+      if (error) throw error;
+      if (data) po.id = data.id;
+    }
+    console.log('[POS-PO] Saved PO', po.poNo, po.status);
+  } catch (err) {
+    console.error('[POS-PO] Save error:', err);
+    toast('⚠ Lưu phiếu nhập lỗi: ' + err.message, 'error');
+  }
+}
 
-  const list = orders.slice(0, 20).map(o => {
-    const statusLabel = {draft:'Nháp',pending:'Chờ duyệt',approved:'Đã duyệt',received:'Đã nhận',cancelled:'Đã huỷ'}[o.status] || o.status;
-    return `<div class="po-card" onclick="_poEditId='${o.id}';_poView='detail';switchMgmtTab('purchase-order')">
-      <div class="head">
-        <span class="code">${escapeHtml(o.code)}</span>
-        <span class="po-status ${o.status}">${statusLabel}</span>
-      </div>
-      <div class="meta">
-        NCC: <strong>${escapeHtml(o.supplierName || '—')}</strong> · ${o.items.length} SP · ${fmt.money(o.totalValue)}<br>
-        Tạo: ${fmt.date(o.createdAt)} · Bởi: ${escapeHtml(o.createdBy)}
-      </div>
-    </div>`;
+// ── Helper: find supplier ──
+function poFindNcc(idOrCode) {
+  if (!idOrCode) return null;
+  return state.poSuppliers.find(s => s.id === idOrCode || s.code === idOrCode);
+}
+
+// ── Helper: generate PO number ──
+function poGenNumber() {
+  const d = new Date();
+  const seq = (state.purchaseOrders.length + 1).toString().padStart(4, '0');
+  return 'PN-' + d.toISOString().slice(2, 10).replace(/-/g, '') + '-' + seq;
+}
+
+// ── Helper: today string ──
+function poTodayStr() { return new Date().toISOString().slice(0, 10); }
+
+// ── MAIN RENDER — sub-tabs ──
+function renderPurchaseOrderTab() {
+  // Auto-load from DB on first render
+  if (!_poLoaded && state.supabase) {
+    poLoadFromDB().then(() => switchMgmtTab('purchase-order'));
+    return '<div style="padding:40px;text-align:center;color:var(--gray-500)"><div style="font-size:24px;margin-bottom:8px">⏳</div>Đang tải dữ liệu nhập kho từ hệ thống...</div>';
+  }
+
+  const subs = [
+    { id: 'list', l: '📋 Phiếu nhập hàng' },
+    { id: 'create', l: '➕ Tạo phiếu nhập' },
+    { id: 'receive-list', l: '📦 Nhận hàng' },
+    { id: 'payables', l: '💰 Công nợ NCC' },
+  ];
+  const subBtns = subs.map(s =>
+    `<button class="rpt-sub-btn ${_poView === s.id ? 'active' : ''}" onclick="_poView='${s.id}';switchMgmtTab('purchase-order')">${s.l}</button>`
+  ).join('');
+
+  let content = '';
+  if (_poView === 'create') content = poRenderCreateForm();
+  else if (_poView === 'detail' && _poEditId) content = poRenderDetail(_poEditId);
+  else if (_poView === 'receive-list') content = poRenderReceiveList();
+  else if (_poView === 'payables') content = poRenderPayables();
+  else content = poRenderList();
+
+  return `
+    <div style="display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap">${subBtns}</div>
+    <div style="margin-bottom:6px;text-align:right">
+      <button class="btn btn-outline" onclick="_poLoaded=false;switchMgmtTab('purchase-order')" style="font-size:10px;padding:3px 10px" title="Tải lại dữ liệu từ Supabase">🔄 Tải lại</button>
+    </div>
+    ${content}
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// 1. DANH SÁCH PO
+// ══════════════════════════════════════════════════════════
+function poRenderList() {
+  const branch = state.shift?.branch || 'PB';
+  const allOrders = state.purchaseOrders.filter(o => o.branch === branch || o.branch === 'ALL');
+  let list = [...allOrders];
+  if (_poFilter !== 'all') list = list.filter(o => o.status === _poFilter);
+
+  const counts = {
+    all: allOrders.length,
+    draft: allOrders.filter(o => o.status === 'draft').length,
+    sent: allOrders.filter(o => o.status === 'sent').length,
+    partial: allOrders.filter(o => o.status === 'partial').length,
+    received: allOrders.filter(o => o.status === 'received').length,
+  };
+  const totalValue = list.reduce((s, o) => s + (o.totalValue || 0), 0);
+
+  const filterBtns = [
+    { k: 'all', l: `Tất cả (${counts.all})` },
+    { k: 'draft', l: `Nháp (${counts.draft})` },
+    { k: 'sent', l: `Đã gửi (${counts.sent})` },
+    { k: 'partial', l: `Một phần (${counts.partial})` },
+    { k: 'received', l: `Đã nhận (${counts.received})` },
+  ].map(f => `<button class="btn ${_poFilter === f.k ? 'btn-primary' : ''}" onclick="_poFilter='${f.k}';switchMgmtTab('purchase-order')" style="font-size:11px;padding:4px 10px">${f.l}</button>`).join('');
+
+  const rows = list.slice(0, 50).map(po => {
+    const ncc = poFindNcc(po.supplierId) || poFindNcc(po.nccCode);
+    const nccDisplay = po.nccName || ncc?.name || po.nccCode || '—';
+    const total = po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0);
+    const recv = po.items.reduce((s, it) => s + (it.recv || 0), 0);
+    const totalQty = po.items.reduce((s, it) => s + (it.qty || 0), 0);
+    const stTag = ({
+      draft: '<span style="background:var(--gray-100);color:var(--gray-600);padding:2px 8px;border-radius:10px;font-size:10px">Nháp</span>',
+      sent: '<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:10px;font-size:10px">Đã gửi</span>',
+      partial: `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:10px">Một phần (${recv}/${totalQty})</span>`,
+      received: '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:10px">Đã nhận</span>',
+      cancelled: '<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:10px">Huỷ</span>',
+    })[po.status] || '';
+
+    return `<tr style="cursor:pointer" onclick="_poEditId='${po.id}';_poView='detail';switchMgmtTab('purchase-order')">
+      <td><strong style="font-size:11px;font-family:monospace">${escapeHtml(po.poNo || po.id?.slice(0,8) || '—')}</strong></td>
+      <td style="font-size:11px">${fmt.date(po.createdAt)}</td>
+      <td>${escapeHtml(nccDisplay)}</td>
+      <td style="text-align:center">${po.items.length}</td>
+      <td class="tr"><strong>${fmt.money(total)}</strong></td>
+      <td style="font-size:11px;color:var(--gray-500)">${po.delivDate ? fmt.date(po.delivDate) : '—'}</td>
+      <td style="text-align:center">${stTag}</td>
+      <td style="text-align:right">
+        ${po.status === 'draft' ? `<button class="btn btn-primary" onclick="event.stopPropagation();poSendDraft('${po.id}')" style="font-size:10px;padding:2px 8px">Gửi</button>` : ''}
+        ${po.status === 'sent' || po.status === 'partial' ? `<button class="btn btn-primary" onclick="event.stopPropagation();poOpenReceive('${po.id}')" style="font-size:10px;padding:2px 8px;background:var(--green)">Nhận</button>` : ''}
+      </td>
+    </tr>`;
   }).join('');
 
   return `
     <div class="rpt-summary-grid" style="grid-template-columns:repeat(4,1fr)">
-      <div class="rpt-summary-card"><div class="val">${orders.length}</div><div class="lbl">Tổng phiếu</div></div>
-      <div class="rpt-summary-card"><div class="val" style="color:var(--orange)">${pending}</div><div class="lbl">Chờ duyệt</div></div>
-      <div class="rpt-summary-card"><div class="val">${orders.filter(o=>o.status==='received').length}</div><div class="lbl">Đã nhận</div></div>
-      <div class="rpt-summary-card"><div class="val">${fmt.money(totalValue)}</div><div class="lbl">Tổng giá trị nhận</div></div>
+      <div class="rpt-summary-card"><div class="val">${counts.all}</div><div class="lbl">Tổng phiếu</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:var(--orange)">${counts.sent + counts.partial}</div><div class="lbl">Đang chờ về</div><div style="font-size:10px;color:var(--gray-500)">${counts.sent} gửi · ${counts.partial} một phần</div></div>
+      <div class="rpt-summary-card"><div class="val">${counts.draft}</div><div class="lbl">Bản nháp</div></div>
+      <div class="rpt-summary-card"><div class="val">${fmt.money(totalValue)}</div><div class="lbl">Giá trị phiếu (lọc)</div></div>
     </div>
-    <div style="margin-bottom:12px">
-      <button class="btn btn-primary" onclick="_poView='create';_poItems=[];switchMgmtTab('purchase-order')" style="font-size:12px">➕ Tạo phiếu nhập hàng</button>
+
+    <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+      ${filterBtns}
+      <button class="btn btn-primary" onclick="_poView='create';_poItems=[];switchMgmtTab('purchase-order')" style="font-size:11px;margin-left:auto">➕ Tạo phiếu nhập</button>
     </div>
-    ${list || '<div class="mgmt-empty"><div class="icon">📥</div><div>Chưa có phiếu nhập kho nào</div></div>'}
+
+    ${list.length === 0 ? '<div class="mgmt-empty"><div class="icon">📥</div><div>Không có phiếu nhập nào' + (_poFilter !== 'all' ? ' ở trạng thái này' : '') + '</div></div>' : `
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px">
+      <table style="font-size:12px;margin:0;min-width:700px">
+        <thead><tr style="background:var(--gray-50)">
+          <th>Số phiếu</th><th>Ngày</th><th>NCC</th><th style="text-align:center">SKU</th><th class="tr">Giá trị</th><th>Dự kiến</th><th style="text-align:center">Trạng thái</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`}
   `;
 }
 
-function renderPOCreateForm() {
-  const suppliers = [...new Set(state.products.map(p => p.nccId || p.supplier || '').filter(Boolean))];
+// ══════════════════════════════════════════════════════════
+// 2. TẠO PO MỚI
+// ══════════════════════════════════════════════════════════
+function poRenderCreateForm() {
+  const nccOptions = state.poSuppliers.map(s =>
+    `<option value="${s.id}">${escapeHtml(s.name)}${s.code ? ' · ' + escapeHtml(s.code) : ''}${s.paymentNet ? ' · NET ' + s.paymentNet : ''}</option>`
+  ).join('');
+
   const itemRows = _poItems.map((item, idx) => `<tr>
-    <td>${escapeHtml(item.sku)}</td>
-    <td>${escapeHtml(item.name)}</td>
-    <td><input type="number" min="1" value="${item.qty}" onchange="_poItems[${idx}].qty=parseInt(this.value)||1;poUpdateTotal()"></td>
-    <td><input type="number" min="0" value="${item.cost}" onchange="_poItems[${idx}].cost=parseInt(this.value)||0;poUpdateTotal()"></td>
-    <td class="tr" id="poLineTotal${idx}">${fmt.money(item.qty * item.cost)}</td>
-    <td><button onclick="_poItems.splice(${idx},1);switchMgmtTab('purchase-order')" style="font-size:10px;color:var(--red);background:none;border:none;cursor:pointer">✕</button></td>
+    <td style="font-size:11px">${escapeHtml(item.sku)}</td>
+    <td><strong style="font-size:11px">${escapeHtml(item.name)}</strong></td>
+    <td style="text-align:right"><input type="number" min="1" value="${item.qty}" onchange="_poItems[${idx}].qty=parseInt(this.value)||1;poRefreshCreateItems()" style="width:65px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px"></td>
+    <td style="text-align:right"><input type="number" min="0" value="${item.cost}" onchange="_poItems[${idx}].cost=parseInt(this.value)||0;poRefreshCreateItems()" style="width:90px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-family:monospace"></td>
+    <td class="tr" style="font-weight:600">${fmt.money(item.qty * item.cost)}</td>
+    <td style="text-align:center"><button onclick="_poItems.splice(${idx},1);poRefreshCreateItems()" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 6px" title="Xóa">✕</button></td>
   </tr>`).join('');
-  const total = _poItems.reduce((s,i) => s + i.qty * i.cost, 0);
+  const total = _poItems.reduce((s, i) => s + i.qty * i.cost, 0);
+  const totalQty = _poItems.reduce((s, i) => s + i.qty, 0);
+
+  // Default delivery date: +2 days
+  const defDeliv = (() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().slice(0, 10); })();
 
   return `
-    <div class="adj-form">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h4 style="font-size:13px;font-weight:700">📥 Tạo phiếu nhập hàng mới</h4>
-        <button class="btn btn-outline" onclick="_poView='list';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại</button>
-      </div>
-      <label>Nhà cung cấp</label>
-      <input type="text" id="poSupplier" placeholder="Tên NCC..." list="poSupplierList">
-      <datalist id="poSupplierList">${suppliers.map(s => `<option value="${escapeHtml(s)}">`).join('')}</datalist>
-      <label>Ghi chú</label>
-      <textarea id="poNote" placeholder="Ghi chú đơn nhập (tuỳ chọn)" rows="2"></textarea>
-      <label>Thêm sản phẩm</label>
-      <input type="text" id="poAddProduct" placeholder="Tìm SKU / tên SP..." oninput="poSearchProduct(this.value)">
-      <div id="poSearchResults" style="max-height:120px;overflow-y:auto;font-size:12px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h4 style="font-size:14px;font-weight:700;margin:0">📥 Tạo phiếu nhập hàng</h4>
+      <button class="btn btn-outline" onclick="_poView='list';switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại</button>
     </div>
-    <div class="po-form-items">
-      <table>
-        <thead><tr><th>SKU</th><th>Tên SP</th><th style="width:70px">SL</th><th style="width:80px">Giá nhập</th><th style="width:90px" class="tr">Thành tiền</th><th style="width:30px"></th></tr></thead>
-        <tbody>${itemRows || '<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:12px">Chưa có SP — tìm và thêm ở trên</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="4" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td><td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(total)}</td><td></td></tr></tfoot>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Nhà cung cấp *</label>
+        <select id="poNccSelect" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px" onchange="poOnNccChange()">
+          <option value="">— Chọn NCC —</option>
+          ${nccOptions}
+        </select>
+        <div id="poNccInfo" style="font-size:10px;color:var(--gray-500);margin-top:3px"></div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Chi nhánh nhận</label>
+        <input type="text" id="poBranch" value="${escapeHtml(state.shift?.branch || 'PB')}" readonly style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;background:var(--gray-50);box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Ngày dự kiến nhận</label>
+        <input type="date" id="poDelivDate" value="${defDeliv}" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Ghi chú</label>
+        <input type="text" id="poNote" placeholder="VD: Giao trước 10h sáng..." style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:3px">Thêm sản phẩm vào phiếu</label>
+      <input type="text" id="poAddProduct" placeholder="Tìm SKU / barcode / tên SP..." oninput="poSearchProduct(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;box-sizing:border-box">
+      <div id="poSearchResults" style="max-height:160px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:6px;margin-top:4px;display:none"></div>
+    </div>
+
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px">
+      <table style="font-size:12px;margin:0;min-width:580px">
+        <thead><tr style="background:var(--gray-50)"><th>SKU</th><th>Tên SP</th><th class="tr" style="width:70px">SL</th><th class="tr" style="width:100px">Giá nhập</th><th class="tr" style="width:100px">Thành tiền</th><th style="width:35px"></th></tr></thead>
+        <tbody id="poCreateItemsBody">${itemRows || '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:20px">Chưa có SP — tìm và thêm ở trên</td></tr>'}</tbody>
+        <tfoot><tr style="background:var(--gray-50)">
+          <td colspan="2" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td>
+          <td class="tr" style="font-weight:700">${totalQty}</td>
+          <td></td>
+          <td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(total)}</td>
+          <td></td>
+        </tr></tfoot>
       </table>
     </div>
-    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
-      <button class="btn btn-outline" onclick="poSaveDraft()" style="font-size:12px">📝 Lưu nháp</button>
-      <button class="btn btn-primary" onclick="poSubmit()" style="font-size:12px" ${_poItems.length===0?'disabled':''}>📤 Gửi duyệt</button>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="poCreateOrder('draft')" style="font-size:12px" ${_poItems.length === 0 ? 'disabled' : ''}>📝 Lưu nháp</button>
+      <button class="btn btn-primary" onclick="poCreateOrder('sent')" style="font-size:12px" ${_poItems.length === 0 ? 'disabled' : ''}>📤 Lưu & Gửi NCC</button>
     </div>
   `;
+}
+
+function poOnNccChange() {
+  const sel = document.getElementById('poNccSelect');
+  const info = document.getElementById('poNccInfo');
+  if (!sel || !info) return;
+  const ncc = poFindNcc(sel.value);
+  if (ncc) {
+    info.innerHTML = `MST: ${escapeHtml(ncc.taxId || '—')} · ĐT: ${escapeHtml(ncc.phone || '—')} · NET ${ncc.paymentNet} ngày`;
+  } else {
+    info.innerHTML = '';
+  }
+}
+
+function poRefreshCreateItems() {
+  switchMgmtTab('purchase-order');
 }
 
 function poSearchProduct(q) {
   const el = document.getElementById('poSearchResults');
-  if (!el || !q || q.length < 2) { if(el) el.innerHTML = ''; return; }
+  if (!el || !q || q.length < 2) { if (el) { el.innerHTML = ''; el.style.display = 'none'; } return; }
   q = q.toLowerCase();
-  const results = state.products.filter(p => `${p.sku} ${p.barcode||''} ${p.name}`.toLowerCase().includes(q)).slice(0, 6);
-  el.innerHTML = results.map(p => `<div style="padding:5px 8px;cursor:pointer;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between" onclick="poAddItem('${escapeHtml(p.sku)}')">
-    <span>${escapeHtml(p.name)} <span style="color:var(--gray-400)">(${escapeHtml(p.sku)})</span></span>
-    <span>Giá nhập: ${fmt.money(p.cost||0)}</span>
+  const results = state.products.filter(p => `${p.sku} ${p.barcode || ''} ${p.name}`.toLowerCase().includes(q)).slice(0, 8);
+  if (results.length === 0) {
+    el.innerHTML = '<div style="padding:10px;color:var(--gray-400);font-size:11px">Không tìm thấy sản phẩm</div>';
+    el.style.display = 'block';
+    return;
+  }
+  el.innerHTML = results.map(p => `<div style="padding:6px 10px;cursor:pointer;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;font-size:12px" onclick="poAddItem('${escapeHtml(p.sku)}')">
+    <div><strong>${escapeHtml(p.name)}</strong><div style="font-size:10px;color:var(--gray-400);font-family:monospace">${escapeHtml(p.sku)} · Tồn: ${p.stock || 0} · Giá vốn: ${fmt.money(p.cost || 0)}</div></div>
+    <button style="font-size:10px;background:var(--navy);color:#fff;border:none;border-radius:4px;padding:3px 8px;cursor:pointer">+ Thêm</button>
   </div>`).join('');
+  el.style.display = 'block';
 }
 
 function poAddItem(sku) {
-  if (_poItems.find(i => i.sku === sku)) { alert('SP đã có trong danh sách'); return; }
+  if (_poItems.find(i => i.sku === sku)) { toast('SP đã có trong phiếu', 'warn'); return; }
   const p = state.products.find(x => x.sku === sku);
   if (!p) return;
   _poItems.push({ sku: p.sku, name: p.name, qty: 1, cost: p.cost || 0 });
-  document.getElementById('poSearchResults').innerHTML = '';
-  document.getElementById('poAddProduct').value = '';
+  const el = document.getElementById('poSearchResults');
+  if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+  const inp = document.getElementById('poAddProduct');
+  if (inp) inp.value = '';
+  toast(`Đã thêm ${p.name}`, 'success');
   switchMgmtTab('purchase-order');
 }
 
-function poUpdateTotal() { /* re-render handles it */ }
-
-function poSaveDraft() { poCreateOrder('draft'); }
-function poSubmit() { poCreateOrder('pending'); }
-
-function poCreateOrder(status) {
-  if (_poItems.length === 0) { alert('Vui lòng thêm sản phẩm'); return; }
-  const supplier = document.getElementById('poSupplier')?.value?.trim() || '';
+async function poCreateOrder(status) {
+  if (_poItems.length === 0) { toast('Vui lòng thêm sản phẩm', 'error'); return; }
+  const nccId = document.getElementById('poNccSelect')?.value || '';
   const note = document.getElementById('poNote')?.value?.trim() || '';
-  const branch = state.shift?.branch || 'PB';
+  const delivDate = document.getElementById('poDelivDate')?.value || '';
+  const branch = document.getElementById('poBranch')?.value || state.shift?.branch || 'PB';
+  if (!nccId && status === 'sent') { toast('Vui lòng chọn nhà cung cấp trước khi gửi', 'error'); return; }
+
+  const ncc = poFindNcc(nccId);
+  const poNo = poGenNumber();
   const order = {
-    id: 'PO-' + Date.now(),
-    code: 'PN-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.random().toString(36).slice(2,5).toUpperCase(),
+    id: null, // will be set by Supabase
+    poNo,
     branch,
-    supplierName: supplier,
+    supplierId: nccId || null,
+    nccName: ncc?.name || '',
+    nccCode: ncc?.code || '',
     status,
-    items: _poItems.map(i => ({...i})),
-    totalValue: _poItems.reduce((s,i) => s + i.qty * i.cost, 0),
+    items: _poItems.map(i => ({ sku: i.sku, name: i.name, qty: i.qty, cost: i.cost, recv: 0 })),
+    totalQty: _poItems.reduce((s, i) => s + i.qty, 0),
+    totalValue: _poItems.reduce((s, i) => s + i.qty * i.cost, 0),
     note,
-    createdAt: Date.now(),
-    createdBy: state.user?.displayName || 'Admin',
-    approvedAt: null, approvedBy: null,
-    receivedAt: null, receivedBy: null,
+    delivDate,
+    createdBy: state.user?.id || null,
+    approvedBy: null, approvedAt: null,
+    sentAt: status === 'sent' ? new Date().toISOString() : null,
+    receivedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
-  state.purchaseOrders.push(order);
+
+  // Save to Supabase
+  await poSaveToDB(order);
+  state.purchaseOrders.unshift(order);
   _poItems = [];
   _poView = 'list';
-  // Log to audit
-  addAuditLog('purchase_order', `Tạo phiếu nhập ${order.code} (${status}), ${order.items.length} SP, ${fmt.money(order.totalValue)}`);
-  alert(`Phiếu nhập ${order.code} đã ${status === 'draft' ? 'lưu nháp' : 'gửi duyệt'}!`);
+  addAuditLog('purchase_order', `Tạo phiếu nhập ${poNo} (${status}), ${order.items.length} SP, ${fmt.money(order.totalValue)}`);
+  toast(`✓ Phiếu ${poNo} đã ${status === 'draft' ? 'lưu nháp' : 'tạo & gửi NCC'}`, 'success');
   switchMgmtTab('purchase-order');
 }
 
-function renderPODetail(poId) {
+// ══════════════════════════════════════════════════════════
+// 3. CHI TIẾT PO + WORKFLOW
+// ══════════════════════════════════════════════════════════
+function poRenderDetail(poId) {
   const po = state.purchaseOrders.find(o => o.id === poId);
-  if (!po) { _poView = 'list'; return renderPOList(); }
-  const statusLabel = {draft:'Nháp',pending:'Chờ duyệt',approved:'Đã duyệt',received:'Đã nhận',cancelled:'Đã huỷ'}[po.status];
-  const itemRows = po.items.map(i => `<tr>
-    <td>${escapeHtml(i.sku)}</td><td>${escapeHtml(i.name)}</td>
-    <td class="tr">${i.qty}</td><td class="tr">${fmt.money(i.cost)}</td>
-    <td class="tr">${fmt.money(i.qty * i.cost)}</td>
-  </tr>`).join('');
+  if (!po) { _poView = 'list'; return poRenderList(); }
 
+  const ncc = poFindNcc(po.supplierId) || poFindNcc(po.nccCode);
+  const total = po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0);
+  const totalRecv = po.items.reduce((s, it) => s + (it.recv || 0) * (it.cost || 0), 0);
+  const totalQty = po.items.reduce((s, it) => s + (it.qty || 0), 0);
+  const totalRecvQty = po.items.reduce((s, it) => s + (it.recv || 0), 0);
+
+  // Status badge
+  const stPill = ({
+    draft: '📋 Nháp',
+    sent: '📤 Đã gửi NCC',
+    partial: '📦 Nhận một phần',
+    received: '✅ Đã nhận đủ',
+    cancelled: '❌ Đã huỷ',
+  })[po.status] || po.status;
+
+  // Timeline
+  const steps = ['Nháp', 'Gửi NCC', 'Nhận hàng', 'Hoàn tất'];
+  const stepIdx = ({ draft: 0, sent: 1, partial: 2, received: 3, cancelled: -1 })[po.status];
+  const timeline = steps.map((s, i) => {
+    let cls = '';
+    if (i < stepIdx) cls = 'color:var(--green);font-weight:600';
+    else if (i === stepIdx) cls = 'color:var(--navy);font-weight:700;text-decoration:underline';
+    else cls = 'color:var(--gray-400)';
+    return `<span style="${cls};font-size:11px">${i + 1}. ${s}</span>`;
+  }).join(' <span style="color:var(--gray-300)">→</span> ');
+
+  // Item rows
+  const itemRows = po.items.map((it, i) => {
+    const recv = it.recv || 0;
+    const recvStyle = recv === it.qty ? 'color:var(--green);font-weight:600' : recv > 0 ? 'color:var(--orange);font-weight:600' : 'color:var(--gray-400)';
+    const diffLabel = recv === 0 ? '' : recv === it.qty ? ' ✓' : ` (thiếu ${it.qty - recv})`;
+    return `<tr>
+      <td style="text-align:center;font-size:11px;color:var(--gray-400)">${i + 1}</td>
+      <td><strong style="font-size:10px;font-family:monospace">${escapeHtml(it.sku)}</strong></td>
+      <td><strong style="font-size:11px">${escapeHtml(it.name || it.sku)}</strong></td>
+      <td class="tr" style="font-weight:600;color:var(--navy)">${it.qty}</td>
+      <td class="tr" style="${recvStyle}">${recv}${diffLabel}</td>
+      <td class="tr" style="font-family:monospace">${fmt.money(it.cost)}</td>
+      <td class="tr" style="font-weight:600">${fmt.money(it.qty * it.cost)}</td>
+    </tr>`;
+  }).join('');
+
+  // Action buttons
   let actions = '';
-  if (po.status === 'draft') actions = `<button class="btn btn-primary" onclick="poChangeStatus('${po.id}','pending')" style="font-size:12px">📤 Gửi duyệt</button>`;
-  if (po.status === 'pending') actions = `
-    <button class="btn btn-primary" onclick="poChangeStatus('${po.id}','approved')" style="font-size:12px">✓ Duyệt</button>
-    <button class="btn btn-outline" onclick="poChangeStatus('${po.id}','cancelled')" style="font-size:12px;color:var(--red)">✕ Huỷ</button>`;
-  if (po.status === 'approved') actions = `<button class="btn btn-primary" onclick="poReceive('${po.id}')" style="font-size:12px">📦 Xác nhận nhận hàng</button>`;
+  if (po.status === 'draft') actions = `
+    <button class="btn btn-primary" onclick="poSendDraft('${po.id}')" style="font-size:12px">📤 Gửi NCC</button>
+    <button class="btn btn-outline" onclick="poCancelOrder('${po.id}')" style="font-size:12px;color:var(--red)">🗑 Xoá phiếu</button>`;
+  if (po.status === 'sent' || po.status === 'partial') actions = `
+    <button class="btn btn-primary" onclick="poOpenReceive('${po.id}')" style="font-size:12px;background:var(--green)">📦 Nhận hàng</button>`;
 
   return `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div>
-        <h4 style="font-size:15px;font-weight:700">${escapeHtml(po.code)} <span class="po-status ${po.status}">${statusLabel}</span></h4>
-        <div style="font-size:12px;color:var(--gray-500);margin-top:2px">NCC: ${escapeHtml(po.supplierName||'—')} · Tạo: ${fmt.date(po.createdAt)} · Bởi: ${escapeHtml(po.createdBy)}</div>
+        <h4 style="font-size:14px;font-weight:700;margin:0">${escapeHtml(po.poNo || '')} · ${stPill}</h4>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:2px">NCC: ${escapeHtml(po.nccName || ncc?.name || '—')} · Tạo: ${fmt.date(po.createdAt)}</div>
       </div>
       <button class="btn btn-outline" onclick="_poView='list';_poEditId=null;switchMgmtTab('purchase-order')" style="font-size:11px">← Danh sách</button>
     </div>
-    ${po.note ? `<div style="background:var(--gray-50);padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:10px;color:var(--gray-600)">📝 ${escapeHtml(po.note)}</div>` : ''}
-    <div class="po-form-items">
-      <table>
-        <thead><tr><th>SKU</th><th>Tên SP</th><th class="tr" style="width:60px">SL</th><th class="tr" style="width:80px">Giá nhập</th><th class="tr" style="width:90px">Thành tiền</th></tr></thead>
+
+    <div style="background:var(--gray-50);padding:10px 14px;border-radius:8px;margin-bottom:12px">${timeline}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;font-size:12px">
+      <div style="background:var(--gray-50);padding:8px 12px;border-radius:6px">
+        <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase">Số phiếu</div>
+        <div style="font-weight:600;font-family:monospace">${escapeHtml(po.poNo || po.id?.slice(0, 8) || '—')}</div>
+      </div>
+      <div style="background:var(--gray-50);padding:8px 12px;border-radius:6px">
+        <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase">Nhà cung cấp</div>
+        <div style="font-weight:600">${escapeHtml(po.nccName || ncc?.name || '—')}</div>
+        ${ncc?.taxId ? `<div style="font-size:10px;color:var(--gray-400)">MST: ${escapeHtml(ncc.taxId)}</div>` : ''}
+      </div>
+      <div style="background:var(--gray-50);padding:8px 12px;border-radius:6px">
+        <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase">Dự kiến giao</div>
+        <div style="font-weight:600">${po.delivDate ? fmt.date(po.delivDate) : '—'}</div>
+        ${ncc?.paymentNet ? `<div style="font-size:10px;color:var(--gray-400)">NET ${ncc.paymentNet} ngày</div>` : ''}
+      </div>
+    </div>
+
+    ${po.sentAt ? `<div style="font-size:10px;color:var(--green);margin-bottom:4px">📤 Đã gửi: ${fmt.date(po.sentAt)}</div>` : ''}
+    ${po.receivedAt ? `<div style="font-size:10px;color:var(--green);margin-bottom:4px">📦 Đã nhận: ${fmt.date(po.receivedAt)}</div>` : ''}
+    ${po.note ? `<div style="background:#fffbeb;border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;margin-bottom:12px">📝 ${escapeHtml(po.note)}</div>` : ''}
+
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:12px">
+      <table style="font-size:12px;margin:0;min-width:640px">
+        <thead><tr style="background:var(--gray-50)">
+          <th style="width:35px;text-align:center">STT</th><th>SKU</th><th>Tên SP</th>
+          <th class="tr" style="width:60px">SL đặt</th><th class="tr" style="width:80px">Đã nhận</th>
+          <th class="tr" style="width:90px">Đơn giá</th><th class="tr" style="width:100px">Thành tiền</th>
+        </tr></thead>
         <tbody>${itemRows}</tbody>
-        <tfoot><tr><td colspan="4" style="text-align:right;font-weight:700;padding:8px">Tổng cộng:</td><td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(po.totalValue)}</td></tr></tfoot>
+        <tfoot><tr style="background:var(--gray-50)">
+          <td colspan="3" style="text-align:right;font-weight:700;padding:8px">TỔNG PHIẾU:</td>
+          <td class="tr" style="font-weight:700">${totalQty}</td>
+          <td class="tr">${totalRecvQty}</td>
+          <td></td>
+          <td class="tr" style="font-weight:700;font-size:14px;color:var(--navy)">${fmt.money(total)}</td>
+        </tr>
+        ${totalRecv > 0 && totalRecv < total ? `<tr style="background:#fef3c7"><td colspan="6" class="tr" style="font-weight:600">Đã nhận:</td><td class="tr" style="font-weight:600;color:var(--orange)">${fmt.money(totalRecv)}</td></tr>` : ''}
+        </tfoot>
       </table>
     </div>
-    ${po.approvedAt ? `<div style="font-size:11px;color:var(--green);margin-top:6px">✓ Duyệt: ${fmt.date(po.approvedAt)} bởi ${escapeHtml(po.approvedBy||'')}</div>` : ''}
-    ${po.receivedAt ? `<div style="font-size:11px;color:var(--green);margin-top:4px">📦 Nhận: ${fmt.date(po.receivedAt)} bởi ${escapeHtml(po.receivedBy||'')}</div>` : ''}
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">${actions}</div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">${actions}</div>
   `;
 }
 
-function poChangeStatus(poId, newStatus) {
+// ── Send draft PO ──
+async function poSendDraft(poId) {
   const po = state.purchaseOrders.find(o => o.id === poId);
   if (!po) return;
-  if (newStatus === 'cancelled' && !confirm('Huỷ phiếu nhập này?')) return;
-  po.status = newStatus;
-  if (newStatus === 'approved') { po.approvedAt = Date.now(); po.approvedBy = state.user?.displayName || 'Admin'; }
-  addAuditLog('purchase_order', `${newStatus === 'approved' ? 'Duyệt' : newStatus === 'cancelled' ? 'Huỷ' : 'Cập nhật'} phiếu ${po.code}`);
+  const ncc = poFindNcc(po.supplierId);
+  if (!confirm(`Gửi phiếu nhập ${po.poNo} cho ${po.nccName || ncc?.name || 'NCC'}?`)) return;
+  po.status = 'sent';
+  po.sentAt = new Date().toISOString();
+  po.updatedAt = new Date().toISOString();
+  await poSaveToDB(po);
+  addAuditLog('purchase_order', `Gửi phiếu nhập ${po.poNo} cho NCC`);
+  toast(`✓ Đã gửi ${po.poNo}`, 'success');
   switchMgmtTab('purchase-order');
 }
 
-function poReceive(poId) {
+// ── Cancel/delete draft PO ──
+async function poCancelOrder(poId) {
   const po = state.purchaseOrders.find(o => o.id === poId);
   if (!po) return;
-  if (!confirm(`Xác nhận đã nhận hàng: ${po.items.length} SP, tổng ${fmt.money(po.totalValue)}?\nTồn kho sẽ được cập nhật.`)) return;
-  po.status = 'received';
-  po.receivedAt = Date.now();
-  po.receivedBy = state.user?.displayName || 'Admin';
-  // Update stock
-  po.items.forEach(item => {
-    const p = state.products.find(x => x.sku === item.sku);
-    if (p) p.stock = (p.stock || 0) + item.qty;
-  });
-  addAuditLog('purchase_order', `Nhận hàng ${po.code}: ${po.items.length} SP, tồn đã cập nhật`);
-  alert(`Đã nhận hàng ${po.code}! Tồn kho đã được cập nhật.`);
+  if (po.status !== 'draft') { toast('Chỉ xoá được phiếu ở trạng thái Nháp', 'error'); return; }
+  if (!confirm(`Xoá phiếu nhập ${po.poNo}?\n\n${po.items.length} SP · ${fmt.money(po.totalValue)}\n\nThao tác KHÔNG thể hoàn tác.`)) return;
+  // Soft delete in DB
+  if (state.supabase && po.id) {
+    try {
+      await state.supabase.from('purchase_orders').update({ deleted_at: new Date().toISOString(), status: 'cancelled' }).eq('id', po.id);
+    } catch (e) { console.error('[POS-PO] Delete error:', e); }
+  }
+  state.purchaseOrders = state.purchaseOrders.filter(o => o.id !== poId);
+  _poView = 'list';
+  _poEditId = null;
+  addAuditLog('purchase_order', `Xoá phiếu nhập nháp ${po.poNo}`);
+  toast(`Đã xoá ${po.poNo}`, 'success');
   switchMgmtTab('purchase-order');
+}
+
+// ══════════════════════════════════════════════════════════
+// 4. NHẬN HÀNG — multi-step receiving workflow
+// ══════════════════════════════════════════════════════════
+function poOpenReceive(poId) {
+  const po = state.purchaseOrders.find(o => o.id === poId);
+  if (!po) { toast('Không tìm thấy phiếu nhập', 'error'); return; }
+  // Prepare receive data
+  _poReceiveData = JSON.parse(JSON.stringify(po));
+  _poReceiveData.items.forEach(it => {
+    it._toRecv = it.qty - (it.recv || 0);
+    if (!it.expiry) it.expiry = '';
+  });
+  _poReceiveData._invoiceNo = '';
+  _poReceiveData._invoiceDate = poTodayStr();
+  _poReceiveData._recvNote = '';
+  _poView = 'receive';
+  _poEditId = poId;
+  switchMgmtTab('purchase-order');
+}
+
+function poRenderReceiveForm() {
+  if (!_poReceiveData) { _poView = 'list'; return poRenderList(); }
+  const po = _poReceiveData;
+  const ncc = poFindNcc(po.supplierId);
+  const branch = state.shift?.branch || po.branch;
+
+  const itemRows = po.items.map((it, idx) => {
+    const need = it.qty - (it.recv || 0);
+    const toRecv = it._toRecv;
+    const diff = toRecv - need;
+    let diffCell = '<td style="text-align:center;color:var(--gray-400)">—</td>';
+    if (toRecv > 0) {
+      if (diff === 0) diffCell = '<td style="text-align:center;color:var(--green);font-weight:600">✓</td>';
+      else if (diff < 0) diffCell = `<td style="text-align:center;color:var(--orange);font-weight:600">−${Math.abs(diff)}</td>`;
+      else diffCell = `<td style="text-align:center;color:var(--navy);font-weight:600">+${diff}</td>`;
+    }
+    let statusPill = '<span style="background:var(--gray-100);color:var(--gray-500);padding:1px 6px;border-radius:8px;font-size:9px">Chưa quét</span>';
+    if (toRecv > 0) {
+      if (diff === 0) statusPill = '<span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:8px;font-size:9px">Khớp</span>';
+      else if (diff < 0) statusPill = `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;font-size:9px">Thiếu ${Math.abs(diff)}</span>`;
+      else statusPill = `<span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:8px;font-size:9px">Thừa ${diff}</span>`;
+    }
+
+    return `<tr>
+      <td style="text-align:center;font-size:10px;color:var(--gray-400)">${idx + 1}</td>
+      <td style="font-family:monospace;font-size:10px">${escapeHtml(it.sku)}</td>
+      <td style="font-size:11px"><strong>${escapeHtml(it.name || it.sku)}</strong></td>
+      <td class="tr">${need}</td>
+      <td class="tr"><input type="number" min="0" value="${toRecv}" placeholder="${need}" onchange="_poReceiveData.items[${idx}]._toRecv=parseInt(this.value)||0;poRefreshReceive()" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;font-weight:600"></td>
+      ${diffCell}
+      <td><input type="month" value="${it.expiry}" onchange="_poReceiveData.items[${idx}].expiry=this.value" style="width:100px;padding:2px 4px;border:1px solid var(--gray-200);border-radius:4px;font-size:10px"></td>
+      <td style="text-align:center">${statusPill}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <h4 style="font-size:14px;font-weight:700;margin:0">📦 Nhận hàng · ${escapeHtml(po.poNo || '')}</h4>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:2px">NCC: ${escapeHtml(po.nccName || ncc?.name || '—')} · CN: ${escapeHtml(branch)}</div>
+      </div>
+      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;switchMgmtTab('purchase-order')" style="font-size:11px">← Quay lại phiếu</button>
+    </div>
+
+    <div style="background:var(--gray-50);padding:8px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:16px;font-size:11px">
+      <span style="color:var(--navy);font-weight:700">1. Nhận vật lý</span>
+      <span style="color:var(--gray-400)">→</span>
+      <span style="color:var(--gray-400)">2. Đối chiếu hoá đơn</span>
+      <span style="color:var(--gray-400)">→</span>
+      <span style="color:var(--gray-400)">3. Cập nhật tồn</span>
+    </div>
+
+    <div style="background:#fef3c7;border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;margin-bottom:12px">
+      ⚠ Cửa hàng kiểm SL thực nhận + HSD. Giá do kế toán đối chiếu hoá đơn sau.
+    </div>
+
+    <div style="background:linear-gradient(135deg,#f0f4ff,#fafbff);border:1.5px dashed var(--navy);border-radius:8px;padding:12px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="poMockScan()">
+      <div style="font-size:16px;letter-spacing:4px;color:var(--navy);font-weight:700">▮▯▮▮▯▮▯▮▮▯▮▮</div>
+      <div style="font-size:10px;color:var(--gray-500);margin-top:4px">Bấm để giả lập quét barcode (demo). App thật sẽ mở camera.</div>
+    </div>
+
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:12px">
+      <table style="font-size:12px;margin:0;min-width:700px">
+        <thead><tr style="background:var(--gray-50)">
+          <th style="width:30px;text-align:center">STT</th><th>SKU</th><th>Tên SP</th>
+          <th class="tr" style="width:55px">SL HĐ</th><th class="tr" style="width:65px">SL nhận</th>
+          <th style="width:55px;text-align:center">Lệch</th>
+          <th style="width:110px">Hạn dùng</th><th style="width:70px;text-align:center">TT</th>
+        </tr></thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Số hoá đơn VAT</label>
+        <input type="text" id="poRcvInvNo" value="${_poReceiveData._invoiceNo}" placeholder="VD: 0000228" onchange="_poReceiveData._invoiceNo=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ngày HĐ</label>
+        <input type="date" id="poRcvInvDate" value="${_poReceiveData._invoiceDate}" onchange="_poReceiveData._invoiceDate=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <label style="font-size:10px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:2px">Ghi chú nhận hàng</label>
+      <textarea id="poRcvNote" rows="2" placeholder="VD: Đủ hàng, hộp Choco Pie hơi móp 2 cái..." onchange="_poReceiveData._recvNote=this.value" style="width:100%;padding:5px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;box-sizing:border-box">${_poReceiveData._recvNote || ''}</textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="_poView='detail';_poReceiveData=null;switchMgmtTab('purchase-order')" style="font-size:12px">Huỷ</button>
+      <button class="btn btn-primary" onclick="poConfirmReceive()" style="font-size:12px;background:var(--green)">✓ Hoàn tất nhận hàng</button>
+    </div>
+  `;
+}
+
+function poRefreshReceive() {
+  switchMgmtTab('purchase-order');
+}
+
+function poMockScan() {
+  if (!_poReceiveData) return;
+  const next = _poReceiveData.items.find(it => !it._toRecv || it._toRecv === 0);
+  if (!next) { toast('Đã quét hết SKU trong đơn này', 'success'); return; }
+  next._toRecv = next.qty - (next.recv || 0);
+  toast(`Đã quét: ${next.sku} · SL ${next._toRecv}`, 'success');
+  switchMgmtTab('purchase-order');
+}
+
+async function poConfirmReceive() {
+  if (!_poReceiveData) return;
+  const poId = _poReceiveData.id;
+  const po = state.purchaseOrders.find(o => o.id === poId);
+  if (!po) { toast('Không tìm thấy phiếu nhập', 'error'); return; }
+
+  const branch = state.shift?.branch || po.branch || 'PB';
+  let anyRecv = false;
+  let allFull = true;
+
+  _poReceiveData.items.forEach((rit, idx) => {
+    const toRecv = parseInt(rit._toRecv) || 0;
+    if (toRecv > 0) {
+      po.items[idx].recv = (po.items[idx].recv || 0) + toRecv;
+      po.items[idx].expiry = rit.expiry;
+      // Cập nhật tồn kho local
+      const p = state.products.find(x => x.sku === rit.sku);
+      if (p) p.stock = (p.stock || 0) + toRecv;
+      anyRecv = true;
+    }
+    if ((po.items[idx].recv || 0) < po.items[idx].qty) allFull = false;
+  });
+  if (!anyRecv) { toast('Chưa nhập số lượng nhận', 'error'); return; }
+
+  po.status = allFull ? 'received' : 'partial';
+  po.receivedAt = new Date().toISOString();
+  po.updatedAt = new Date().toISOString();
+  const noteVal = _poReceiveData._recvNote || '';
+  if (noteVal) po.note = (po.note ? po.note + '\n' : '') + '[Nhận] ' + noteVal;
+
+  // Tạo công nợ NCC tạm
+  const ncc = poFindNcc(po.supplierId);
+  const tempTotal = po.items.reduce((s, it) => {
+    return s + (it.recv || 0) * (it.cost || 0);
+  }, 0);
+  const existingPayable = state.poPayables.find(p => p.poId === po.id);
+  if (existingPayable) {
+    existingPayable.amount = tempTotal;
+    existingPayable.balance = tempTotal - existingPayable.paid;
+  } else {
+    const dueDate = new Date(po.receivedAt);
+    dueDate.setDate(dueDate.getDate() + (ncc?.paymentNet || 30));
+    state.poPayables.push({
+      id: 'CN-POS-' + Date.now(),
+      poId: po.id,
+      poNo: po.poNo,
+      nccId: po.supplierId,
+      nccName: po.nccName || ncc?.name || '',
+      amount: tempTotal,
+      paid: 0,
+      balance: tempTotal,
+      dueDate: dueDate.toISOString().slice(0, 10),
+      createdAt: po.receivedAt,
+      payments: [],
+    });
+  }
+
+  // Save to DB
+  await poSaveToDB(po);
+
+  const recvCount = po.items.filter(i => (i.recv || 0) > 0).length;
+  addAuditLog('purchase_order', `Nhận hàng ${po.poNo}: CN ${branch} nhận ${recvCount}/${po.items.length} SKU${allFull ? ' (đầy đủ)' : ' (một phần)'}`);
+
+  _poReceiveData = null;
+  _poView = 'detail';
+  toast(`✓ Nhận hàng ${po.poNo} thành công! Tồn kho đã cập nhật.${!allFull ? ' (nhận một phần — có thể nhận thêm sau)' : ''}`, 'success');
+  switchMgmtTab('purchase-order');
+}
+
+// ══════════════════════════════════════════════════════════
+// 5. TAB NHẬN HÀNG — tổng hợp PO chờ nhận
+// ══════════════════════════════════════════════════════════
+function poRenderReceiveList() {
+  const branch = state.shift?.branch || 'PB';
+  const allPOs = state.purchaseOrders.filter(o => o.branch === branch || o.branch === 'ALL');
+  const pending = allPOs.filter(p => p.status === 'sent' || p.status === 'partial');
+  const today = poTodayStr();
+  const overdue = pending.filter(p => p.delivDate && p.delivDate < today);
+  const dueToday = pending.filter(p => p.delivDate === today);
+  const upcoming = pending.filter(p => !p.delivDate || p.delivDate > today);
+  // Đã nhận 7 ngày qua
+  const w = new Date(); w.setDate(w.getDate() - 7);
+  const receivedWeek = allPOs.filter(p => p.status === 'received' && p.receivedAt && new Date(p.receivedAt) >= w);
+
+  let list = [];
+  let panelTitle = '';
+  let panelColor = 'var(--navy)';
+  if (_poReceiveFilter === 'overdue') { list = overdue; panelTitle = '⚠ Phiếu quá hạn'; panelColor = 'var(--red)'; }
+  else if (_poReceiveFilter === 'today') { list = dueToday; panelTitle = '📦 Phiếu nhận hôm nay'; panelColor = 'var(--orange)'; }
+  else if (_poReceiveFilter === 'upcoming') { list = upcoming; panelTitle = '📅 Phiếu sắp đến'; panelColor = 'var(--gray-500)'; }
+  else if (_poReceiveFilter === 'received') { list = receivedWeek; panelTitle = '✅ Đã nhận trong tuần'; panelColor = 'var(--green)'; }
+  else { list = [...overdue, ...dueToday, ...upcoming]; panelTitle = '📋 Tất cả chờ nhận'; }
+
+  const filterBtns = [
+    { k: 'all', l: `Tất cả (${pending.length})`, c: '' },
+    { k: 'overdue', l: `⚠ Quá hạn (${overdue.length})`, c: overdue.length > 0 ? 'border-left:3px solid var(--red)' : '' },
+    { k: 'today', l: `📦 Hôm nay (${dueToday.length})`, c: dueToday.length > 0 ? 'border-left:3px solid var(--orange)' : '' },
+    { k: 'upcoming', l: `📅 Sắp đến (${upcoming.length})`, c: '' },
+    { k: 'received', l: `✅ Tuần qua (${receivedWeek.length})`, c: '' },
+  ].map(f => `<button class="btn ${_poReceiveFilter === f.k ? 'btn-primary' : ''}" onclick="_poReceiveFilter='${f.k}';switchMgmtTab('purchase-order')" style="font-size:10px;padding:3px 8px;${f.c}">${f.l}</button>`).join('');
+
+  const rows = list.map(po => {
+    const ncc = poFindNcc(po.supplierId);
+    const nccDisplay = po.nccName || ncc?.name || '—';
+    const total = po.items.reduce((s, it) => s + (it.qty || 0) * (it.cost || 0), 0);
+    const recv = po.items.reduce((s, it) => s + (it.recv || 0), 0);
+    const totalQty = po.items.reduce((s, it) => s + (it.qty || 0), 0);
+    const isOverdue = po.delivDate && po.delivDate < today && po.status !== 'received';
+    return `<tr>
+      <td><strong style="font-size:11px;font-family:monospace">${escapeHtml(po.poNo || '')}</strong></td>
+      <td>${escapeHtml(nccDisplay)}</td>
+      <td style="font-size:11px;${isOverdue ? 'color:var(--red);font-weight:600' : ''}">${po.delivDate ? fmt.date(po.delivDate) : '—'}${isOverdue ? ' ⚠' : ''}</td>
+      <td style="text-align:center">${po.items.length}</td>
+      <td class="tr"><strong>${fmt.money(total)}</strong></td>
+      <td style="text-align:center">${po.status === 'partial' ? `<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;font-size:9px">${recv}/${totalQty}</span>` : `<span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:8px;font-size:9px">Đã gửi</span>`}</td>
+      <td style="text-align:right">
+        <button class="btn btn-primary" onclick="event.stopPropagation();poOpenReceive('${po.id}')" style="font-size:10px;padding:2px 8px;background:var(--green)">📦 Nhận</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="rpt-summary-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="rpt-summary-card" style="cursor:pointer" onclick="_poReceiveFilter='overdue';switchMgmtTab('purchase-order')">
+        <div class="val" style="color:var(--red)">${overdue.length}</div><div class="lbl">Quá hạn</div>
+      </div>
+      <div class="rpt-summary-card" style="cursor:pointer" onclick="_poReceiveFilter='today';switchMgmtTab('purchase-order')">
+        <div class="val" style="color:var(--orange)">${dueToday.length}</div><div class="lbl">Hôm nay</div>
+      </div>
+      <div class="rpt-summary-card" style="cursor:pointer" onclick="_poReceiveFilter='upcoming';switchMgmtTab('purchase-order')">
+        <div class="val">${upcoming.length}</div><div class="lbl">Sắp đến</div>
+      </div>
+      <div class="rpt-summary-card" style="cursor:pointer" onclick="_poReceiveFilter='received';switchMgmtTab('purchase-order')">
+        <div class="val" style="color:var(--green)">${receivedWeek.length}</div><div class="lbl">Đã nhận tuần</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">${filterBtns}</div>
+
+    ${list.length === 0 ? `<div class="mgmt-empty"><div class="icon">${_poReceiveFilter === 'received' ? '✅' : '📦'}</div><div>Không có phiếu nhập nào${_poReceiveFilter === 'overdue' ? ' quá hạn' : _poReceiveFilter === 'today' ? ' nhận hôm nay' : _poReceiveFilter === 'received' ? ' đã nhận trong tuần' : ' chờ nhận'}</div></div>` : `
+    <div style="border-left:3px solid ${panelColor};border-radius:0 8px 8px 0;overflow:hidden">
+      <div style="background:var(--gray-50);padding:8px 14px;font-size:12px;font-weight:700;color:${panelColor}">${panelTitle} (${list.length})</div>
+      <div style="overflow-x:auto;border:1px solid var(--gray-200);border-left:none;border-radius:0 0 8px 0">
+        <table style="font-size:12px;margin:0;min-width:600px">
+          <thead><tr style="background:var(--gray-50)"><th>Số phiếu</th><th>NCC</th><th>Dự kiến</th><th style="text-align:center">SKU</th><th class="tr">Giá trị</th><th style="text-align:center">TT</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`}
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// 6. CÔNG NỢ NCC
+// ══════════════════════════════════════════════════════════
+function poRenderPayables() {
+  const today = poTodayStr();
+  let list = [...state.poPayables].reverse();
+  if (_poPayFilter === 'unpaid') list = list.filter(p => p.balance > 0);
+  else if (_poPayFilter === 'overdue') list = list.filter(p => p.balance > 0 && p.dueDate < today);
+  else if (_poPayFilter === 'paid') list = list.filter(p => p.balance === 0);
+
+  const totals = {
+    unpaid: state.poPayables.filter(p => p.balance > 0).length,
+    overdue: state.poPayables.filter(p => p.balance > 0 && p.dueDate < today).length,
+    paid: state.poPayables.filter(p => p.balance === 0).length,
+    all: state.poPayables.length,
+  };
+  const totalDebt = state.poPayables.reduce((s, p) => s + p.balance, 0);
+  const overdueAmt = state.poPayables.filter(p => p.balance > 0 && p.dueDate < today).reduce((s, p) => s + p.balance, 0);
+
+  const filterBtns = [
+    { k: 'unpaid', l: `Còn nợ (${totals.unpaid})` },
+    { k: 'overdue', l: `Quá hạn (${totals.overdue})` },
+    { k: 'paid', l: `Đã trả (${totals.paid})` },
+    { k: 'all', l: `Tất cả (${totals.all})` },
+  ].map(f => `<button class="btn ${_poPayFilter === f.k ? 'btn-primary' : ''}" onclick="_poPayFilter='${f.k}';switchMgmtTab('purchase-order')" style="font-size:10px;padding:3px 8px">${f.l}</button>`).join('');
+
+  const rows = list.map(p => {
+    const isOverdue = p.balance > 0 && p.dueDate < today;
+    const status = p.balance === 0 ? '<span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:8px;font-size:9px">Đã trả</span>'
+      : p.paid > 0 ? '<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;font-size:9px">Một phần</span>'
+      : isOverdue ? '<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:8px;font-size:9px">Quá hạn</span>'
+      : '<span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:8px;font-size:9px">Chờ trả</span>';
+    return `<tr>
+      <td><strong style="font-size:10px;font-family:monospace">${escapeHtml(p.poNo || p.poId?.slice(0, 8) || '—')}</strong></td>
+      <td>${escapeHtml(p.nccName || '—')}</td>
+      <td style="font-size:11px">${fmt.date(p.createdAt)}</td>
+      <td style="font-size:11px;${isOverdue ? 'color:var(--red);font-weight:600' : ''}">${fmt.date(p.dueDate)}${isOverdue ? ' ⚠' : ''}</td>
+      <td class="tr">${fmt.money(p.amount)}</td>
+      <td class="tr" style="color:${p.paid > 0 ? 'var(--green)' : 'var(--gray-400)'}">${fmt.money(p.paid)}</td>
+      <td class="tr"><strong style="color:${p.balance > 0 ? 'var(--red)' : 'var(--gray-400)'}">${fmt.money(p.balance)}</strong></td>
+      <td style="text-align:center">${status}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div style="background:#eff6ff;border-left:3px solid var(--navy);padding:8px 14px;border-radius:0 6px 6px 0;font-size:11px;margin-bottom:12px">
+      📌 <strong>Tab tham chiếu.</strong> Đầy đủ kế toán phải trả → mở <a href="ncc_aipos.html" target="_blank" style="color:var(--navy);font-weight:700;text-decoration:underline">NCC module</a> hoặc Kế toán module (sổ chi tiết 331, phiếu chi, đối chiếu công nợ). Tab này tóm tắt nhanh theo phiếu nhập.
+    </div>
+
+    <div class="rpt-summary-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="rpt-summary-card"><div class="val" style="color:var(--red)">${fmt.money(totalDebt)}</div><div class="lbl">Tổng phải trả</div><div style="font-size:10px;color:var(--gray-500)">${totals.unpaid} công nợ</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:var(--orange)">${fmt.money(overdueAmt)}</div><div class="lbl">Quá hạn</div><div style="font-size:10px;color:var(--gray-500)">${totals.overdue} khoản</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:var(--green)">${totals.paid}</div><div class="lbl">Đã thanh toán</div><div style="font-size:10px;color:var(--gray-500)">/ ${totals.all} công nợ</div></div>
+    </div>
+
+    <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">${filterBtns}</div>
+
+    ${list.length === 0 ? '<div class="mgmt-empty"><div class="icon">💰</div><div>Không có công nợ' + (_poPayFilter === 'unpaid' ? ' chưa trả' : _poPayFilter === 'overdue' ? ' quá hạn' : _poPayFilter === 'paid' ? ' đã trả' : '') + '</div></div>' : `
+    <div style="overflow-x:auto;border:1px solid var(--gray-200);border-radius:8px">
+      <table style="font-size:12px;margin:0;min-width:700px">
+        <thead><tr style="background:var(--gray-50)">
+          <th>Số phiếu</th><th>NCC</th><th>Ngày tạo</th><th>Hạn trả</th><th class="tr">Tổng</th><th class="tr">Đã trả</th><th class="tr">Còn nợ</th><th style="text-align:center">TT</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+// ── Override renderPurchaseOrderTab to handle receive sub-view ──
+const _origPoRender = renderPurchaseOrderTab;
+renderPurchaseOrderTab = function() {
+  if (_poView === 'receive' && _poReceiveData) return poRenderReceiveForm();
+  return _origPoRender();
 }
 
 /* ============================================================
