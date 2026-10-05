@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="vi">
-<!-- NCC AIPOS-PRO (FORK thuong mai tu ncc__22_.html): doi 5 ket noi (NCC+BCTC) sang AIPOS-PRO; login ACCOUNTS/hash -> Supabase Auth (Cach A, email) resolve role qua app_users. Bo sung 20 bang NCC (orders/po_history/settings/delivery_status/budgets/branches/passwords/pricing_approvals/receiving_*/auto_*...) + 2 view vao AIPOS-PRO. 0 tham chieu Vicomart. -->
+<!-- NCC AIPOS-PRO: Supabase Auth login, multi-tenant SaaS. -->
 <head>
 <meta charset="UTF-8">
 <!-- v2.73.25: FORCE NO-CACHE — luôn fetch bản mới sau deploy -->
@@ -9667,7 +9667,7 @@ function _getNccBudget(nccName, branchOverride) {
   // v2.65 FIX: khi user ở "Tất cả CN" (branch = ''), sum qua 3 CN để
   // phản ánh đúng tổng NS — tránh rơi vào legacy key bị stale
   if (branch === '' || branch === null || branch === undefined) {
-    const BRANCHES_ALL = ['pb', 'vt', 'ta'];
+    const BRANCHES_ALL = (typeof BRANCHES!=='undefined'&&BRANCHES.length) ? BRANCHES.map(b=>b.key) : ['pb','vt','ta'];
     let hasAnyBranchKey = false;
     let total = 0;
     for (const br of BRANCHES_ALL) {
@@ -9726,7 +9726,7 @@ function _getNccBudgetMeta(nccName, branchOverride) {
   // v2.65 FIX: khi branch = '' (All CN), pick branch đầu tiên có data
   // để UI hiển thị đúng mode (auto_pct_cogs / auto_pct_ban / manual)
   if (branch === '' || branch === null || branch === undefined) {
-    const BRANCHES_ALL = ['pb', 'vt', 'ta'];
+    const BRANCHES_ALL = (typeof BRANCHES!=='undefined'&&BRANCHES.length) ? BRANCHES.map(b=>b.key) : ['pb','vt','ta'];
     for (const br of BRANCHES_ALL) {
       const k = _budgetKey(nccName, br);
       const r = NCC_BUDGETS[k];
@@ -10791,16 +10791,16 @@ function _aoAutofixCountAldi() {
   const nccList = Array.from(nccSet).filter(n => n && n !== 'Chưa phân loại');
 
   // Đếm locked (bỏ qua)
-  const BRANCHES = ['pb', 'vt', 'ta'];
+  const _brKeys = (typeof BRANCHES!=='undefined'&&BRANCHES.length) ? BRANCHES.map(b=>b.key) : ['pb','vt','ta'];
   let lockedConfigs = 0;
   nccList.forEach(ncc => {
-    BRANCHES.forEach(br => {
+    _brKeys.forEach(br => {
       const key = (typeof _budgetKey === 'function') ? _budgetKey(ncc, br) : (ncc + '|' + br);
       const ex = (NCC_BUDGETS||{})[key];
       if (ex && ex.mode === 'manual' && ex.weeklyCap > 0) lockedConfigs++;
     });
   });
-  return { nccCount: nccList.length, totalConfigs: nccList.length * BRANCHES.length, lockedConfigs };
+  return { nccCount: nccList.length, totalConfigs: nccList.length * _brKeys.length, lockedConfigs };
 }
 
 // Render pane ALDI
@@ -11383,7 +11383,7 @@ async function aoBudgetAutoFixApply(scope) {
 // ════════════════════════════════════════════════════════════════════
 async function aoBudgetResetAllAldi() {
   const ALDI_PCT = 1.15; // Vốn × 1.15
-  const BRANCHES = ['pb', 'vt', 'ta']; // 3 chi nhánh
+  const _brKeys = (typeof BRANCHES!=='undefined'&&BRANCHES.length) ? BRANCHES.map(b=>b.key) : ['pb','vt','ta'];
 
   // Đếm NCC ứng viên (có giá vốn > 0 ở ít nhất 1 CN)
   const rows = window._AO_LAST_BUDGET_ROWS || [];
@@ -20075,7 +20075,7 @@ const LOGIN_PASS_SUFFIX = '123';
 //   │                  │                  │
 //   │  LEFT (navy)     │  RIGHT (white)   │
 //   │  - Logo xu navy  │  - Badge         │
-//   │  - VICOMART      │  - H1 "Đăng nhập"│
+//   │  - AIPOS-PRO     │  - H1 "Đăng nhập"│
 //   │  - Tagline       │  - Username      │
 //   │  - Description   │  - Password +👁   │
 //   │  - 5 Features    │  - Remember + Q? │
@@ -21930,36 +21930,42 @@ document.head.appendChild(shakeStyle);
 // Khởi tạo nút đăng nhập nhanh sau khi ACCOUNTS load
 // DOMContentLoaded handled below
 
-// ══════ BRANCHES — danh sách chi nhánh động ══════
-let BRANCHES = [
-  {key:'pb', name:'Phú Bài',    code:'PB', color:'#0071CE', emoji:'🔵', ma:'CN001',
-   addr:'Phú Bài, Hương Thủy, TT-Huế',  ql:'QL Phú Bài',    manager:'pb_ql',
-   ds:918801580, ncc:89, active:true, status:'active',
-   nsField:'phu_bai', banField:'ban_pb',  // field trong SUPPLIERS hardcode
-   whId:'5a50386b-0a76-4131-81f8-546fdeccaa8a', // Pancake warehouse ID
-   ns_tuan: 0,  // ngân sách tuần — dùng cho CN động (không có trong SUPPLIERS)
-  },
-  {key:'vt', name:'Vinh Thanh', code:'VT', color:'#0071CE', emoji:'🟢', ma:'CN002',
-   addr:'Vinh Thanh, Phú Vang, TT-Huế', ql:'QL Vinh Thanh', manager:'vt_ql',
-   ds:770892704, ncc:76, active:true, status:'active',
-   nsField:'vinh_thanh', banField:'ban_vt',
-   whId:'686c67b8-090f-4caf-bc48-bf748503f1d2',
-   ns_tuan: 0,
-  },
-  {key:'ta', name:'Thuận An',   code:'TA', color:'#888888', emoji:'🟣', ma:'CN003',
-   addr:'Thuận An, Phú Vang, TT-Huế',   ql:'QL Thuận An',   manager:'ta_ql',
-   ds:453451668, ncc:48, active:true, status:'active',
-   nsField:'thuan_an', banField:'ban_ta',
-   whId:'a83381ca-b5b8-4a0a-9cc3-f095b4ad8943', // Kho chính (tạm)
-   ns_tuan: 0,
-  },
-  // CN mới thêm vào đây — nsField: null (dùng ns_by_branch từ Supabase)
-  // Ví dụ:
-  // {key:'hn', name:'Hà Nội', code:'HN', color:'#e53935', emoji:'🔴', ma:'CN004',
-  //  addr:'...', nsField: null, banField: null,
-  //  whId: 'paste-uuid-from-pancake',
-  //  ns_tuan: 0, active: false }
-];
+// ══════ BRANCHES — loaded dynamically from vc_branches ══════
+let BRANCHES = [];
+
+async function loadBranchesFromDB() {
+  if (!supa) { console.warn('[NCC] loadBranches: no supabase client'); return; }
+  try {
+    const { data, error } = await supa.from('vc_branches')
+      .select('id, code, name, address, tinh, active, color, emoji, sort_order, manager, phone')
+      .order('sort_order');
+    if (error) throw error;
+    if (data && data.length > 0) {
+      BRANCHES = data.map((b, i) => ({
+        key: b.code.toLowerCase(),
+        name: b.name,
+        code: b.code,
+        color: b.color || '#0071CE',
+        emoji: b.emoji || '🏪',
+        ma: 'CN' + String(i + 1).padStart(3, '0'),
+        addr: b.address || '',
+        ql: 'QL ' + b.name,
+        manager: b.code.toLowerCase() + '_ql',
+        ds: 0,
+        ncc: 0,
+        active: b.active,
+        status: b.active ? 'active' : 'inactive',
+        nsField: null,
+        banField: null,
+        whId: null,
+        ns_tuan: 0,
+      }));
+      console.log('[NCC] ✅ Loaded', BRANCHES.length, 'branches from vc_branches');
+    }
+  } catch(e) {
+    console.warn('[NCC] loadBranches failed:', e.message);
+  }
+}
 
 // ════════════════════════════════════════════════════════════════
 // DYNAMIC BRANCH HELPER LAYER
@@ -26337,6 +26343,32 @@ let _realtimeSub = null;
 let _syncIndicator = null;
 
 // ── Khởi tạo ────────────────────────────────────────────────────
+// ── SSO AUTO-LOGIN: skip login nếu Hub đã đăng nhập ──
+async function aiposNccSsoGate() {
+  if (!supa) return;
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session || !session.user) return; // chưa có session → giữ login screen
+    // Đã có session → tạo user object + vào app
+    let acc = { username: session.user.email, name: session.user.email, role: 'staff', locked: false };
+    try {
+      const { data: au } = await supa.from('app_users').select('full_name, role').eq('auth_uid', session.user.id).maybeSingle();
+      if (au) { acc.name = au.full_name || acc.name; acc.role = au.role || acc.role; }
+    } catch(e) {}
+    currentUser = acc;
+    if (typeof logSession === 'function') logSession('🔐 SSO Auto-login', acc.username);
+    // Ẩn login screen, hiện app
+    const ls = document.getElementById('login-screen');
+    if (ls) ls.style.display = 'none';
+    const ma = document.getElementById('main-app');
+    if (ma) ma.style.display = 'block';
+    if (typeof updateHeaderUser === 'function') updateHeaderUser(acc);
+    if (typeof initApp === 'function') initApp();
+  } catch (e) {
+    console.warn('[NCC] SSO auto-login failed:', e.message);
+  }
+}
+
 async function supaInit() {
   try {
     let retries = 0;
@@ -26367,6 +26399,12 @@ async function supaInit() {
 
     // Khởi tạo Tenant sau khi có Supabase
     await Tenant.init();
+
+    // Load branches from DB (single source of truth)
+    await loadBranchesFromDB();
+
+    // ── SSO: auto-login nếu đã có session từ Hub ──
+    await aiposNccSsoGate();
 
     await supaLoadAll();
     supaSubscribeRealtime();
@@ -48250,8 +48288,10 @@ function aoDebugShow() {
   // Chỉ wrap aoRunAnalysisBranch thêm logic snapshot.
   // ════════════════════════════════════════════════════════════════════
 
-  const BRANCHES = ['', 'pb', 'vt', 'ta'];  // '' = tất cả
-  const BRANCH_LABEL = { '':'Tất cả', 'pb':'Phú Bài', 'vt':'Vinh Thành', 'ta':'Thuận An' };
+  const _aoBrKeys = (typeof BRANCHES!=='undefined'&&BRANCHES.length) ? ['', ...BRANCHES.map(b=>b.key)] : ['','pb','vt','ta'];
+  const BRANCH_LABEL = {'':'Tất cả'};
+  if(typeof BRANCHES!=='undefined'&&BRANCHES.length) BRANCHES.forEach(b => BRANCH_LABEL[b.key] = b.name);
+  else { BRANCH_LABEL.pb='Phú Bài'; BRANCH_LABEL.vt='Vinh Thành'; BRANCH_LABEL.ta='Thuận An'; }
 
   // Snapshot storage
   window.AO_SNAPSHOTS = window.AO_SNAPSHOTS || {};

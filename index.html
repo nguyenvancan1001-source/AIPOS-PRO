@@ -216,8 +216,10 @@
   .plan-pick .pk-name{font-size:13px;font-weight:700;color:#f1f5f9;}
   .plan-pick .pk-price{font-size:11px;color:#60a5fa;font-weight:600;margin-top:2px;}
   .plan-pick .pk-info{font-size:10px;color:#94a3b8;margin-top:4px;line-height:1.4;}
-  .hddt-pick label{padding:10px 8px!important;background:#0c1527!important;}
-  .hddt-pick label.selected{background:rgba(59,130,246,.12)!important;}
+  .hddt-pick label{padding:10px 8px!important;background:#0c1527!important;position:relative;}
+  .hddt-pick label::after{content:'';position:absolute;top:6px;right:6px;width:20px;height:20px;border:2px solid #475569;border-radius:50%;transition:all .2s;}
+  .hddt-pick label.selected{background:rgba(59,130,246,.15)!important;border-color:#3b82f6!important;}
+  .hddt-pick label.selected::after{content:'✓';background:#3b82f6;border-color:#3b82f6;color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:20px;}
   .hddt-pick .pk-name{font-size:11px!important;}
   .hddt-pick .pk-price{font-size:10px!important;}
   .hddt-pick .pk-icon{font-size:16px!important;margin-bottom:3px!important;}
@@ -225,6 +227,60 @@
   .ok-msg{color:#4ade80;font-size:13px;font-weight:600;text-align:center}
   .link{font-size:12.5px;color:#60a5fa;text-decoration:none;font-weight:600;cursor:pointer}
   .note{font-size:11px;color:#94a3b8;margin-top:10px;text-align:center}
+
+  /* ===== ONBOARD + BRANCH CHIPS ===== */
+  .ob-form{max-width:520px;margin:0 auto;padding:0 16px 32px}
+  .ob-lbl{display:block;font-size:11px;color:#94a3b8;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  .ob-input{width:100%;padding:10px 14px;border:1.5px solid #475569;border-radius:8px;background:#0f172a;color:#f1f5f9;font-size:14px;font-family:inherit}
+  .ob-input:focus{border-color:#3b82f6;outline:none}
+  .ob-err{color:#ef4444;font-size:12px;margin-top:8px;min-height:16px}
+  .branch-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 0 16px;justify-content:center}
+  .br-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:600;color:#f1f5f9;border:1px solid #475569;background:rgba(255,255,255,.06)}
+  .br-chip .ch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .br-chip.inactive{opacity:.45;text-decoration:line-through}
+  .br-chip-add{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#60a5fa;border:1.5px dashed #3b82f6;background:none;cursor:pointer}
+  .br-chip-add:hover{background:rgba(59,130,246,.12)}
+
+  /* ===== BRANCH MANAGER MODAL ===== */
+  .br-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:flex-start;justify-content:center;padding-top:5vh;overflow-y:auto}
+  .br-overlay.show{display:flex}
+  .br-panel{background:#1e293b;border-radius:16px;width:680px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+  .br-header{display:flex;align-items:center;gap:12px;padding:20px 24px 14px;border-bottom:1px solid #334155;position:sticky;top:0;background:#1e293b;z-index:1;border-radius:16px 16px 0 0}
+  .br-header h2{font-size:17px;font-weight:800;flex:1}
+  .br-header .br-close{background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px}
+  .br-header .br-close:hover{background:rgba(255,255,255,.1);color:#f1f5f9}
+  .br-header .br-add{background:#3b82f6;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+  .br-header .br-add:hover{background:#2563eb}
+  .br-list{padding:12px 24px 20px}
+  .br-card{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px 16px;background:#0f172a;border-radius:10px;margin-bottom:8px;border:1px solid #334155}
+  .br-card.inactive{opacity:.5}
+  .br-emoji{font-size:24px;text-align:center}
+  .br-info .br-name{font-weight:700;font-size:14px;color:#f1f5f9}
+  .br-info .br-code{font-size:11px;color:#60a5fa;font-weight:600;margin-left:8px}
+  .br-info .br-addr{font-size:12px;color:#94a3b8;margin-top:2px}
+  .br-info .br-meta{font-size:11px;color:#64748b;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+  .br-actions{display:flex;gap:6px}
+  .br-actions button{padding:5px 12px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer}
+  .br-btn-edit{background:rgba(59,130,246,.2);color:#93c5fd}
+  .br-btn-toggle{background:rgba(245,158,11,.2);color:#fcd34d}
+  .br-btn-toggle.off{background:rgba(34,197,94,.2);color:#86efac}
+  .br-empty{text-align:center;padding:40px;color:#64748b;font-size:14px}
+  /* Branch Form Modal */
+  .bf-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center}
+  .bf-overlay.show{display:flex}
+  .bf-modal{background:#1e293b;border-radius:14px;padding:28px;width:480px;max-width:94vw;max-height:85vh;overflow-y:auto}
+  .bf-modal h3{font-size:16px;font-weight:700;color:#3b82f6;margin-bottom:16px}
+  .bf-modal label{display:block;font-size:11px;color:#94a3b8;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  .bf-modal input,.bf-modal select,.bf-modal textarea{width:100%;padding:9px 12px;border:1.5px solid #475569;border-radius:8px;background:#0f172a;color:#f1f5f9;font-size:13px;font-family:inherit}
+  .bf-modal textarea{resize:vertical;min-height:60px}
+  .bf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bf-btns{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+  .bf-btns button{padding:9px 22px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+  .bf-save{background:#3b82f6;color:#fff}
+  .bf-save:hover{background:#2563eb}
+  .bf-cancel{background:#334155;color:#94a3b8}
+  .bf-err{color:#ef4444;font-size:12px;margin-top:8px;min-height:16px}
+  @media(max-width:520px){.br-card{grid-template-columns:32px 1fr;gap:8px}.br-actions{grid-column:span 2;justify-content:flex-end}.bf-row{grid-template-columns:1fr}}
 
   /* ===== ADMIN PANEL ===== */
   #adminPanel{display:none;min-height:100vh;background:var(--navy);color:#f1f5f9}
@@ -461,16 +517,16 @@
       <div class="field" id="regHddtWrap" style="display:none">
         <label>📄 Gói Hoá đơn điện tử (HĐĐT) <span style="font-weight:400;color:#94a3b8">— không bắt buộc</span></label>
         <div class="plan-pick hddt-pick">
-          <input type="hidden" name="regHddt" value="none">
-          <label onclick="selectHddt(this,'5000')"><input type="radio" name="regHddt" value="5000">
+          <input type="hidden" id="regHddtVal" value="none">
+          <label onclick="selectHddt(this,'5000')"><input type="radio" name="regHddtRadio" value="5000">
             <div class="pk-icon">📄</div><div class="pk-name">5.000 HĐ</div>
             <div class="pk-price">100đ/HĐ · 500.000đ</div>
           </label>
-          <label onclick="selectHddt(this,'10000')"><input type="radio" name="regHddt" value="10000">
+          <label onclick="selectHddt(this,'10000')"><input type="radio" name="regHddtRadio" value="10000">
             <div class="pk-icon">📄📄</div><div class="pk-name">10.000 HĐ</div>
             <div class="pk-price">90đ/HĐ · 900.000đ <span style="color:#4ade80">▼10%</span></div>
           </label>
-          <label onclick="selectHddt(this,'20000')"><input type="radio" name="regHddt" value="20000">
+          <label onclick="selectHddt(this,'20000')"><input type="radio" name="regHddtRadio" value="20000">
             <div class="pk-icon">📄📄📄</div><div class="pk-name">20.000 HĐ</div>
             <div class="pk-price">80đ/HĐ · 1.600.000đ <span style="color:#4ade80">▼20%</span></div>
           </label>
@@ -516,6 +572,7 @@
     <span id="planBadge" class="plan-basic" style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.5px;margin-left:8px">BASIC</span>
     <div class="spacer"></div>
     <div class="user" id="userEmail"></div>
+    <button class="logout" id="branchMgrBtn" style="background:rgba(59,130,246,.25);display:none;" onclick="openBranchMgr()">⚙️ Cửa hàng</button>
     <button class="logout" id="backupBtn" style="background:rgba(11,122,59,.3);display:none;">💾 Sao lưu</button>
     <button class="logout" id="restoreBtn" style="background:rgba(181,69,63,.25);display:none;">♻️ Khôi phục</button>
     <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Mời NV</button>
@@ -524,13 +581,94 @@
     <button class="logout" id="logoutBtn">Đăng xuất</button>
   </div>
   <div class="hub-body">
-    <div class="hub-head">
-      <h1>Chọn ứng dụng</h1>
-      <p>Hệ sinh thái quản lý bán lẻ tích hợp — dữ liệu liên thông toàn hệ</p>
+    <!-- ONBOARD: thêm cửa hàng đầu tiên (ẩn mặc định) -->
+    <div id="onboardBranch" style="display:none">
+      <div class="hub-head">
+        <h1>🏪 Thêm cửa hàng đầu tiên</h1>
+        <p>Tạo chi nhánh để bắt đầu sử dụng hệ thống bán hàng</p>
+      </div>
+      <div class="ob-form">
+        <div class="bf-row">
+          <div><label class="ob-lbl">Mã cửa hàng *</label><input id="ob-code" class="ob-input" placeholder="VD: HN1, SG2, HUE" maxlength="10"></div>
+          <div><label class="ob-lbl">Tên cửa hàng *</label><input id="ob-name" class="ob-input" placeholder="VD: Siêu thị ABC Hoàn Kiếm"></div>
+        </div>
+        <label class="ob-lbl">Địa chỉ</label><input id="ob-address" class="ob-input" placeholder="Số nhà, đường, phường/xã">
+        <div class="bf-row">
+          <div><label class="ob-lbl">Tỉnh / TP</label><input id="ob-tinh" class="ob-input" placeholder="VD: Hà Nội"></div>
+          <div><label class="ob-lbl">Điện thoại</label><input id="ob-phone" class="ob-input" placeholder="0xxx xxx xxx"></div>
+        </div>
+        <div class="bf-row">
+          <div><label class="ob-lbl">Quản lý</label><input id="ob-manager" class="ob-input" placeholder="Tên quản lý"></div>
+          <div><label class="ob-lbl">Giờ mở cửa</label><input id="ob-hours" class="ob-input" placeholder="VD: 7:00 - 22:00"></div>
+        </div>
+        <div class="ob-err" id="obErr"></div>
+        <button class="btn" id="obSaveBtn" onclick="saveOnboardBranch()" style="margin-top:12px">🚀 Tạo cửa hàng & Bắt đầu</button>
+      </div>
     </div>
-    <div class="grid" id="appGrid"></div>
+    <!-- NORMAL HUB: đã có cửa hàng -->
+    <div id="normalHub">
+      <div class="hub-head">
+        <h1>Chọn ứng dụng</h1>
+        <p>Hệ sinh thái quản lý bán lẻ tích hợp — dữ liệu liên thông toàn hệ</p>
+      </div>
+      <div id="branchChips" class="branch-chips" style="display:none"></div>
+      <div class="grid" id="appGrid"></div>
+    </div>
   </div>
   <div class="foot">AIPOS·PRO · Nền tảng đa khách hàng · Phiên đăng nhập dùng chung cho mọi phân hệ</div>
+</div>
+
+<!-- ===== BRANCH MANAGER ===== -->
+<div class="br-overlay" id="brOverlay" onclick="if(event.target===this)closeBranchMgr()">
+  <div class="br-panel">
+    <div class="br-header">
+      <h2>🏪 Quản lý Chi nhánh</h2>
+      <button class="br-add" onclick="openBranchForm()">+ Thêm chi nhánh</button>
+      <button class="br-close" onclick="closeBranchMgr()">✕</button>
+    </div>
+    <div class="br-list" id="brList"><div class="br-empty">Đang tải...</div></div>
+  </div>
+</div>
+<!-- Branch Add/Edit Form -->
+<div class="bf-overlay" id="bfOverlay" onclick="if(event.target===this)closeBranchForm()">
+  <div class="bf-modal">
+    <h3 id="bfTitle">Thêm chi nhánh mới</h3>
+    <div class="bf-row">
+      <div><label>Mã chi nhánh *</label><input id="bf-code" placeholder="VD: HN1, SG2" maxlength="10"></div>
+      <div><label>Tên chi nhánh *</label><input id="bf-name" placeholder="VD: Chi nhánh Hoàn Kiếm"></div>
+    </div>
+    <label>Địa chỉ</label><input id="bf-address" placeholder="Số nhà, đường, phường/xã">
+    <div class="bf-row">
+      <div><label>Tỉnh / TP</label><input id="bf-tinh" placeholder="VD: Hà Nội"></div>
+      <div><label>Quận / Huyện</label><input id="bf-district" placeholder="VD: Hoàn Kiếm"></div>
+    </div>
+    <div class="bf-row">
+      <div><label>Phường / Xã</label><input id="bf-ward" placeholder=""></div>
+      <div><label>Khu vực</label><input id="bf-region" placeholder="VD: Miền Bắc"></div>
+    </div>
+    <div class="bf-row">
+      <div><label>Điện thoại</label><input id="bf-phone" placeholder="0xxx xxx xxx"></div>
+      <div><label>Quản lý</label><input id="bf-manager" placeholder="Tên quản lý"></div>
+    </div>
+    <div class="bf-row">
+      <div><label>Diện tích (m²)</label><input id="bf-area" type="number" min="0" step="0.1"></div>
+      <div><label>Số đội ngũ</label><input id="bf-staff" type="number" min="0"></div>
+    </div>
+    <div class="bf-row">
+      <div><label>Giờ mở cửa</label><input id="bf-hours" placeholder="VD: 7:00 - 22:00"></div>
+      <div><label>Ngày khai trương</label><input id="bf-opened" type="date"></div>
+    </div>
+    <div class="bf-row">
+      <div><label>Emoji</label><input id="bf-emoji" value="🏪" maxlength="4" style="width:60px"></div>
+      <div><label>Màu sắc</label><input id="bf-color" type="color" value="#0071CE" style="width:60px;height:36px;padding:2px"></div>
+      <div><label>Thứ tự</label><input id="bf-sort" type="number" value="0" min="0" style="width:70px"></div>
+    </div>
+    <div class="bf-err" id="bfErr"></div>
+    <div class="bf-btns">
+      <button class="bf-cancel" onclick="closeBranchForm()">Hủy</button>
+      <button class="bf-save" id="bfSaveBtn" onclick="saveBranch()">💾 Lưu</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== ADMIN PANEL ===== -->
@@ -802,9 +940,11 @@ async function enterHub(user) {
       document.getElementById('inviteBtn').style.display = 'inline-block';
       document.getElementById('backupBtn').style.display = 'inline-block';
       document.getElementById('restoreBtn').style.display = 'inline-block';
+      document.getElementById('branchMgrBtn').style.display = 'inline-block';
     }
   } catch(e) {}
-  renderApps(features);
+  // Check chi nhánh — chưa có thì onboard, có rồi thì hiện apps
+  await checkBranchesAndRender(features);
   // Demo banner nếu đang ở chế độ demo
   if (isDemo) showDemoBanner();
 }
@@ -843,22 +983,24 @@ function highlightSelectedPlan() {
     if (plan === 'basic') {
       document.querySelectorAll('.hddt-pick input[type=radio]').forEach(r => r.checked = false);
       document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
-      const hidden = document.querySelector('input[type=hidden][name=regHddt]');
+      const hidden = document.getElementById('regHddtVal');
       if (hidden) hidden.value = 'none';
     }
   }
 }
 function selectHddt(lbl, val) {
   const radio = lbl.querySelector('input[type=radio]');
-  const hidden = document.querySelector('input[type=hidden][name=regHddt]');
-  if (radio && radio.checked && lbl.classList.contains('selected')) {
-    // Bỏ chọn
-    radio.checked = false;
+  const hidden = document.getElementById('regHddtVal');
+  if (lbl.classList.contains('selected')) {
+    // Bỏ chọn (toggle off)
+    if (radio) radio.checked = false;
     lbl.classList.remove('selected');
     if (hidden) hidden.value = 'none';
   } else {
-    document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
-    if (radio) { radio.checked = true; lbl.classList.add('selected'); }
+    // Chọn gói mới
+    document.querySelectorAll('.hddt-pick label').forEach(l => { l.classList.remove('selected'); const r = l.querySelector('input[type=radio]'); if (r) r.checked = false; });
+    if (radio) radio.checked = true;
+    lbl.classList.add('selected');
     if (hidden) hidden.value = val;
   }
 }
@@ -874,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init HĐĐT default — no package selected
   document.querySelectorAll('.hddt-pick input[type=radio]').forEach(r => r.checked = false);
   document.querySelectorAll('.hddt-pick label').forEach(l => l.classList.remove('selected'));
-  const hdHidden = document.querySelector('input[type=hidden][name=regHddt]');
+  const hdHidden = document.getElementById('regHddtVal');
   if (hdHidden) hdHidden.value = 'none';
   // Default billing = yearly
   setBilling('yearly');
@@ -951,7 +1093,7 @@ async function doRegister() {
   const address = document.getElementById('regAddress').value.trim();
   const bizType = document.getElementById('regBizType').value;
   const plan = document.querySelector('input[name=regPlan]:checked')?.value || 'basic';
-  const hddtPkg = document.querySelector('input[name=regHddt]:checked')?.value || 'none';
+  const hddtPkg = document.getElementById('regHddtVal')?.value || 'none';
   err.textContent = '';
   const bizLabels = { company:'tên công ty', household:'tên hộ kinh doanh', individual:'tên đại diện' };
   if (!company) { err.textContent = `Vui lòng nhập ${bizLabels[bizType]||'tên'}`; return; }
@@ -1153,11 +1295,290 @@ function setBilling(mode) {
   }
 }
 
+// ===== BRANCH MANAGER =====
+let _brEditId = null; // null = add mode, uuid = edit mode
+let _brData = [];
+let _hubFeatures = null;
+
+async function checkBranchesAndRender(features) {
+  _hubFeatures = features;
+  try {
+    const { data, error } = await sb.from('vc_branches')
+      .select('id, code, name, active, color, emoji, sort_order')
+      .order('sort_order').order('code');
+    if (error) throw error;
+    _brData = data || [];
+  } catch(e) { _brData = []; }
+
+  const onboard = document.getElementById('onboardBranch');
+  const normal = document.getElementById('normalHub');
+
+  if (_brData.length === 0) {
+    // Chưa có cửa hàng → hiện onboard
+    onboard.style.display = '';
+    normal.style.display = 'none';
+  } else {
+    // Đã có → hiện chips + apps
+    onboard.style.display = 'none';
+    normal.style.display = '';
+    renderBranchChips();
+    renderApps(features);
+  }
+}
+
+function renderBranchChips() {
+  const container = document.getElementById('branchChips');
+  if (_brData.length === 0) { container.style.display = 'none'; return; }
+  container.style.display = 'flex';
+
+  // Tính max branches
+  const planBadge = document.getElementById('planBadge');
+  const plan = planBadge ? planBadge.textContent.toLowerCase() : 'basic';
+  const maxDefault = { basic: 1, standard: 2, premium: 10 };
+  let maxBr = maxDefault[plan] || 1;
+  if (_hubFeatures && _hubFeatures.max_branches) maxBr = _hubFeatures.max_branches;
+  const canAdd = _brData.length < maxBr;
+
+  container.innerHTML = _brData.map(b =>
+    `<span class="br-chip${b.active ? '' : ' inactive'}" title="${b.active ? 'Đang hoạt động' : 'Tạm đóng'}">`
+    + `<span class="ch-dot" style="background:${b.color || '#3b82f6'}"></span>`
+    + `${b.emoji || '🏪'} ${esc(b.name)}`
+    + `</span>`
+  ).join('')
+  + (canAdd ? `<button class="br-chip-add" onclick="openBranchForm()" title="Thêm chi nhánh mới">＋ Thêm</button>` : '');
+}
+
+async function saveOnboardBranch() {
+  const errEl = document.getElementById('obErr');
+  errEl.textContent = '';
+  const code = (document.getElementById('ob-code').value || '').trim().toUpperCase();
+  const name = (document.getElementById('ob-name').value || '').trim();
+  if (!code) { errEl.textContent = 'Nhập mã cửa hàng (VD: HN1, SG2).'; return; }
+  if (!name) { errEl.textContent = 'Nhập tên cửa hàng.'; return; }
+  if (!/^[A-Z0-9]{1,10}$/.test(code)) { errEl.textContent = 'Mã cửa hàng: chỉ chữ + số, tối đa 10 ký tự.'; return; }
+
+  const row = {
+    code, name, active: true,
+    address: (document.getElementById('ob-address').value || '').trim() || null,
+    tinh: (document.getElementById('ob-tinh').value || '').trim() || null,
+    phone: (document.getElementById('ob-phone').value || '').trim() || null,
+    manager: (document.getElementById('ob-manager').value || '').trim() || null,
+    opening_hours: (document.getElementById('ob-hours').value || '').trim() || null,
+    emoji: '🏪', color: '#0071CE', sort_order: 0,
+  };
+  const btn = document.getElementById('obSaveBtn');
+  btn.disabled = true; btn.textContent = '⏳ Đang tạo...';
+  try {
+    const { error } = await sb.from('vc_branches').insert(row);
+    if (error) {
+      if (error.message.includes('duplicate') || error.message.includes('unique')) {
+        errEl.textContent = `Mã "${code}" đã tồn tại.`; btn.disabled = false; btn.textContent = '🚀 Tạo cửa hàng & Bắt đầu'; return;
+      }
+      throw error;
+    }
+    // Refresh → hiện apps
+    await checkBranchesAndRender(_hubFeatures);
+  } catch(e) {
+    errEl.textContent = 'Lỗi: ' + (e?.message || e);
+  }
+  btn.disabled = false; btn.textContent = '🚀 Tạo cửa hàng & Bắt đầu';
+}
+
+function openBranchMgr() {
+  document.getElementById('brOverlay').classList.add('show');
+  loadBranchList();
+}
+function closeBranchMgr() {
+  document.getElementById('brOverlay').classList.remove('show');
+}
+
+async function loadBranchList() {
+  const list = document.getElementById('brList');
+  list.innerHTML = '<div class="br-empty">Đang tải...</div>';
+  try {
+    const { data, error } = await sb.from('vc_branches')
+      .select('id, code, name, address, tinh, district, ward, region, phone, manager, area_m2, staff_count, opening_hours, opened_at, active, color, emoji, sort_order')
+      .order('sort_order').order('code');
+    if (error) throw error;
+    _brData = data || [];
+    if (_brData.length === 0) {
+      list.innerHTML = '<div class="br-empty">Chưa có chi nhánh nào.<br>Bấm "+ Thêm chi nhánh" để tạo mới.</div>';
+      return;
+    }
+    list.innerHTML = _brData.map(b => `
+      <div class="br-card${b.active ? '' : ' inactive'}">
+        <div class="br-emoji">${b.emoji || '🏪'}</div>
+        <div class="br-info">
+          <div><span class="br-name">${esc(b.name)}</span><span class="br-code">${esc(b.code)}</span>
+            ${b.active ? '' : '<span style="color:#f59e0b;font-size:10px;margin-left:6px">⏸ Tạm đóng</span>'}</div>
+          ${b.address ? '<div class="br-addr">📍 ' + esc(b.address) + (b.tinh ? ', ' + esc(b.tinh) : '') + '</div>' : ''}
+          <div class="br-meta">
+            ${b.phone ? '<span>📞 ' + esc(b.phone) + '</span>' : ''}
+            ${b.manager ? '<span>👤 ' + esc(b.manager) + '</span>' : ''}
+            ${b.area_m2 ? '<span>📐 ' + b.area_m2 + 'm²</span>' : ''}
+            ${b.staff_count ? '<span>👥 ' + b.staff_count + '</span>' : ''}
+            ${b.opening_hours ? '<span>🕐 ' + esc(b.opening_hours) + '</span>' : ''}
+          </div>
+        </div>
+        <div class="br-actions">
+          <button class="br-btn-edit" onclick="openBranchForm('${b.id}')">✏️ Sửa</button>
+          <button class="br-btn-toggle ${b.active ? '' : 'off'}" onclick="toggleBranch('${b.id}',${b.active})">${b.active ? '⏸ Đóng' : '▶ Mở'}</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="br-empty" style="color:#ef4444">Lỗi tải: ' + esc(e.message) + '</div>';
+  }
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function openBranchForm(id) {
+  _brEditId = id || null;
+  document.getElementById('bfTitle').textContent = _brEditId ? 'Sửa chi nhánh' : 'Thêm chi nhánh mới';
+  document.getElementById('bfSaveBtn').textContent = _brEditId ? '💾 Cập nhật' : '💾 Lưu';
+  document.getElementById('bfErr').textContent = '';
+  // Reset form
+  ['bf-code','bf-name','bf-address','bf-tinh','bf-district','bf-ward','bf-region','bf-phone','bf-manager','bf-area','bf-staff','bf-hours','bf-opened'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bf-emoji').value = '🏪';
+  document.getElementById('bf-color').value = '#0071CE';
+  document.getElementById('bf-sort').value = '0';
+  document.getElementById('bf-code').disabled = false;
+
+  if (_brEditId) {
+    const b = _brData.find(x => x.id === _brEditId);
+    if (b) {
+      document.getElementById('bf-code').value = b.code || '';
+      document.getElementById('bf-code').disabled = true; // code không đổi được
+      document.getElementById('bf-name').value = b.name || '';
+      document.getElementById('bf-address').value = b.address || '';
+      document.getElementById('bf-tinh').value = b.tinh || '';
+      document.getElementById('bf-district').value = b.district || '';
+      document.getElementById('bf-ward').value = b.ward || '';
+      document.getElementById('bf-region').value = b.region || '';
+      document.getElementById('bf-phone').value = b.phone || '';
+      document.getElementById('bf-manager').value = b.manager || '';
+      document.getElementById('bf-area').value = b.area_m2 || '';
+      document.getElementById('bf-staff').value = b.staff_count || '';
+      document.getElementById('bf-hours').value = b.opening_hours || '';
+      document.getElementById('bf-opened').value = b.opened_at || '';
+      document.getElementById('bf-emoji').value = b.emoji || '🏪';
+      document.getElementById('bf-color').value = b.color || '#0071CE';
+      document.getElementById('bf-sort').value = b.sort_order || 0;
+    }
+  }
+  document.getElementById('bfOverlay').classList.add('show');
+}
+
+function closeBranchForm() {
+  document.getElementById('bfOverlay').classList.remove('show');
+  _brEditId = null;
+}
+
+async function saveBranch() {
+  const errEl = document.getElementById('bfErr');
+  errEl.textContent = '';
+  const code = document.getElementById('bf-code').value.trim().toUpperCase();
+  const name = document.getElementById('bf-name').value.trim();
+  if (!code) { errEl.textContent = 'Mã chi nhánh không được để trống.'; return; }
+  if (!name) { errEl.textContent = 'Tên chi nhánh không được để trống.'; return; }
+  if (!/^[A-Z0-9]{1,10}$/.test(code)) { errEl.textContent = 'Mã chi nhánh: chỉ chữ + số, tối đa 10 ký tự.'; return; }
+
+  const row = {
+    code, name,
+    address: document.getElementById('bf-address').value.trim() || null,
+    tinh: document.getElementById('bf-tinh').value.trim() || null,
+    district: document.getElementById('bf-district').value.trim() || null,
+    ward: document.getElementById('bf-ward').value.trim() || null,
+    region: document.getElementById('bf-region').value.trim() || null,
+    phone: document.getElementById('bf-phone').value.trim() || null,
+    manager: document.getElementById('bf-manager').value.trim() || null,
+    area_m2: parseFloat(document.getElementById('bf-area').value) || null,
+    staff_count: parseInt(document.getElementById('bf-staff').value) || null,
+    opening_hours: document.getElementById('bf-hours').value.trim() || null,
+    opened_at: document.getElementById('bf-opened').value || null,
+    emoji: document.getElementById('bf-emoji').value.trim() || '🏪',
+    color: document.getElementById('bf-color').value || '#0071CE',
+    sort_order: parseInt(document.getElementById('bf-sort').value) || 0,
+    active: true,
+  };
+
+  const btn = document.getElementById('bfSaveBtn');
+  btn.disabled = true; btn.textContent = '⏳ Đang lưu...';
+  try {
+    if (_brEditId) {
+      delete row.code; // không update code
+      delete row.active; // giữ nguyên active khi edit
+      const { error } = await sb.from('vc_branches').update(row).eq('id', _brEditId);
+      if (error) throw error;
+    } else {
+      // Check max_branches
+      const planBadge = document.getElementById('planBadge');
+      const plan = planBadge ? planBadge.textContent.toLowerCase() : 'basic';
+      const maxDefault = { basic: 1, standard: 2, premium: 10 };
+      let maxBr = maxDefault[plan] || 1;
+      try {
+        const { data: f } = await sb.rpc('get_plan_features');
+        if (f && f.max_branches) maxBr = f.max_branches;
+      } catch(e) {}
+      if (_brData.length >= maxBr) {
+        errEl.textContent = `Gói ${plan.toUpperCase()} cho phép tối đa ${maxBr} chi nhánh. Nâng cấp gói để thêm.`;
+        btn.disabled = false; btn.textContent = '💾 Lưu'; return;
+      }
+      const { error } = await sb.from('vc_branches').insert(row);
+      if (error) {
+        if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          errEl.textContent = `Mã "${code}" đã tồn tại. Chọn mã khác.`;
+          btn.disabled = false; btn.textContent = '💾 Lưu'; return;
+        }
+        throw error;
+      }
+    }
+    closeBranchForm();
+    await loadBranchList();
+    // Cập nhật chips trên hub
+    try {
+      const { data } = await sb.from('vc_branches').select('id, code, name, active, color, emoji, sort_order').order('sort_order').order('code');
+      _brData = data || [];
+      renderBranchChips();
+    } catch(e2) {}
+  } catch(e) {
+    errEl.textContent = 'Lỗi: ' + (e?.message || e);
+  }
+  btn.disabled = false; btn.textContent = _brEditId ? '💾 Cập nhật' : '💾 Lưu';
+}
+
+async function toggleBranch(id, currentActive) {
+  const action = currentActive ? 'Tạm đóng' : 'Mở lại';
+  if (!confirm(`${action} chi nhánh này?`)) return;
+  try {
+    const upd = { active: !currentActive };
+    if (!currentActive === false) upd.closed_at = new Date().toISOString().split('T')[0];
+    const { error } = await sb.from('vc_branches').update(upd).eq('id', id);
+    if (error) throw error;
+    await loadBranchList();
+    // Cập nhật chips
+    try {
+      const { data } = await sb.from('vc_branches').select('id, code, name, active, color, emoji, sort_order').order('sort_order').order('code');
+      _brData = data || [];
+      renderBranchChips();
+    } catch(e2) {}
+  } catch(e) { alert('Lỗi: ' + (e?.message || e)); }
+}
+
 function renderApps(features) {
-  // features (jsonb) có thể bật/tắt app theo gói: {ketoan:true, pos:true,...}. Null = hiện hết.
+  // Giới hạn app theo gói — nếu DB chưa trả features, dùng default theo plan
+  const planBadge = document.getElementById('planBadge');
+  const currentPlan = planBadge ? planBadge.textContent.toLowerCase() : 'basic';
+  const defaultFeatures = {
+    basic: { pos: true, ketoan: false, kho: false, ncc: false, luong: false },
+    standard: { pos: true, ketoan: false, kho: true, ncc: true, luong: false },
+    premium: { pos: true, ketoan: true, kho: true, ncc: true, luong: true }
+  };
+  const f = features || defaultFeatures[currentPlan] || defaultFeatures.basic;
   const grid = document.getElementById('appGrid'); grid.innerHTML='';
   APPS.forEach(a => {
-    if (features && features[a.code] === false) return; // gói không có app này
+    if (f[a.code] === false) return; // gói không có app này
     const el = document.createElement('a');
     el.className='app'; el.href=a.url;
     el.innerHTML = `<div class="ic-wrap" style="color:${a.color}">${a.ic}</div><span class="nm">${a.nm}</span>

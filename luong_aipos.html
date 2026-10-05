@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- LUONG AIPOS-PRO (FORK thuong mai tu luong.html): doi LUONG+VANHANH url/key sang AIPOS-PRO (1 ket noi); login USERS_DB -> Supabase Auth (Cach A, email) resolve role qua app_users; vc_state da bo sung AIPOS-PRO voi PK (tenant_id,key) + RLS, upsert onConflict tenant_id,key. 0 tham chieu Vicomart. -->
+<!-- LUONG AIPOS-PRO: Supabase Auth login, multi-tenant SaaS. -->
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -3610,13 +3610,35 @@ const USERS_DB={
   admin:   {pw:'admin123', role:'admin',    display:'Admin'},
   manager: {pw:'mgr2026',  role:'manager',  display:'Quản lý'},
 };
-// Dynamic branch registry — can be added/edited/deleted by director
-let BRANCH_REG=[
-  {id:'pb', name:'Phú Bài',   code:'CN01', addr:'Phú Bài, Thừa Thiên Huế',  phone:'', color:'pb', targetDT:500000000},
-  {id:'vt', name:'Vinh Thanh',code:'CN02', addr:'Vinh Thanh, Thừa Thiên Huế',phone:'', color:'vt', targetDT:400000000},
-  {id:'ta', name:'Thuận An',  code:'CN03', addr:'Thuận An, Thừa Thiên Huế', phone:'', color:'ta', targetDT:450000000},
-  {id:'office', name:'Văn phòng Cty', code:'VP', addr:'02 Sóng Hồng, Phú Bài, Huế', phone:'', color:'office', targetDT:0, isOffice:true},
-];
+// Dynamic branch registry — loaded from vc_branches (single source of truth)
+let BRANCH_REG=[];
+
+async function loadBranchesFromDB() {
+  const db = window._aiposDb;
+  if (!db) { console.warn('[LUONG] loadBranches: no supabase client'); return; }
+  try {
+    const { data, error } = await db.from('vc_branches')
+      .select('id, code, name, address, tinh, active, color, emoji, sort_order, manager, phone')
+      .order('sort_order');
+    if (error) throw error;
+    if (data && data.length > 0) {
+      BRANCH_REG = data.map(b => ({
+        id: b.code.toLowerCase(),
+        name: b.name,
+        code: b.code,
+        addr: b.address || '',
+        phone: b.phone || '',
+        color: b.code.toLowerCase(),
+        targetDT: 0,
+        active: b.active,
+        isOffice: b.name.toLowerCase().includes('văn phòng') || b.name.toLowerCase().includes('office'),
+      }));
+      console.log('[LUONG] ✅ Loaded', BRANCH_REG.length, 'branches from vc_branches');
+    }
+  } catch(e) {
+    console.warn('[LUONG] loadBranches failed:', e.message);
+  }
+}
 // Live BRANCHES map rebuilt from BRANCH_REG
 function getBranches(){const m={all:'Tất cả'};BRANCH_REG.forEach(b=>m[b.id]=b.name);return m;}
 function BRANCHES(){return getBranches();}
@@ -12754,11 +12776,49 @@ document.getElementById('ip').addEventListener('keydown',e=>{if(e.key==='Enter')
 // Khoi dong SB ngay khi page load de preload accounts
 (function earlyInit(){
   function tryInit(){
-    if(typeof window.initSB==='function') window.initSB();
+    if(typeof window.initSB==='function') {
+      window.initSB();
+      // Load branches from DB then SSO gate
+      setTimeout(async()=>{ await loadBranchesFromDB(); aiposLuongSsoGate(); }, 300);
+    }
     else setTimeout(tryInit, 300);
   }
   setTimeout(tryInit, 400);
 })();
+
+// ── SSO AUTO-LOGIN: skip login nếu Hub đã đăng nhập ──
+async function aiposLuongSsoGate() {
+  const sb = window._aiposDb;
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session || !session.user) return; // chưa có session → giữ login screen
+    // Đã có session từ Hub → auto-login
+    let role = 'staff', display = session.user.email;
+    try {
+      const { data: au } = await sb.from('app_users').select('full_name, role').eq('auth_uid', session.user.id).maybeSingle();
+      if (au) {
+        role = (au.role === 'owner' || au.role === 'manager') ? (au.role === 'owner' ? 'director' : 'manager') : au.role;
+        display = au.full_name || display;
+      }
+    } catch(e) {}
+    CU = session.user.email; CU_ROLE = role; CU_BR = 'all';
+    IA = (CU_ROLE === 'admin' || CU_ROLE === 'director');
+    IS_DIR = (CU_ROLE === 'director');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    var _b = document.getElementById('sync-status'); if(_b) _b.style.display = 'inline';
+    const roleIcon = { director:'👑', admin:'⭐', manager:'👔', staff:'👤' };
+    document.getElementById('udsp').textContent = (roleIcon[role] || '👤') + ' ' + display;
+    var _ab = document.getElementById('admbdg'); if(_ab) _ab.style.display = 'none';
+    document.querySelectorAll('.dir-only').forEach(el => el.style.display = IS_DIR ? 'flex' : 'none');
+    if (typeof applyRoleNav === 'function') applyRoleNav(CU_ROLE);
+    if (typeof auditLog === 'function') auditLog('HT', 'THÊM', 'SSO Auto-login', '—', session.user.email + ' (' + CU_ROLE + ')');
+    if (typeof afterLogin === 'function') afterLogin();
+  } catch (e) {
+    console.warn('[LUONG] SSO auto-login failed:', e.message);
+  }
+}
 document.getElementById('iu').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('ip').focus();});
 
 function init(){
@@ -14070,7 +14130,7 @@ function refreshHRDropdowns(){
 
   // 3. Branch dropdowns — từ BRANCH_REG (loại bỏ chi nhánh đã đóng như Thuận An)
   // Vẫn giữ Văn phòng Cty để cho NS VP chọn được
-  const CLOSED_BRANCHES = ['ta']; // các CN đã đóng — không cho chọn khi tạo NS mới
+  const CLOSED_BRANCHES = BRANCH_REG.filter(b => b.active === false).map(b => b.id); // CN đã đóng (từ DB active flag)
   const brList = (typeof BRANCH_REG!=='undefined')
     ? BRANCH_REG.filter(b => !CLOSED_BRANCHES.includes(b.id))
     : [];

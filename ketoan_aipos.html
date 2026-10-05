@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AIPOS-PRO ketoan FORK v2: VA RO RI DU LIEU — doi NOT chi ket noi chinh ma CA SUPA_NCC + SUPA_LUONG + NCC_URL/KEY (3+1 cho) tu DB Vicomart that sang AIPOS-PRO. Truoc do tab Ton kho/POS doc nham 3528 SKU + 36 GD that cua Vicomart. Gio moi ket noi tro AIPOS-PRO (rong). Bang products/pos_transactions/inventory_movements/v_inventory_wac da co tren AIPOS-PRO. -->
+<!-- AIPOS-PRO ketoan: Supabase Auth login, multi-tenant SaaS. -->
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -280,7 +280,7 @@ td.num{font-family:var(--mono);text-align:right;font-weight:500;}
 <div id="loginScreen" class="login-screen">
   <div class="login-box" style="text-align:center;">
     <div style="margin-bottom:12px;"><span class="login-badge">🤖 AI KẾ TOÁN TỰ ĐỘNG</span></div>
-    <div class="login-brand">VICOMART</div>
+    <div class="login-brand">AIPOS-PRO</div>
     <div class="login-sub">BCTC · KẾ TOÁN AI v5.0</div>
     <div class="login-rule"></div>
     <div style="margin:24px 0;"><div class="loading" style="width:32px;height:32px;"></div></div>
@@ -302,7 +302,7 @@ td.num{font-family:var(--mono);text-align:right;font-weight:500;}
 <div id="app" class="app">
   <div class="topbar">
     <a href="/" class="topbar-back">← BCTC</a>
-    <div class="topbar-brand">VICOMART KẾ TOÁN</div>
+    <div class="topbar-brand">AIPOS-PRO · Kế Toán</div>
     <div class="topbar-ver">v5.0</div>
     <div class="topbar-ai-badge">🤖 AI</div>
     <div class="topbar-spacer"></div>
@@ -331,7 +331,7 @@ td.num{font-family:var(--mono);text-align:right;font-weight:500;}
     <div class="sidebar-group">
       <div class="sidebar-group-title">📥 Nhập liệu</div>
       <div class="nav-tab" data-page="fmsbridge" title="FMS Bridge - Đọc DB FMS"><span class="nav-tab-icon">🌉</span><span>FMS Bridge</span></div>
-      <div class="nav-tab" data-page="nccbridge" title="NCC Bridge - đồng bộ 2 chiều với ncc.vicomart.vn"><span class="nav-tab-icon">🔗</span><span>NCC Bridge</span></div>
+      <div class="nav-tab" data-page="nccbridge" title="NCC Bridge - đồng bộ 2 chiều với NCC module"><span class="nav-tab-icon">🔗</span><span>NCC Bridge</span></div>
       <div class="nav-tab" data-page="smartpaste" title="AI Nhập Liệu thông minh"><span class="nav-tab-icon">🤖</span><span>AI Nhập Liệu</span></div>
       <div class="nav-tab" data-page="bulkimport" title="Import CSV sao kê NH"><span class="nav-tab-icon">📋</span><span>Import CSV</span></div>
       <div class="nav-tab" data-page="new" title="Lập chứng từ thủ công"><span class="nav-tab-icon">✏️</span><span>Lập tay</span></div>
@@ -427,9 +427,9 @@ td.num{font-family:var(--mono);text-align:right;font-weight:500;}
 <div id="tourOverlay" class="tour-overlay">
   <div class="tour-card">
     <div class="tour-icon">🎉</div>
-    <div class="tour-title">Chào mừng đến Vicomart Kế Toán AI!</div>
+    <div class="tour-title">Chào mừng đến AIPOS-PRO Kế Toán AI!</div>
     <div class="tour-body">
-      Đây là hệ thống <strong>AI Kế toán tự động 90%</strong> của Vicomart. 
+      Đây là hệ thống <strong>AI Kế toán tự động 90%</strong> dành cho bán lẻ. 
       <br><br>
       <strong>Anh chỉ cần XEM</strong>, AI sẽ:
       <br>• Tự đọc giao dịch (paste/CSV import)
@@ -455,7 +455,7 @@ const SUPA_KEY_LUONG = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmF
 // Dùng lại ai-proxy (Groq Llama 3.3 — miễn phí, đã deploy sẵn)
 const KETOAN_AI_URL = SUPABASE_URL + '/functions/v1/ai-proxy';
 
-const KETOAN_AI_SYSTEM = `Bạn là chuyên gia kế toán VAS Thông tư 200 cho siêu thị Vicomart Việt Nam.
+const KETOAN_AI_SYSTEM = `Bạn là chuyên gia kế toán VAS Thông tư 200 cho chuỗi bán lẻ Việt Nam.
 Phân tích mô tả giao dịch ngân hàng → trả về JSON mapping tài khoản kế toán.
 
 Tài khoản phổ biến:
@@ -1025,7 +1025,7 @@ pages.new = `<div class="page-header"><div><div class="page-title">✏️ Lập 
 </script>
 
 <script>
-/* ===== ENGINE GHÉP NỐI v9 — port nguyên bản từ tool "Ghép Nối Sản Phẩm v9 – AI + Thuật Toán" (giữ đúng từ điển/danh mục tuning Vicomart) ===== */
+/* ===== ENGINE GHÉP NỐI v9 — port nguyên bản từ tool "Ghép Nối Sản Phẩm v9 – AI + Thuật Toán" (giữ đúng từ điển/danh mục tuning chuỗi bán lẻ) ===== */
 window.GHEPV9 = (function(){
 function nv(s){return s.toLowerCase().replace(/[áàảãạăắặằẳẵâấầẩẫậ]/g,'a').replace(/[éèẻẽẹêếềểễệ]/g,'e').replace(/[íìỉĩị]/g,'i').replace(/[óòỏõọôốồổỗộơớờởỡợ]/g,'o').replace(/[úùủũụưứừửữự]/g,'u').replace(/[ýỳỷỹỵ]/g,'y').replace(/đ/g,'d').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
 const DICT={
@@ -1445,7 +1445,7 @@ function isCross(a,b){
   if(!ca||!cb){
     const known=ca||cb;
     if(STRICT.has(known))return true;
-    return false; // NỚI Vicomart: tên kho Pancake đầy đủ thường không khớp từ khóa danh mục → cho qua, để điểm tương đồng quyết định
+    return false; // NOTE: tên kho Pancake đầy đủ thường không khớp từ khóa danh mục → cho qua, để điểm tương đồng quyết định
     const FOOD_SPECIFIC=new Set([
       'DO_HOP','VIEN','XUC_XICH','DONG_LANH','NUOC_MAM','GIA_VI',
       'AJI_BOT_NGOT','AJI_BOT_CANH','AJI_CHIEN','AJI_MAYO','AJI_GIAM',
@@ -2861,27 +2861,32 @@ function init() {
     if (SUPA_KEY_NCC && SUPA_KEY_NCC.startsWith('eyJ') && !SUPA_KEY_NCC.includes('PLACEHOLDER')) {
       try {
         window.SUPA_NCC = supabase.createClient(SUPA_URL_NCC, SUPA_KEY_NCC);
-        console.log('[Vicomart] NCC client connected:', SUPA_URL_NCC);
+        console.log('[AIPOS] NCC client connected:', SUPA_URL_NCC);
       } catch (e) {
-        console.error('[Vicomart] NCC client failed:', e);
+        console.error('[AIPOS] NCC client failed:', e);
       }
     } else {
-      console.warn('[Vicomart] SUPA_KEY_NCC chưa cấu hình — tab Audit / NXT / Manual link sẽ không hoạt động');
+      console.warn('[AIPOS] SUPA_KEY_NCC chưa cấu hình — tab Audit / NXT / Manual link sẽ không hoạt động');
     }
 
     // ─── LƯƠNG project client (đọc bảng lương để hạch toán) ──
     if (SUPA_KEY_LUONG && SUPA_KEY_LUONG.startsWith('eyJ')) {
       try {
         window.SUPA_LUONG = supabase.createClient(SUPA_URL_LUONG, SUPA_KEY_LUONG);
-        console.log('[Vicomart] LƯƠNG client connected:', SUPA_URL_LUONG);
+        console.log('[AIPOS] LƯƠNG client connected:', SUPA_URL_LUONG);
       } catch (e) {
-        console.error('[Vicomart] LƯƠNG client failed:', e);
+        console.error('[AIPOS] LƯƠNG client failed:', e);
       }
     }
   } else {
-    console.warn('[Vicomart] Demo mode — anon key not configured');
+    console.warn('[AIPOS] Demo mode — anon key not configured');
   }
   
+  // Load branches from DB (single source of truth)
+  if (window.LuongCalc && window.LuongCalc.loadBranches) {
+    window.LuongCalc.loadBranches();
+  }
+
   // BẢN THƯƠNG MẠI AIPOS-PRO: BẮT BUỘC đăng nhập (multi-tenant + RLS).
   // current_tenant_id() resolve qua auth.uid() → mỗi user thấy đúng dữ liệu công ty mình.
   setTimeout(() => { aiposAuthGate(); }, 200);
@@ -2902,7 +2907,7 @@ function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTi
 
 async function doLogin() {
   // Kept for backward compat — không dùng nữa
-  loadApp({id:'fms-user', email:'giamdoc@vicomart.vn'}, true);
+  loadApp({id:'fms-user', email:'demo@aipos.vn'}, true);
 }
 
 async function loadApp(user, demo = false) {
@@ -2932,14 +2937,14 @@ async function loadApp(user, demo = false) {
   switchPage('dashboard');
   
   // Show tour
-  if (!localStorage.getItem('vicomart_tour_done')) {
+  if (!localStorage.getItem('aipos_tour_done')) {
     document.getElementById('tourOverlay').classList.add('active');
   }
 }
 
 function closeTour() {
   document.getElementById('tourOverlay').classList.remove('active');
-  localStorage.setItem('vicomart_tour_done', '1');
+  localStorage.setItem('aipos_tour_done', '1');
 }
 
 function logout() {
@@ -3575,9 +3580,10 @@ async function renderDashboard() {
     });
   }
   
-  // Branch performance
-  const branches = ['PB','VT','TA','HQ'];
-  const branchNames = {PB:'Phú Bài',VT:'Vinh Thành',TA:'Thuận An',HQ:'Tổng'};
+  // Branch performance — dynamic from DB
+  const _brReg = (window.LuongCalc && window.LuongCalc._internal && window.LuongCalc._internal.BRANCH_REG.length) ? window.LuongCalc._internal.BRANCH_REG : [{id:'pb',name:'Phú Bài',code:'CN01'},{id:'vt',name:'Vinh Thành',code:'CN02'}];
+  const branches = [..._brReg.filter(b=>!b.isOffice).map(b=>b.id.toUpperCase()), 'HQ'];
+  const branchNames = {}; _brReg.forEach(b => branchNames[b.id.toUpperCase()] = b.name); branchNames['HQ'] = 'Tổng';
   let branchHtml = '';
   for (const b of branches) {
     const bvs = vs.filter(v => v.branch === b);
@@ -3971,7 +3977,7 @@ function clearAiKey() {
 
 // ----- Gọi Claude API để cải thiện điểm ghép -----
 const _AI_SYS = [
-  'Ban la chuyen gia kho hang tap hoa VICOMART. Ghep MA AO (ten hang tu HD dau vao) voi SKU THAT trong kho.',
+  'Ban la chuyen gia kho hang tap hoa. Ghep MA AO (ten hang tu HD dau vao) voi SKU THAT trong kho.',
   '',
   'VIET TAT KHO: STTT=Sua Tuoi TT | SCA=Sua Chua An | SCUTT=Sua Chua Uong TT | NPC=Poca snack | BVS=Bang Ve Sinh',
   'SRM=Sua Rua Mat | KDR=Kem Danh Rang | NSM=Nuoc Suc Mieng | DL=Duoc Lieu | VS=Vang Sua | GP+=Grow Plus',
@@ -4762,13 +4768,14 @@ function subscribeRealtime() {
    Schema source data ở NCC project (nccSupa), acc_* ở BCTC (supa)
    ============================================================ */
 
-const HUB_VAT_DEFAULT = 8; // Vicomart bán lẻ FMCG mặc định 8%
+const HUB_VAT_DEFAULT = 8; // bán lẻ FMCG mặc định 8%
 
 // Branch normalize từ POS/KHO (PB/VT/TA) → acc_branch (giữ nguyên format)
 function normHubBranch(b) {
   if (!b) return 'HQ';
   const s = String(b).toUpperCase().trim();
-  if (['PB','VT','TA','HQ'].includes(s)) return s;
+  const _validBr = (window.LuongCalc && window.LuongCalc._internal && window.LuongCalc._internal.BRANCH_REG.length) ? window.LuongCalc._internal.BRANCH_REG.map(b=>b.id.toUpperCase()) : ['PB','VT','TA'];
+  if ([..._validBr, 'HQ'].includes(s)) return s;
   return normNccBranch(b);
 }
 
@@ -4823,7 +4830,7 @@ async function autoPostPosTx(tx) {
   if (total <= 0) { console.log('[HUB-POS] skip zero-total tx:', tx.code); return; }
   const dateStr = (tx.created_at || new Date().toISOString()).slice(0, 10);
 
-  // Tách VAT (8% default — Vicomart bán lẻ FMCG)
+  // Tách VAT (8% default — bán lẻ FMCG)
   const beforeVAT = Math.round(total / (1 + HUB_VAT_DEFAULT/100));
   const vatAmount = total - beforeVAT;
 
@@ -5129,7 +5136,7 @@ init();
 
 <script>
 // ============================================================
-// BANK CSV/XLSX PARSER v2 — Nâng cấp cho 3 bank thực tế Vicomart dùng
+// BANK CSV/XLSX PARSER v2 — Nâng cấp cho 3 bank phổ biến
 // - MB Bank BIZ (xuất XLSX từ "Sổ phụ điện tử")
 // - Vietinbank eFAST Business (xuất XLSX)
 // - Vietcombank iBanking (xuất CSV/XLSX)
@@ -5964,7 +5971,7 @@ function renderVoucherModal(v, lines, inv) {
     if (m) hdLabel = m[1].trim();
   }
 
-  const COMPANY = `CÔNG TY CỔ PHẦN VICOMART RETAIL`;
+  const COMPANY = ``;
   const MST = `3301744382`;
   const ADDR = `Thừa Thiên Huế`;
 
@@ -6737,9 +6744,9 @@ function printReport(kind) {
   const el = document.getElementById('reportContent');
   if (!el) return;
   const w = window.open('', '_blank', 'width=900,height=1100');
-  w.document.write(`<!DOCTYPE html><html><head><title>BCTC Vicomart</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>BCTC</title>
     <style>body{font-family:'Times New Roman',serif;margin:20px;} table{width:100%;border-collapse:collapse;} td,th{border:1px solid #ccc;padding:6px;} @media print{body{margin:0;}}</style>
-  </head><body><h2>VICOMART — BÁO CÁO TÀI CHÍNH</h2>${el.innerHTML}</body></html>`);
+  </head><body><h2>BÁO CÁO TÀI CHÍNH</h2>${el.innerHTML}</body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 300);
 }
@@ -6838,7 +6845,7 @@ pages.aging = `
     <div class="kpi-card ok">
       <div class="kpi-label">💰 Tổng công nợ NCC</div>
       <div class="kpi-value" id="agingTotal">—</div>
-      <div class="kpi-sub">Vicomart đang nợ</div>
+      <div class="kpi-sub">Đang nợ</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">✅ Còn hạn (≤ 30d)</div>
@@ -7149,7 +7156,7 @@ function exportAgingCSV() {
   const blob = new Blob(['\ufeff' + header + rows], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `vicomart_aging_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `aging_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   toast('✅ Đã xuất CSV', 'success');
 }
@@ -7270,7 +7277,7 @@ function vtbBankCode(name){ const n=vtbStripDiacritics(name); for(const [re,code
 function _vtbContent(r){
   const n = Number(r.invoice_count) || 0;
   const sohd = n > 0 ? ` ${n} HD` : '';
-  const base = `VICOMART TT CONG NO ${r.partner_name}${sohd}`;
+  const base = `TT CONG NO ${r.partner_name}${sohd}`;
   return vtbStripDiacritics(base).toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 }
 
@@ -7538,7 +7545,7 @@ async function viewPartnerLedger(partnerId) {
         </div>
         <div style="background:var(--alt);padding:10px;border-radius:4px;margin-bottom:14px;font-size:13px;">
           <strong>Số dư hiện tại:</strong> <span class="mono" style="font-size:16px;font-weight:700;color:${runningBalance>0?'var(--risk)':'var(--ok)'};">${formatNum(Math.abs(runningBalance))}đ</span>
-          ${runningBalance > 0 ? `<span style="color:var(--risk);"> · Vicomart đang nợ ${isNCC?'NCC':'KH'}</span>` : runningBalance < 0 ? `<span style="color:var(--ok);"> · ${isNCC?'NCC':'KH'} đang nợ Vicomart</span>` : ''}
+          ${runningBalance > 0 ? `<span style="color:var(--risk);"> · Đang nợ ${isNCC?'NCC':'KH'}</span>` : runningBalance < 0 ? `<span style="color:var(--ok);"> · ${isNCC?'NCC':'KH'} đang nợ Cty</span>` : ''}
         </div>
         <div style="max-height:500px;overflow:auto;">
           <table style="width:100%;font-size:12px;border-collapse:collapse;">
@@ -7596,7 +7603,7 @@ function printPartnerLedger() {
   w.document.write(`<!DOCTYPE html><html><head><title>Sổ chi tiết công nợ S12-DNN</title>
     <style>body{font-family:'Times New Roman',serif;margin:20px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ccc;padding:6px;} thead{background:#0D2B4E;color:white;} @media print{body{margin:10px;}}</style>
   </head><body>
-    <h2 style="text-align:center;">VICOMART — SỔ CHI TIẾT CÔNG NỢ (Mẫu S12-DNN)</h2>
+    <h2 style="text-align:center;">SỔ CHI TIẾT CÔNG NỢ (Mẫu S12-DNN)</h2>
     ${content}
   </body></html>`);
   w.document.close();
@@ -7905,7 +7912,7 @@ async function loadBalanceSheet() {
   document.getElementById('bsContent').innerHTML = `
     <div style="background:white;border:1px solid var(--line);border-radius:4px;padding:20px;">
       <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid var(--navy);padding-bottom:10px;">
-        <div style="font-size:18px;font-weight:700;color:var(--navy);">CÔNG TY TNHH VICOMART</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);"></div>
         <div style="font-size:14px;font-weight:700;margin-top:8px;">BẢNG CÂN ĐỐI KẾ TOÁN (B01a-DNN)</div>
         <div style="font-size:11px;color:var(--ink-mute);margin-top:4px;">Tại ngày ${formatDate(date)} · Đơn vị: VNĐ</div>
       </div>
@@ -7938,7 +7945,7 @@ async function loadBalanceSheet() {
 function printBalanceSheet() {
   const c = document.getElementById('bsContent'); if (!c) return;
   const w = window.open('', '_blank', 'width=1100,height=900');
-  w.document.write(`<!DOCTYPE html><html><head><title>B01a-DNN Vicomart</title><style>body{font-family:'Times New Roman',serif;padding:20px;} table{width:100%;border-collapse:collapse;} td{padding:4px 8px;border-bottom:1px solid #ddd;} @media print{body{padding:10px;}}</style></head><body>${c.innerHTML}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>B01a-DNN</title><style>body{font-family:'Times New Roman',serif;padding:20px;} table{width:100%;border-collapse:collapse;} td{padding:4px 8px;border-bottom:1px solid #ddd;} @media print{body{padding:10px;}}</style></head><body>${c.innerHTML}</body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 300);
 }
@@ -8003,7 +8010,7 @@ async function loadCashBook() {
 function printCashBook() {
   const c = document.getElementById('cbContent'); if (!c) return;
   const w = window.open('', '_blank', 'width=1200,height=900');
-  w.document.write(`<!DOCTYPE html><html><head><title>S07-DNN Sổ quỹ TM</title><style>body{font-family:'Times New Roman',serif;padding:20px;} table{width:100%;border-collapse:collapse;font-size:11px;} th,td{border:1px solid #ccc;padding:5px;} th{background:#0D2B4E;color:white;}</style></head><body><h2 style="text-align:center;">VICOMART · SỔ QUỸ TIỀN MẶT (S07-DNN)</h2>${c.innerHTML}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>S07-DNN Sổ quỹ TM</title><style>body{font-family:'Times New Roman',serif;padding:20px;} table{width:100%;border-collapse:collapse;font-size:11px;} th,td{border:1px solid #ccc;padding:5px;} th{background:#0D2B4E;color:white;}</style></head><body><h2 style="text-align:center;">SỔ QUỸ TIỀN MẶT (S07-DNN)</h2>${c.innerHTML}</body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 300);
 }
@@ -8471,7 +8478,7 @@ async function openEInvoiceConfig() {
         <h4 style="margin:18px 0 8px;">⚙️ Global settings</h4>
         <div class="form-grid cols-3">
           <div>
-            <label class="form-label">MST Vicomart</label>
+            <label class="form-label">MST doanh nghiệp</label>
             <input id="cfgMst" class="form-input mono" value="${cfg.taxpayer_id || ''}" maxlength="13">
           </div>
           <div>
@@ -9022,7 +9029,7 @@ async function openSelectProduct(lineId, invoiceId) {
 
   const html = `<div class="modal-bg active" id="searchProdModal" onclick="if(event.target.id==='searchProdModal')document.getElementById('searchProdModal').remove()">
     <div class="modal" style="max-width:560px;">
-      <div class="modal-head"><div class="modal-title">🔍 Chọn sản phẩm Vicomart</div><button class="modal-close" onclick="document.getElementById('searchProdModal').remove()">✕</button></div>
+      <div class="modal-head"><div class="modal-title">🔍 Chọn sản phẩm</div><button class="modal-close" onclick="document.getElementById('searchProdModal').remove()">✕</button></div>
       <div class="modal-body">
         <div style="background:#f0f9ff;padding:8px;border-radius:6px;margin-bottom:10px;font-size:12px;">
           NCC ghi: <b>${escapeHtml(line?.ncc_item_name || '')}</b> · giá <b>${formatNum(line?.ncc_unit_price || 0)}đ</b>
@@ -9206,7 +9213,7 @@ async function openEInvoiceAudit() {
       <div class="mono muted">MST ${a.ncc_tax_id}</div>
       <div>${escapeHtml(a.ncc_item_name||'').slice(0,30)}</div>
     </td>
-    <td style="padding:6px;font-size:11px;">${escapeHtml(a.vicomart_name||'').slice(0,30)}</td>
+    <td style="padding:6px;font-size:11px;">${escapeHtml(a.sku_name||'').slice(0,30)}</td>
     <td style="padding:6px;font-size:11px;text-align:right;font-family:monospace;">${a.hit_count}</td>
   </tr>`;
 
@@ -9253,7 +9260,7 @@ async function openEInvoiceAudit() {
           ? `<table style="width:100%;border-collapse:collapse;font-size:12px;">
               <thead><tr style="background:#f9fafb;">
                 <th style="padding:6px;text-align:left;">NCC</th>
-                <th style="padding:6px;text-align:left;">Vicomart</th>
+                <th style="padding:6px;text-align:left;">SKU</th>
                 <th style="padding:6px;text-align:right;width:80px;">Hit</th>
               </tr></thead>
               <tbody>${topAliases.map(renderTopAlias).join('')}</tbody>
@@ -9719,17 +9726,17 @@ function numToWordsVi(n) {
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
-// Thông tin DN cố định (Vicomart)
-// COMPANY_INFO: trắng nhãn (white-label). Mặc định = Vicomart (tenant 0).
+// Thông tin DN (từ tenant config)
+// COMPANY_INFO: trắng nhãn (white-label). Mặc định = tenant mặc định.
 // loadTenantConfig() sẽ ghi đè từ bảng tenant_config nếu có — nếu chưa có bảng
 // (DB hiện tại) thì giữ nguyên giá trị mặc định bên dưới → tương thích ngược 100%.
 let COMPANY_INFO = {
-  name: 'CÔNG TY CỔ PHẦN BÁN LẺ VICOMART RETAIL',
+  name: '',
   tax_id: '3301744382',
   logo_url: '',
   brand_color: '#1565C0',
 };
-// Mã tenant hiện tại — sau này lấy từ subdomain / đăng nhập. Hiện cố định Vicomart.
+// Mã tenant hiện tại — sau này lấy từ subdomain / đăng nhập. Lấy từ session.
 window.TENANT_CODE = window.TENANT_CODE || 'vcm';
 
 // Nạp cấu hình công ty theo tenant (nguyên tắc #4: bỏ hard-code).
@@ -9742,7 +9749,7 @@ async function loadTenantConfig() {
       .select('company_name, tax_id, tenant_config(logo_url, brand_color)')
       .eq('code', window.TENANT_CODE)
       .maybeSingle();
-    if (error || !data) return; // bảng/dòng chưa có → dùng mặc định Vicomart
+    if (error || !data) return; // bảng/dòng chưa có → dùng mặc định
     if (data.company_name) COMPANY_INFO.name = data.company_name;
     if (data.tax_id) COMPANY_INFO.tax_id = data.tax_id;
     const cfg = data.tenant_config || {};
@@ -10105,11 +10112,31 @@ window.LuongCalc = (function() {
     targetDTByMonth:{},
   };
   let CFG = JSON.parse(JSON.stringify(CFG_DEFAULT));
-  let BRANCH_REG = [
-    {id:'pb', name:'Phú Bài',   code:'CN01', targetDT:500000000},
-    {id:'vt', name:'Vinh Thanh',code:'CN02', targetDT:400000000},
-    {id:'office', name:'Văn phòng', code:'VP', targetDT:0, isOffice:true},
-  ];
+  // BRANCH_REG: loaded from vc_branches (single source of truth)
+  let BRANCH_REG = [];
+
+  async function _loadBranchReg() {
+    if (typeof supa === 'undefined' || !supa) return;
+    try {
+      const { data, error } = await supa.from('vc_branches')
+        .select('code, name, address, active, color, emoji, sort_order')
+        .order('sort_order');
+      if (error) throw error;
+      if (data && data.length > 0) {
+        BRANCH_REG = data.map(b => ({
+          id: b.code.toLowerCase(),
+          name: b.name,
+          code: b.code,
+          targetDT: 0,
+          active: b.active,
+          isOffice: b.name.toLowerCase().includes('văn phòng') || b.name.toLowerCase().includes('office'),
+        }));
+        console.log('[KETOAN/LuongCalc] ✅ Loaded', BRANCH_REG.length, 'branches from vc_branches');
+      }
+    } catch(e) {
+      console.warn('[KETOAN/LuongCalc] loadBranches failed:', e.message);
+    }
+  }
   let TGFLT = { month:5, year:2026, mode:'month' };
   let PER = { month:5, year:2026 };
 
@@ -10529,7 +10556,7 @@ window.LuongCalc = (function() {
     };
   }
 
-  return { loadFromSupabase, computeMonthBranch, setPeriod,
+  return { loadFromSupabase, computeMonthBranch, setPeriod, loadBranches: _loadBranchReg,
            // Debug exports
            _internal: { get ST(){return ST;}, get CFG(){return CFG;}, get BRANCH_REG(){return BRANCH_REG;} } };
 })();
@@ -10570,7 +10597,7 @@ async function openPayrollHachToan() {
     </div>
     <div style="padding:18px 20px;">
       <div id="prLuongStatus" style="background:#FFF8E1;border:1px solid #d97706;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;">
-        ⏳ Đang đọc bảng lương từ <b>luong.vicomart.vn</b>...
+        ⏳ Đang đọc bảng lương từ <b>Lương module</b>...
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
@@ -11505,7 +11532,7 @@ async function faTemplate() {
   ws['!cols'] = FA_HEADERS.map(() => ({ wch: 18 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'TSCD');
-  XLSX.writeFile(wb, 'mau_tscd_vicomart.xlsx');
+  XLSX.writeFile(wb, 'mau_tscd.xlsx');
   toast('⬇️ Đã tải file mẫu', 'success');
 }
 
@@ -11521,7 +11548,7 @@ async function faExport() {
   const ws = XLSX.utils.aoa_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'TSCD');
-  XLSX.writeFile(wb, `tscd_vicomart_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `tscd_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast(`📤 Đã xuất ${fixedAssetsCache.length} TSCĐ`, 'success');
 }
 
@@ -11617,7 +11644,8 @@ async function loadBranchReports() {
   if (month) q = q.eq('month', parseInt(month));
   const { data } = await q;
   
-  const branches = ['PB','VT','TA','HQ'];
+  const _brReg2 = (window.LuongCalc && window.LuongCalc._internal && window.LuongCalc._internal.BRANCH_REG.length) ? window.LuongCalc._internal.BRANCH_REG : [{id:'pb',name:'Phú Bài'},{id:'vt',name:'Vinh Thành'}];
+  const branches = [..._brReg2.filter(b=>!b.isOffice).map(b=>b.id.toUpperCase()), 'HQ'];
   const aggData = {};
   branches.forEach(b => aggData[b] = {revenue:0, cogs:0, selling_exp:0, admin_exp:0, fin_exp:0, count:0});
   
@@ -11712,7 +11740,7 @@ async function exportVATXml() {
     <TTinChung>
       <TTinDChiNNT>
         <mst>0301234567</mst>
-        <tenNNT>CONG TY TNHH VICOMART</tenNNT>
+        <tenNNT></tenNNT>
       </TTinDChiNNT>
       <TKhaiThue>
         <maTKhai>01/GTGT</maTKhai>
@@ -11757,7 +11785,7 @@ async function exportTNDNXml() {
 <HSoThueDTu>
   <HSoKhaiThue>
     <TTinChung>
-      <TTinDChiNNT><mst>0301234567</mst><tenNNT>CONG TY TNHH VICOMART</tenNNT></TTinDChiNNT>
+      <TTinDChiNNT><mst>0301234567</mst><tenNNT></tenNNT></TTinDChiNNT>
       <TKhaiThue><maTKhai>03/TNDN</maTKhai><kyKKhaiThue><kieuKy>Y</kieuKy><kyKKhai>${year}</kyKKhai></kyKKhaiThue></TKhaiThue>
     </TTinChung>
     <NDTKhai>
@@ -11976,7 +12004,7 @@ async function loadVatOutLedger() {
 
   let invs = [];
   if (source === 'pos') {
-    // Nguồn POS bán lẻ — doanh thu thực của Vicomart (VAT 8%), dựng dạng "hóa đơn" để kê
+    // Nguồn POS bán lẻ — doanh thu thực dành cho bán lẻ (VAT 8%), dựng dạng "hóa đơn" để kê
     const ncc = window.SUPA_NCC || (typeof getNccSupa === 'function' ? getNccSupa() : null);
     if (!ncc) { cont.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-mute);">Chưa kết nối POS/NCC.</div>'; return; }
     let q = ncc.from('pos_transactions')
@@ -13054,7 +13082,7 @@ async function loadThuyetMinh() {
   const row = (lbl, v) => `<tr><td style="padding:4px 6px;">${lbl}</td><td class="num mono" style="padding:4px 6px;">${formatNum(v)}</td></tr>`;
   cont.innerHTML = `<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px;max-width:860px;">
     <h3 style="margin:0 0 6px;">I. Đặc điểm hoạt động doanh nghiệp</h3>
-    <textarea id="tmI" class="form-input" style="width:100%;height:70px;">Công ty hoạt động trong lĩnh vực bán lẻ hàng tiêu dùng, vận hành chuỗi siêu thị Vicomart. Trong kỳ có 2 chi nhánh đang hoạt động: Phú Bài và Vinh Thành.</textarea>
+    <textarea id="tmI" class="form-input" style="width:100%;height:70px;">Công ty hoạt động trong lĩnh vực bán lẻ hàng tiêu dùng, vận hành chuỗi bán lẻ. Trong kỳ có 2 chi nhánh đang hoạt động: Phú Bài và Vinh Thành.</textarea>
     <h3 style="margin:12px 0 6px;">II. Kỳ kế toán, đơn vị tiền tệ</h3>
     <textarea id="tmII" class="form-input" style="width:100%;height:50px;">Kỳ kế toán năm bắt đầu từ 01/01/${window._tmData.yr} đến 31/12/${window._tmData.yr}. Đơn vị tiền tệ sử dụng trong kế toán: Đồng Việt Nam (VND).</textarea>
     <h3 style="margin:12px 0 6px;">III. Chế độ & chính sách kế toán áp dụng</h3>
@@ -13244,7 +13272,7 @@ function downloadFile(filename, content, mimeType) {
 pages.docs = `
   <div class="page-header">
     <div>
-      <div class="page-title">📚 Tài liệu hướng dẫn Vicomart Kế Toán AI</div>
+      <div class="page-title">📚 Tài liệu hướng dẫn AIPOS-PRO Kế Toán AI</div>
       <div class="page-sub">Sổ tay vận hành 23 chương · Đọc trực tiếp · Tải DOCX/PDF</div>
     </div>
   </div>
@@ -13253,7 +13281,7 @@ pages.docs = `
     <div style="display:flex;align-items:center;gap:12px;">
       <div style="font-size:36px;">🤖</div>
       <div style="flex:1;">
-        <div style="font-size:16px;font-weight:700;color:var(--ai);margin-bottom:4px;">VICOMART KẾ TOÁN AI v6.0</div>
+        <div style="font-size:16px;font-weight:700;color:var(--ai);margin-bottom:4px;">AIPOS-PRO KẾ TOÁN AI</div>
         <div style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
           Sổ tay vận hành đầy đủ · Chuẩn TT 133/2016 + Luật GTGT 2024 + Luật TNDN 2025 + NĐ 181/2025 + NĐ 70/2025<br>
           <strong>23 chương</strong> · 7 phần · ~18 trang in · Cập nhật 25/04/2026
@@ -13331,8 +13359,8 @@ pages.docs = `
 const DOC_CONTENT = {
   p1: {
     title: 'PHẦN I · GIỚI THIỆU HỆ THỐNG',
-    body: `<h3>Chương 1: Tổng quan Vicomart Kế Toán AI</h3>
-<p><strong>Triết lý vận hành:</strong> Vicomart Kế Toán AI là hệ thống kế toán <strong>tự động 90%</strong> đầu tiên cho chuỗi siêu thị mini Việt Nam. Anh/chị là người XEM. AI làm hết.</p>
+    body: `<h3>Chương 1: Tổng quan AIPOS-PRO Kế Toán AI</h3>
+<p><strong>Triết lý vận hành:</strong> AIPOS-PRO Kế Toán AI là hệ thống kế toán <strong>tự động 90%</strong> đầu tiên cho chuỗi bán lẻ Việt Nam. Anh/chị là người XEM. AI làm hết.</p>
 <p><strong>Quy mô:</strong> Hiện 3 CN (PB, VT, TA) → mục tiêu 1000 CN. Doanh thu ~12 tỷ/năm → 5,000 tỷ. Chi phí phần mềm: <strong>0đ/tháng</strong>.</p>
 <p><strong>Đặc điểm khác biệt:</strong></p>
 <ul>
@@ -13376,7 +13404,7 @@ const DOC_CONTENT = {
 <p><strong>Quy tắc vàng:</strong> Doanh thu tăng + Lãi dương + Cảnh báo = 0 → bỏ qua, đi việc khác. Chỉ can thiệp khi có chấm đỏ/vàng.</p>
 
 <h3>Chương 5: FMS Bridge</h3>
-<p>Đặc trưng độc quyền của Vicomart — đọc trực tiếp <code>fms_cf_transactions</code> (1367+ GD) → AI Map → tự sinh voucher kế toán.</p>
+<p>Đặc trưng độc quyền dành cho bán lẻ — đọc trực tiếp <code>fms_cf_transactions</code> (1367+ GD) → AI Map → tự sinh voucher kế toán.</p>
 <p><strong>Quy trình:</strong> Tab "🌉 FMS Bridge" → chọn khoảng thời gian → "🔍 QUÉT FMS" → "🚀 TẠO N VOUCHER" → đợi 1-3 phút.</p>
 <p><strong>Logic mapping:</strong> thu_ban_hang+CK→THU-02 · chi_ncc+Vinamilk→CHI-01 · chi_vanhanh+điện→CHI-09 · chi_luong+CK→CHI-22 · ...</p>
 
@@ -13434,7 +13462,7 @@ const DOC_CONTENT = {
 <h3>Chương 15: Tờ khai thuế</h3>
 <p><strong>VAT 01/GTGT:</strong> Nộp trước ngày 20 tháng sau. Tab "📤 HTKK XML" xuất file XML chuẩn HTKK 5.x.</p>
 <p><strong>TNDN 03/TNDN:</strong> Tạm nộp quý + Quyết toán năm.</p>
-<p><strong>Thuế suất TNDN 17%</strong> — Vicomart đủ điều kiện DN nhỏ (DT 3-50 tỷ/năm) theo Luật 67/2025 + NĐ 236/2025.</p>`
+<p><strong>Thuế suất TNDN 17%</strong> — DN đủ điều kiện DN nhỏ (DT 3-50 tỷ/năm) theo Luật 67/2025 + NĐ 236/2025.</p>`
   },
   p5: {
     title: 'PHẦN V · AI AUTO-MAP ENGINE',
@@ -13486,8 +13514,8 @@ const DOC_CONTENT = {
 <ul>
   <li><strong>🤖 Claude AI:</strong> claude.ai — gửi screenshot + mô tả lỗi</li>
   <li><strong>📊 Supabase:</strong> supabase.com/dashboard/project/ssrodnzhuydlupglvepm</li>
-  <li><strong>🚀 Vercel:</strong> vercel.com/vicomart</li>
-  <li><strong>💾 GitHub:</strong> github.com/nguyenvancan1001-source/BTCT-VICOMART</li>
+  <li><strong>🚀 Vercel:</strong> vercel.com</li>
+  <li><strong>💾 GitHub:</strong> github.com/nguyenvancan1001-source/AIPOS-PRO</li>
 </ul>`
   },
   p8: {
@@ -13554,7 +13582,7 @@ const DOC_CONTENT = {
 <p style="margin:0;"><strong>Phương pháp đường thẳng:</strong> Khấu hao 1 tháng = Nguyên giá ÷ (Số năm × 12). Bắt đầu trích từ tháng đưa vào sử dụng.</p>
 </div>
 <table style="width:100%;font-size:13px;border-collapse:collapse;margin:12px 0;">
-  <thead style="background:var(--alt);"><tr><th style="padding:8px;text-align:left;">Nhóm tài sản (Vicomart)</th><th style="padding:8px;">Khung số năm</th></tr></thead>
+  <thead style="background:var(--alt);"><tr><th style="padding:8px;text-align:left;">Nhóm tài sản</th><th style="padding:8px;">Khung số năm</th></tr></thead>
   <tbody>
     <tr><td style="padding:8px;border-top:1px solid #eee;">Tủ lạnh / tủ mát / máy lạnh / máy móc thiết bị</td><td style="padding:8px;border-top:1px solid #eee;text-align:center;">5 – 12 năm</td></tr>
     <tr><td style="padding:8px;border-top:1px solid #eee;">Kệ / quầy / tủ trưng bày · dụng cụ quản lý</td><td style="padding:8px;border-top:1px solid #eee;text-align:center;">5 – 10 năm</td></tr>
@@ -13722,7 +13750,7 @@ const DOC_CONTENT = {
 
 <button class="nv-btn" onclick="var e=this.nextElementSibling;e.style.display=e.style.display==='block'?'none':'block'">🔗 R · Đồng bộ NCC Bridge (2 chiều)</button>
 <div class="nv-panel"><table><thead><tr><th>Bước</th><th>Hành động</th><th>Ai</th><th>Điểm kiểm soát</th></tr></thead><tbody>
-<tr><td>1</td><td>Tab NCC Bridge → đồng bộ với ncc.vicomart.vn</td><td><span class="nv-who">Kế toán</span></td><td class="nv-ks">Kết nối 2 Supabase OK</td></tr>
+<tr><td>1</td><td>Tab NCC Bridge → đồng bộ với NCC module</td><td><span class="nv-who">Kế toán</span></td><td class="nv-ks">Kết nối 2 Supabase OK</td></tr>
 <tr><td>2</td><td>Kéo dữ liệu NCC/mua hàng từ app NCC sang kế toán</td><td>tự động</td><td class="nv-ks">Không trùng bản ghi đã có</td></tr>
 <tr><td>3</td><td>Đối chiếu số NCC 2 bên</td><td><span class="nv-who">Kế toán</span></td><td class="nv-ks">Danh sách NCC khớp nhau</td></tr>
 </tbody></table></div>
@@ -13758,7 +13786,7 @@ const DOC_CONTENT = {
 <tr><td>2</td><td>Bấm Pull → gdt-pull kéo HĐ mới (incremental, không kéo lại HĐ cũ)</td><td>tự động</td><td class="nv-ks">Số HĐ pulled hợp lý · không trùng kỳ</td></tr>
 <tr><td>3</td><td>gdt-parse: bóc dòng + map đối tác → sinh voucher BN</td><td>tự động</td><td class="nv-ks">Nợ 1561/1331 = Có 331 (cân) · đúng MST bán</td></tr>
 <tr><td>4</td><td>gdt-kho-sync (NCC): tạo mã ảo GDTV + nhập kho HQ</td><td>tự động</td><td class="nv-ks">Tồn HQ tăng · alias lưu</td></tr>
-<tr><td>5</td><td>HĐ số lượng lớn: chạy gdt_selenium.py (CDP token → API 8 HĐ/lần) trên máy hoặc đặt lịch</td><td><span class="nv-who">IT/Kế toán</span></td><td class="nv-ks">Chrome profile ~/vicomart_gdt_profile · CHƯA tự chạy theo lịch</td></tr>
+<tr><td>5</td><td>HĐ số lượng lớn: chạy gdt_selenium.py (CDP token → API 8 HĐ/lần) trên máy hoặc đặt lịch</td><td><span class="nv-who">IT/Kế toán</span></td><td class="nv-ks">Chrome profile ~/gdt_profile · CHƯA tự chạy theo lịch</td></tr>
 </tbody></table></div>
 
 <button class="nv-btn" onclick="var e=this.nextElementSibling;e.style.display=e.style.display==='block'?'none':'block'">🔄 W · Map lại mã hàng GDT hàng loạt</button>
@@ -13874,7 +13902,7 @@ function printDocChapter(key) {
   const doc = DOC_CONTENT[key];
   if (!doc) return;
   const w = window.open('', '_blank', 'width=900,height=900');
-  w.document.write(`<!DOCTYPE html><html><head><title>${doc.title} · Vicomart Sổ tay</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>${doc.title} · AIPOS-PRO Sổ tay</title>
     <style>
       body{font-family:'Times New Roman',serif;max-width:760px;margin:30px auto;padding:0 20px;line-height:1.7;color:#222;}
       h1{color:#0D2B4E;border-bottom:2px solid #8B6914;padding-bottom:8px;}
@@ -13886,13 +13914,13 @@ function printDocChapter(key) {
       @media print{body{margin:10px;}}
     </style></head><body>
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:24px;font-weight:700;color:#0D2B4E;">VICOMART KẾ TOÁN AI v6.0</div>
+      <div style="font-size:24px;font-weight:700;color:#0D2B4E;">AIPOS-PRO KẾ TOÁN AI</div>
       <div style="font-size:14px;color:#666;">Sổ tay vận hành · ${new Date().toLocaleDateString('vi-VN')}</div>
     </div>
     <h1>${doc.title}</h1>
     ${doc.body}
     <div style="margin-top:40px;padding-top:20px;border-top:1px solid #ccc;font-size:11px;color:#999;text-align:center;">
-      Vicomart Kế Toán AI v6.0 · TT 133/2016 + Luật GTGT 2024 + TNDN 2025 + NĐ 181/2025
+      AIPOS-PRO Kế Toán AI v6.0 · TT 133/2016 + Luật GTGT 2024 + TNDN 2025 + NĐ 181/2025
     </div>
   </body></html>`);
   w.document.close();
@@ -13900,9 +13928,9 @@ function printDocChapter(key) {
 }
 
 function downloadHandbook(format) {
-  toast(`📄 File ${format.toUpperCase()} đã upload sẵn lên GitHub repo. Anh tải tại: github.com/nguyenvancan1001-source/BTCT-VICOMART`, 'info');
+  toast(`📄 File ${format.toUpperCase()} đã upload sẵn lên GitHub repo. Anh tải tại: github.com/nguyenvancan1001-source/AIPOS-PRO`, 'info');
   // Có thể link trực tiếp nếu đã upload
-  // window.open(`/Vicomart_KeToanAI_SoTay.${format}`, '_blank');
+  // window.open(`/AIPOS_KeToan_SoTay.${format}`, '_blank');
 }
 
 // ============================================================
@@ -13964,7 +13992,7 @@ pages.printforms = `
     </div>
   </div>
   
-  <h3 style="color:var(--navy);">🌾 NGOẠI LỆ NĐ 181/2025 (đặc thù Vicomart)</h3>
+  <h3 style="color:var(--navy);">🌾 NGOẠI LỆ NĐ 181/2025 (đặc thù bán lẻ)</h3>
   <div class="forms-grid">
     <div class="form-card" style="border:2px solid var(--gold);" onclick="openBKTM_NongSan()">
       <div class="form-card-icon" style="color:var(--gold);">🌾</div>
@@ -14035,7 +14063,7 @@ function buildPrintHeader(title, subtitle) {
   return `
     <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;">
       <div style="font-size:11px;line-height:1.5;">
-        <div><strong>CÔNG TY TNHH VICOMART</strong></div>
+        <div><strong></strong></div>
         <div>Địa chỉ: Thừa Thiên Huế</div>
         <div>MST: 0301234567</div>
       </div>
@@ -14060,7 +14088,7 @@ function buildSignature(roles) {
 
 function openPrintWindow(html, title) {
   const w = window.open('', '_blank', 'width=900,height=1100');
-  w.document.write(`<!DOCTYPE html><html><head><title>${title} · Vicomart</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>${title} · AIPOS-PRO</title>
     <style>
       body{font-family:'Times New Roman',serif;max-width:740px;margin:20px auto;padding:0 20px;color:#000;}
       table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -14579,7 +14607,7 @@ function printDeNghiThanhToan() {
   const body = `
     ${buildPrintHeader('GIẤY ĐỀ NGHỊ THANH TOÁN', 'Mẫu số: 05-TT — Ban hành theo TT 133/2016/TT-BTC')}
     <p style="text-align:center;">Ngày ${dObj.getDate()} tháng ${dObj.getMonth()+1} năm ${dObj.getFullYear()}</p>
-    <p>Kính gửi: <strong>Ban Giám đốc Công ty TNHH Vicomart</strong></p>
+    <p>Kính gửi: <strong>Ban Giám đốc Công ty</strong></p>
     <table style="border:none;">
       <tr><td style="border:none;width:30%;padding:6px 0;">Họ và tên người đề nghị:</td><td style="border:none;font-weight:700;">${name}</td></tr>
       <tr><td style="border:none;padding:6px 0;">Bộ phận:</td><td style="border:none;">${dept}</td></tr>
@@ -14636,7 +14664,7 @@ function printDeNghiTamUng() {
   const body = `
     ${buildPrintHeader('GIẤY ĐỀ NGHỊ TẠM ỨNG', 'Mẫu số: 03-TT — Ban hành theo TT 133/2016/TT-BTC')}
     <p style="text-align:center;">Ngày ${dObj.getDate()} tháng ${dObj.getMonth()+1} năm ${dObj.getFullYear()}</p>
-    <p>Kính gửi: <strong>Ban Giám đốc Công ty TNHH Vicomart</strong></p>
+    <p>Kính gửi: <strong>Ban Giám đốc Công ty</strong></p>
     <table style="border:none;">
       <tr><td style="border:none;padding:6px 0;width:30%;">Tên tôi là:</td><td style="border:none;font-weight:700;">${name}</td></tr>
       <tr><td style="border:none;padding:6px 0;">Bộ phận:</td><td style="border:none;">${dept}</td></tr>
@@ -14717,7 +14745,7 @@ function parseDk(dk) {
 pages.nccbridge = `
   <div class="page-header">
     <div>
-      <div class="page-title">🔗 NCC Bridge v6.0.5 — ncc.vicomart.vn</div>
+      <div class="page-title">🔗 NCC Bridge</div>
       <div class="page-sub">Đồng bộ 2 chiều · Hạch toán đúng TT 133 · "Hàng về - sổ ghi"</div>
     </div>
     <div class="page-actions">

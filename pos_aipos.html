@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- POS AIPOS-PRO (FORK thuong mai tu pos__2_.html): doi NCC+BCTC url/key sang AIPOS-PRO (1 ket noi); login MOCK_USERS -> Supabase Auth (Cach A, email+matkhau) + resolve tenant/role qua app_users; logout signOut. Bang vc_branches/vc_inventory + kho_* da bo sung vao AIPOS-PRO. 0 tham chieu Vicomart that. -->
+<!-- POS AIPOS-PRO: Supabase Auth login, multi-tenant SaaS. -->
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -253,8 +253,34 @@ body.modal-open .fab-fs{opacity:0.3;pointer-events:none}
 body.in-pos .fab-fs{display:inline-flex}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
+/* ===== SIDEBAR MENU ===== */
+.pos-body{flex:1;display:flex;overflow:hidden;min-height:0}
+.pos-sidebar{width:0;min-width:0;overflow:hidden;background:#0f172a;display:flex;flex-direction:column;transition:width .25s ease,min-width .25s ease;z-index:10;border-right:1px solid #1e293b}
+.pos-sidebar.open{width:220px;min-width:220px}
+.pos-sidebar .sidebar-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b}
+.pos-sidebar .sidebar-head .sb-title{color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.pos-sidebar .sidebar-close{background:none;border:none;color:#64748b;cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center}
+.pos-sidebar .sidebar-close:hover{color:#e2e8f0;background:#1e293b}
+.pos-sidebar .sb-nav{flex:1;overflow-y:auto;padding:6px 8px}
+.pos-sidebar .sb-nav::-webkit-scrollbar{width:4px}
+.pos-sidebar .sb-nav::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.sb-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .12s;white-space:nowrap}
+.sb-nav-item:hover{background:#1e293b;color:#f1f5f9}
+.sb-nav-item.active{background:var(--navy);color:white;font-weight:600}
+.sb-nav-item .sb-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-nav-item .sb-badge{margin-left:auto;background:#dc2626;color:white;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;font-family:var(--font-num)}
+.sb-divider{height:1px;background:#1e293b;margin:6px 8px}
+.sb-section-label{padding:8px 12px 4px;color:#475569;font-size:9.5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700}
+.sidebar-toggle-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:white;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .12s;margin-right:6px}
+.sidebar-toggle-btn:hover{background:rgba(255,255,255,0.22)}
+.pos-sidebar .sb-footer{padding:10px 12px;border-top:1px solid #1e293b;font-size:11px;color:#475569;text-align:center}
+
 /* ===== MAIN POS LAYOUT ===== */
+.pos-content-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;transition:all .25s ease}
 .pos-main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:8px;padding:8px;overflow:hidden;min-height:0}
+/* Management inline view (replaces modal for sidebar nav) */
+.pos-mgmt-inline{flex:1;overflow-y:auto;padding:16px;background:var(--gray-100);display:none}
+.pos-mgmt-inline.active{display:block}
 .left-col{display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
 .right-col{display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
 .search-section{background:white;border-radius:9px;padding:10px 12px;position:relative;flex-shrink:0;box-shadow:var(--shadow-sm)}
@@ -1166,9 +1192,82 @@ body.in-pos .fab-fs{display:inline-flex}
 
   <!-- Main POS screen -->
   <div id="screen-pos" style="display:none;flex-direction:column;height:100vh;overflow:hidden">
+    <div class="pos-body">
+
+    <!-- Sidebar -->
+    <div class="pos-sidebar" id="posSidebar">
+      <div class="sidebar-head">
+        <span class="sb-title">Menu</span>
+        <button class="sidebar-close" onclick="toggleSidebar()" title="Đóng menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="sb-nav" id="sidebarNav">
+        <button class="sb-nav-item active" data-view="pos" onclick="switchSidebarView('pos')">
+          <span class="sb-icon">🛒</span>Bán hàng
+        </button>
+        <div class="sb-divider"></div>
+        <div class="sb-section-label">Quản lý</div>
+        <button class="sb-nav-item" data-view="dashboard" onclick="switchSidebarView('dashboard')">
+          <span class="sb-icon">📊</span>Tổng quan
+        </button>
+        <button class="sb-nav-item" data-view="online-orders" onclick="switchSidebarView('online-orders')">
+          <span class="sb-icon">🛒</span>Đơn online<span class="sb-badge" id="sbBadgeOnline" style="display:none">0</span>
+        </button>
+        <button class="sb-nav-item" data-view="sales-today" onclick="switchSidebarView('sales-today')">
+          <span class="sb-icon">📋</span>Đơn hàng<span class="sb-badge" id="sbBadgeSales" style="display:none">0</span>
+        </button>
+        <button class="sb-nav-item" data-view="inventory" onclick="switchSidebarView('inventory')">
+          <span class="sb-icon">📦</span>Tồn kho
+        </button>
+        <button class="sb-nav-item" data-view="customers" onclick="switchSidebarView('customers')">
+          <span class="sb-icon">👥</span>Khách hàng
+        </button>
+        <button class="sb-nav-item" data-view="returns" onclick="switchSidebarView('returns')">
+          <span class="sb-icon">↺</span>Trả hàng
+        </button>
+        <button class="sb-nav-item" data-view="writeoff" onclick="switchSidebarView('writeoff')">
+          <span class="sb-icon">🗑️</span>Hủy hàng
+        </button>
+        <button class="sb-nav-item" data-view="promos-active" onclick="switchSidebarView('promos-active')">
+          <span class="sb-icon">🎁</span>KM đang chạy
+        </button>
+        <button class="sb-nav-item" data-view="products" onclick="switchSidebarView('products')">
+          <span class="sb-icon">🏷️</span>Hàng hóa
+        </button>
+        <button class="sb-nav-item" data-view="stocktake" onclick="switchSidebarView('stocktake')">
+          <span class="sb-icon">📋</span>Kiểm kê
+        </button>
+        <button class="sb-nav-item" data-view="stock-adjust" onclick="switchSidebarView('stock-adjust')">
+          <span class="sb-icon">⚖️</span>Điều chỉnh
+        </button>
+        <button class="sb-nav-item" data-view="purchase-order" onclick="switchSidebarView('purchase-order')">
+          <span class="sb-icon">📥</span>Nhập kho
+        </button>
+        <button class="sb-nav-item" data-view="adv-reports" onclick="switchSidebarView('adv-reports')">
+          <span class="sb-icon">📈</span>Báo cáo NC
+        </button>
+        <button class="sb-nav-item" data-view="team-mgmt" onclick="switchSidebarView('team-mgmt')">
+          <span class="sb-icon">👥</span>Đội ngũ
+        </button>
+        <div class="sb-divider"></div>
+        <div class="sb-section-label">Hệ thống</div>
+        <button class="sb-nav-item" onclick="openSettingsModal(); toggleSidebar()">
+          <span class="sb-icon">⚙️</span>Cài đặt
+        </button>
+        <button class="sb-nav-item" onclick="openShiftReport(); toggleSidebar()">
+          <span class="sb-icon">📊</span>Báo cáo ca
+        </button>
+      </div>
+      <div class="sb-footer">AIPOS-PRO v1.0</div>
+    </div>
+
+    <!-- Content area -->
+    <div class="pos-content-area" id="posContentArea">
     <div class="header">
       <div class="header-top">
         <div class="header-zone-left">
+          <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Menu (M)">☰</button>
           <div class="brand-block">
             <div class="brand-name" id="posBrandName">AIPOS-PRO</div>
             <div class="brand-sub" id="hdrBranchSub">Chi nhánh —</div>
@@ -1266,6 +1365,10 @@ body.in-pos .fab-fs{display:inline-flex}
         <div id="paymentCardInline"></div>
       </div>
     </div>
+    <!-- Inline management view (shown when sidebar nav picks a mgmt tab) -->
+    <div class="pos-mgmt-inline" id="posMgmtInline"></div>
+    </div><!-- /pos-content-area -->
+    </div><!-- /pos-body -->
   </div>
 
   <!-- Modal containers -->
@@ -1515,11 +1618,36 @@ const CONFIG = {
   }
 };
 
-const BRANCHES = {
-  PB: { code: 'PB', name: 'Chi nhánh Phú Bài',  address: '02 Sóng Hồng, Phường Phú Bài, TP Huế', province: 'TT-Hue', provinceName: 'Thừa Thiên Huế' },
-  VT: { code: 'VT', name: 'Chi nhánh Vinh Thành', address: 'Vinh Thành, TP Huế',                  province: 'TT-Hue', provinceName: 'Thừa Thiên Huế' },
-  TA: { code: 'TA', name: 'Chi nhánh Thuận An',  address: 'Thuận An, TP Huế',                     province: 'TT-Hue', provinceName: 'Thừa Thiên Huế' },
-};
+// BRANCHES: loaded dynamically from vc_branches table
+// Fallback empty — loadBranchesFromDB() populates on init
+let BRANCHES = {};
+
+async function loadBranchesFromDB() {
+  const db = state.supabase;
+  if (!db) { console.warn('[POS] loadBranches: no supabase client'); return; }
+  try {
+    const { data, error } = await db.from('vc_branches')
+      .select('code, name, address, tinh, active, color, emoji, sort_order, manager')
+      .eq('active', true)
+      .order('sort_order');
+    if (error) throw error;
+    if (data && data.length > 0) {
+      BRANCHES = {};
+      data.forEach(b => {
+        BRANCHES[b.code] = {
+          code: b.code,
+          name: b.name || ('Chi nhánh ' + b.code),
+          address: b.address || '',
+          province: b.tinh ? b.tinh.replace(/\s+/g, '-') : '',
+          provinceName: b.tinh || '',
+        };
+      });
+      console.log('[POS] ✅ Loaded', Object.keys(BRANCHES).length, 'branches from vc_branches');
+    }
+  } catch(e) {
+    console.warn('[POS] loadBranches failed:', e.message);
+  }
+}
 
 // Helper: get all branch codes in same province as the current branch
 function getBranchesInSameProvince(branchCode) {
@@ -2118,7 +2246,6 @@ function mapNccProductRowHub(p, branch) {
     pack:     parseInt(p.pack) || 1,
     vat:      parseFloat(p.vat) || 0.10,
     active:   p.active !== false,  // ⚡ FIX v2: default true
-    image_url: p.image_url || '',  // ⚡ FIX v4: ảnh sản phẩm
     _raw:     p,
   };
 }
@@ -2147,7 +2274,6 @@ function mapPancakeProductRow(p) {
     stockTA: parseInt(p.stockTA) || 0,
     pancakeId: p.id,
     variationId: p._vid,
-    image_url: p.image_url || '',
     _raw: p,
   };
 }
@@ -2732,7 +2858,6 @@ function renderSearchDropdown() {
       const stockTag = p.stock <= 0 ? '<span style="color:var(--red);font-weight:500">Hết hàng</span>' : `Còn ${p.stock} ${p.unit}`;
       return `
         <div class="search-result ${i===idx?'active':''} ${p.stock<=0?'out-of-stock':''}" onmousedown="addToCart('${p.sku}'); $('#searchInput').value=''; state.searchQuery=''; renderSearchDropdown(); $('#searchInput').focus()">
-          ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--gray-200);flex-shrink:0">` : `<div style="width:40px;height:40px;border-radius:6px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;opacity:.3">📷</div>`}
           <div class="info">
             <div class="name">${escapeHtml(p.name)}</div>
             <div class="meta">${escapeHtml(p.sku)} · ${escapeHtml(p.barcode)} · ${stockTag}</div>
@@ -9869,13 +9994,8 @@ function renderProductList() {
     return `<tr>
       <td class="sku">${escapeHtml(p.sku)}</td>
       <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--gray-200);flex-shrink:0">` : `<div style="width:36px;height:36px;border-radius:6px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;opacity:.3">📷</div>`}
-          <div>
-            <div style="font-weight:600;font-size:12px">${escapeHtml(p.name)}</div>
-            <div style="font-size:10px;color:var(--gray-500)">${p.barcode||'—'}</div>
-          </div>
-        </div>
+        <div style="font-weight:600;font-size:12px">${escapeHtml(p.name)}</div>
+        <div style="font-size:10px;color:var(--gray-500)">${p.barcode||'—'}</div>
       </td>
       <td style="font-size:11px">${getCatName(p.category)}</td>
       <td style="text-align:right;font-weight:600">${fmt.money(p.price)}</td>
@@ -10011,20 +10131,6 @@ function renderProductForm(product) {
           <label>Hạn sử dụng (HSD)</label>
           <input id="pf-expiry" type="date" value="${p.expiryDate||''}">
         </div>
-        <div class="prod-form-full">
-          <label>📷 Ảnh sản phẩm</label>
-          <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
-            <div id="pf-img-preview" style="width:90px;height:90px;border-radius:10px;border:2px dashed var(--gray-300);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--gray-50);flex-shrink:0;cursor:pointer" onclick="document.getElementById('pf-img-file').click()">
-              ${p.image_url ? '<img src="'+escapeHtml(p.image_url)+'" style="width:100%;height:100%;object-fit:cover">' : '<span style="font-size:28px;opacity:.4">📷</span>'}
-            </div>
-            <div style="flex:1;min-width:180px">
-              <input type="file" id="pf-img-file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="pfPreviewImage(this)">
-              <button class="btn" type="button" style="background:var(--navy);color:#fff;font-size:11px;padding:6px 12px;margin-bottom:6px" onclick="document.getElementById('pf-img-file').click()">📤 Upload ảnh</button>
-              <div style="font-size:10px;color:var(--gray-500);margin-bottom:6px">JPG, PNG, WebP · Tối đa 2MB</div>
-              <input id="pf-imageUrl" value="${escapeHtml(p.image_url||'')}" placeholder="Hoặc dán URL ảnh..." style="font-size:11px" oninput="pfUrlPreview(this.value)">
-            </div>
-          </div>
-        </div>
       </div>
       <div style="margin-top:16px;display:flex;gap:8px">
         <button class="btn btn-primary" onclick="prodSave(${isEdit?'true':'false'})">${isEdit ? '💾 Lưu thay đổi' : '➕ Thêm sản phẩm'}</button>
@@ -10034,43 +10140,7 @@ function renderProductForm(product) {
   `;
 }
 
-/* ── Image preview & upload helpers ── */
-let _pfPendingFile = null; // file chờ upload khi save
-
-function pfPreviewImage(input) {
-  const file = input.files?.[0];
-  if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { alert('Ảnh quá lớn! Tối đa 2MB'); input.value = ''; return; }
-  _pfPendingFile = file;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const prev = document.getElementById('pf-img-preview');
-    prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-    document.getElementById('pf-imageUrl').value = ''; // clear URL nếu upload file
-  };
-  reader.readAsDataURL(file);
-}
-
-function pfUrlPreview(url) {
-  if (!url) return;
-  _pfPendingFile = null; // clear file nếu dùng URL
-  const prev = document.getElementById('pf-img-preview');
-  prev.innerHTML = `<img src="${escapeHtml(url)}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=font-size:28px;opacity:.4>❌</span>'">`;
-}
-
-async function pfUploadImage(sku) {
-  if (!_pfPendingFile) return null;
-  const tenantId = state.tenantId || 'default';
-  const ext = _pfPendingFile.name.split('.').pop().toLowerCase() || 'jpg';
-  const path = `${tenantId}/${sku.toLowerCase()}.${ext}`;
-  const { data, error } = await sb.storage.from('product-images').upload(path, _pfPendingFile, { upsert: true, contentType: _pfPendingFile.type });
-  if (error) { console.error('Upload error:', error); alert('Lỗi upload ảnh: ' + error.message); return null; }
-  const { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
-  _pfPendingFile = null;
-  return urlData.publicUrl;
-}
-
-async function prodSave(isEdit) {
+function prodSave(isEdit) {
   const sku = ($('#pf-sku')?.value||'').trim().toUpperCase();
   const name = ($('#pf-name')?.value||'').trim();
   const category = $('#pf-category')?.value||'';
@@ -10084,25 +10154,18 @@ async function prodSave(isEdit) {
   const batchNumber = ($('#pf-batch')?.value||'').trim();
   const mfgDate = $('#pf-mfgDate')?.value||'';
   const expiryDate = $('#pf-expiry')?.value||'';
-  let imageUrl = ($('#pf-imageUrl')?.value||'').trim();
 
   if (!sku || !name || !category) { alert('Vui lòng nhập đầy đủ SKU, Tên, Danh mục'); return; }
   if (price <= 0) { alert('Giá bán phải > 0'); return; }
 
-  // Upload ảnh nếu có file đang chờ
-  if (_pfPendingFile) {
-    const uploadedUrl = await pfUploadImage(sku);
-    if (uploadedUrl) imageUrl = uploadedUrl;
-  }
-
   if (isEdit) {
     const idx = state.products.findIndex(p => p.sku === sku);
     if (idx < 0) { alert('Không tìm thấy SP'); return; }
-    state.products[idx] = { ...state.products[idx], name, category, unit, barcode, price, cost, nccId, lotNumber, batchNumber, mfgDate, expiryDate, image_url: imageUrl || state.products[idx].image_url };
+    state.products[idx] = { ...state.products[idx], name, category, unit, barcode, price, cost, nccId, lotNumber, batchNumber, mfgDate, expiryDate };
     addAuditLog('inventory', `Sửa SP ${sku} — ${name}`);
   } else {
     if (state.products.some(p => p.sku === sku)) { alert('SKU đã tồn tại!'); return; }
-    state.products.push({ sku, barcode, name, category, price, cost, stock, unit, nccId, lotNumber, batchNumber, mfgDate, expiryDate, image_url: imageUrl });
+    state.products.push({ sku, barcode, name, category, price, cost, stock, unit, nccId, lotNumber, batchNumber, mfgDate, expiryDate });
     addAuditLog('inventory', `Thêm SP mới ${sku} — ${name}`);
   }
 
@@ -11254,7 +11317,7 @@ function renderAdvReportsTab() {
   ` : '';
   const subs = [
     {id:'profit',l:'💰 Lợi nhuận'},{id:'top-sellers',l:'🏆 Bán chạy / chậm'},
-    {id:'abc',l:'📊 Phân tích ABC'},{id:'compare',l:'🔄 So sánh kỳ'},
+    {id:'abc',l:'📊 Phân tích ABC'},{id:'compare',l:'🔄 So sánh kỳ'},{id:'tax',l:'🧾 Thuế'},
   ];
   const subBtns = subs.map(s => `<button class="rpt-sub-btn ${_rptSub===s.id?'active':''}" onclick="setRptSub('${s.id}')">${s.l}</button>`).join('');
   let body = '';
@@ -11262,6 +11325,7 @@ function renderAdvReportsTab() {
   else if (_rptSub === 'top-sellers') body = renderRptTopSellers();
   else if (_rptSub === 'abc') body = renderRptABC();
   else if (_rptSub === 'compare') body = renderRptCompare();
+  else if (_rptSub === 'tax') body = renderRptTax();
 
   return `
     <div class="date-filter-bar">${rangeBtns}${customRange}</div>
@@ -11547,6 +11611,119 @@ function renderRptCompare() {
     <div class="rpt-chart" style="margin-top:14px">
       <div class="rpt-chart-title">🔄 Thay đổi so với kỳ trước</div>
       ${rows}
+    </div>
+  `;
+}
+
+/* --- Tax Overview (tham khảo — không thay thế KETOAN) --- */
+function renderRptTax() {
+  const txs = getRptTransactions();
+  const sales = txs.filter(t => t.kind !== 'return');
+  const returns = txs.filter(t => t.kind === 'return');
+  const prodMap = {};
+  state.products.forEach(p => { prodMap[p.sku] = p; });
+
+  // Tính VAT đầu ra theo từng thuế suất SP
+  const vatBuckets = {}; // { rate: { revenue, vat, count } }
+  let totalRevenue = 0, totalVAT = 0, totalCOGS = 0;
+
+  function processTx(t, sign) {
+    t.items.forEach(i => {
+      const vr = i.vatRate || 8;
+      const lineTotal = (i.lineTotal || (i.qty * i.price)) * sign;
+      const lineRev = Math.round(lineTotal / (1 + vr / 100));
+      const lineVAT = lineTotal - lineRev;
+      if (!vatBuckets[vr]) vatBuckets[vr] = { revenue: 0, vat: 0, count: 0 };
+      vatBuckets[vr].revenue += lineRev;
+      vatBuckets[vr].vat += lineVAT;
+      vatBuckets[vr].count += sign;
+      totalRevenue += lineRev;
+      totalVAT += lineVAT;
+      const p = prodMap[i.sku];
+      totalCOGS += Math.round((p ? (p.cost || 0) : 0) * i.qty) * sign;
+    });
+  }
+  sales.forEach(t => processTx(t, 1));
+  returns.forEach(t => processTx(t, -1));
+
+  const grossProfit = totalRevenue - totalCOGS;
+  const TNDN_RATE = 0.20; // 20% CIT mặc định
+  const tndnEst = Math.max(0, Math.round(grossProfit * TNDN_RATE));
+  const profitAfterTax = grossProfit - tndnEst;
+
+  // Bảng VAT theo thuế suất
+  const rates = Object.keys(vatBuckets).sort((a, b) => Number(a) - Number(b));
+  const vatRows = rates.map(r => {
+    const b = vatBuckets[r];
+    return `<tr>
+      <td style="text-align:center;font-weight:700">${r}%</td>
+      <td style="text-align:right">${fmt.money(b.revenue)}</td>
+      <td style="text-align:right;color:var(--orange)">${fmt.money(b.vat)}</td>
+      <td style="text-align:right">${fmt.money(b.revenue + b.vat)}</td>
+    </tr>`;
+  }).join('');
+
+  // Quý hiện tại
+  const now = new Date();
+  const qtr = Math.ceil((now.getMonth() + 1) / 3);
+  const qtrLabel = `Q${qtr}/${now.getFullYear()}`;
+
+  // Ước tính thuế GTGT phải nộp (đầu ra - đầu vào)
+  // POS chỉ có đầu ra, đầu vào nằm ở NCC/KETOAN
+  const vatPayableNote = 'Chưa trừ VAT đầu vào (xem KETOAN để có số chính xác)';
+
+  return `
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--gray-700)">
+      ⚠️ <strong>Số liệu tham khảo</strong> — chỉ tính từ dữ liệu bán hàng tại POS. Báo cáo thuế chính thức (có đầy đủ mua vào + chi phí) xem tại app <strong>KETOAN</strong>.
+    </div>
+    <div class="rpt-summary-grid">
+      <div class="rpt-summary-card"><div class="val">${fmt.money(totalRevenue)}</div><div class="lbl">Doanh thu chưa VAT</div><div class="sub">${sales.length} giao dịch</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:var(--orange)">${fmt.money(totalVAT)}</div><div class="lbl">VAT đầu ra</div><div class="sub">${vatPayableNote}</div></div>
+      <div class="rpt-summary-card"><div class="val">${fmt.money(totalCOGS)}</div><div class="lbl">Giá vốn hàng bán</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:${grossProfit>=0?'var(--green)':'var(--red)'}">${fmt.money(grossProfit)}</div><div class="lbl">Lợi nhuận gộp</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:var(--red)">${fmt.money(tndnEst)}</div><div class="lbl">Ước tính CIT (${(TNDN_RATE*100)}%)</div><div class="sub">Trên lợi nhuận gộp POS</div></div>
+      <div class="rpt-summary-card"><div class="val" style="color:${profitAfterTax>=0?'var(--green)':'var(--red)'}">${fmt.money(profitAfterTax)}</div><div class="lbl">LN sau thuế (ước tính)</div></div>
+    </div>
+
+    <div class="rpt-chart">
+      <div class="rpt-chart-title">🧾 VAT đầu ra theo thuế suất</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <thead><tr style="border-bottom:2px solid var(--gray-300)">
+          <th style="padding:8px 6px;text-align:center;width:80px">Thuế suất</th>
+          <th style="padding:8px 6px;text-align:right">DT chưa thuế</th>
+          <th style="padding:8px 6px;text-align:right">Tiền thuế</th>
+          <th style="padding:8px 6px;text-align:right">Tổng thanh toán</th>
+        </tr></thead>
+        <tbody>${vatRows || '<tr><td colspan="4" style="text-align:center;color:var(--gray-500);padding:16px">Chưa có dữ liệu</td></tr>'}</tbody>
+        <tfoot><tr style="border-top:2px solid var(--gray-300);font-weight:700">
+          <td style="padding:8px 6px;text-align:center">Tổng</td>
+          <td style="padding:8px 6px;text-align:right">${fmt.money(totalRevenue)}</td>
+          <td style="padding:8px 6px;text-align:right;color:var(--orange)">${fmt.money(totalVAT)}</td>
+          <td style="padding:8px 6px;text-align:right">${fmt.money(totalRevenue + totalVAT)}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+
+    <div class="rpt-chart">
+      <div class="rpt-chart-title">📋 Ước tính nghĩa vụ thuế (${qtrLabel})</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray-100);border-radius:8px">
+          <span>Thuế GTGT đầu ra (phải nộp)</span>
+          <span style="font-weight:700;color:var(--orange)">${fmt.money(totalVAT)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray-100);border-radius:8px">
+          <span>Thuế GTGT đầu vào (được khấu trừ)</span>
+          <span style="font-weight:700;color:var(--gray-500)">— xem KETOAN —</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(245,158,11,0.1);border-radius:8px;border:1px solid rgba(245,158,11,0.2)">
+          <span style="font-weight:600">GTGT phải nộp (ước tính)</span>
+          <span style="font-weight:700;color:var(--orange)">${fmt.money(totalVAT)} <span style="font-size:10px;color:var(--gray-500)">chưa trừ đầu vào</span></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray-100);border-radius:8px">
+          <span>CIT ước tính (${(TNDN_RATE*100)}% × LN gộp)</span>
+          <span style="font-weight:700;color:var(--red)">${fmt.money(tndnEst)}</span>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -12279,6 +12456,11 @@ function setupHotkeys() {
       quickCompletePay();
     }
 
+    // M : toggle sidebar menu
+    else if ((e.key === 'm' || e.key === 'M') && !isInputField) {
+      e.preventDefault();
+      toggleSidebar();
+    }
     // ? : help
     else if (e.key === '?' && !isInputField) {
       e.preventDefault();
@@ -12286,6 +12468,52 @@ function setupHotkeys() {
     }
   });
 
+}
+
+/* ============================================================
+   SSO AUTO-LOGIN — skip login if Hub session exists
+   ============================================================ */
+async function aiposPosAuthGate() {
+  if (!initSupabaseClient()) { showLoginScreen(); return; }
+  const sb = state.supabase;
+  if (!sb) { showLoginScreen(); return; }
+  // Load branches from DB before anything else
+  await loadBranchesFromDB();
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session || !session.user) { showLoginScreen(); return; }
+    // Session từ Hub → tạo user object và vào app
+    let role = 'cashier', name = session.user.email, branches = [];
+    try {
+      const { data: au } = await sb.from('app_users')
+        .select('full_name, role').eq('auth_uid', session.user.id).maybeSingle();
+      if (au) { role = au.role || role; name = au.full_name || name; }
+    } catch (e) {}
+    const user = { code: session.user.email, name, role, branches, authUid: session.user.id };
+    state.user = user;
+    Storage.set(CONFIG.storageKeys.auth, user);
+    // Check ca trực
+    const savedShift = Storage.get(CONFIG.storageKeys.shift);
+    if (savedShift && !savedShift.closedAt) {
+      state.shift = savedShift;
+      const savedCart = Storage.get(CONFIG.storageKeys.cart);
+      if (savedCart) {
+        state.cart = savedCart.cart || [];
+        state.discount = savedCart.discount || {type:'percent', value:0};
+        state.customer = savedCart.customer || null;
+        state.appliedCoupon = savedCart.appliedCoupon || null;
+      }
+      state.heldOrders = Storage.get(CONFIG.storageKeys.held) || [];
+      state.transactions = Storage.get(CONFIG.storageKeys.transactions) || [];
+      showPosScreen();
+      toast(`Tiếp tục ca trực — ${BRANCHES[state.shift.branch].name}`, 'success');
+    } else {
+      showShiftScreen();
+    }
+  } catch (e) {
+    console.warn('[POS] SSO auto-login failed:', e.message);
+    showLoginScreen();
+  }
 }
 
 /* ============================================================
@@ -12405,14 +12633,108 @@ function init() {
       showShiftScreen();
     }
   } else {
-    showLoginScreen();
+    // ── SSO: kiểm tra Supabase session từ Hub (đã đăng nhập 1 lần) ──
+    aiposPosAuthGate();
   }
 
   setupScanner();
   setupHotkeys();
+  updateSidebarBadges();
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* ============================================================
+   SIDEBAR MENU — Toggle + View Switching
+   ============================================================ */
+let _sidebarOpen = false;
+let _currentSidebarView = 'pos';
+
+function toggleSidebar() {
+  _sidebarOpen = !_sidebarOpen;
+  const sb = $('#posSidebar');
+  if (sb) sb.classList.toggle('open', _sidebarOpen);
+}
+
+function switchSidebarView(viewId) {
+  _currentSidebarView = viewId;
+
+  // Update active state in sidebar nav
+  document.querySelectorAll('.sb-nav-item[data-view]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewId);
+  });
+
+  const posMain = document.querySelector('.pos-main');
+  const mgmtInline = $('#posMgmtInline');
+
+  if (viewId === 'pos') {
+    // Show POS selling screen, hide management
+    if (posMain) posMain.style.display = 'grid';
+    if (mgmtInline) { mgmtInline.classList.remove('active'); mgmtInline.innerHTML = ''; }
+    // Re-focus search
+    const si = $('#searchInput');
+    if (si) setTimeout(() => si.focus(), 100);
+  } else {
+    // Hide POS selling screen, show management inline
+    if (posMain) posMain.style.display = 'none';
+    if (mgmtInline) {
+      mgmtInline.classList.add('active');
+      mgmtInline.innerHTML = `
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:var(--shadow-sm)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h2 style="font-size:18px;font-weight:700;color:var(--navy-dark)">
+              ${getMgmtViewTitle(viewId)}
+            </h2>
+            <button class="btn btn-ghost btn-sm" onclick="switchSidebarView('pos')" style="font-size:12px">← Quay lại bán hàng</button>
+          </div>
+          <div id="mgmtInlineContent">${renderMgmtTab(viewId)}</div>
+        </div>
+      `;
+    }
+  }
+
+  // Auto close sidebar on mobile or after selection
+  if (window.innerWidth < 1200 && _sidebarOpen) toggleSidebar();
+}
+
+function getMgmtViewTitle(viewId) {
+  const titles = {
+    'dashboard': '📊 Tổng quan',
+    'online-orders': '🛒 Đơn online',
+    'sales-today': '📋 Đơn hàng hôm nay',
+    'inventory': '📦 Tồn kho',
+    'customers': '👥 Khách hàng',
+    'returns': '↺ Trả hàng',
+    'writeoff': '🗑️ Hủy hàng',
+    'promos-active': '🎁 Khuyến mãi đang chạy',
+    'products': '🏷️ Hàng hóa',
+    'stocktake': '📋 Kiểm kê',
+    'stock-adjust': '⚖️ Điều chỉnh tồn',
+    'purchase-order': '📥 Nhập kho',
+    'adv-reports': '📈 Báo cáo nâng cao',
+    'team-mgmt': '👥 Đội ngũ',
+  };
+  return titles[viewId] || viewId;
+}
+
+function updateSidebarBadges() {
+  const salesBadge = $('#sbBadgeSales');
+  const onlineBadge = $('#sbBadgeOnline');
+  if (salesBadge) {
+    const count = todayTransactions().length;
+    salesBadge.textContent = count;
+    salesBadge.style.display = count > 0 ? '' : 'none';
+  }
+  if (onlineBadge) {
+    const count = (state.onlineOrders || []).filter(o => o.status === 'new').length;
+    onlineBadge.textContent = count;
+    onlineBadge.style.display = count > 0 ? '' : 'none';
+    if (count > 0) onlineBadge.style.animation = 'pulse 1.5s infinite';
+  }
+}
+
+// Update badges periodically
+setInterval(updateSidebarBadges, 10000);
 </script>
 
 <!-- Floating Fullscreen Button (touch-friendly) -->
