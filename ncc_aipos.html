@@ -4116,41 +4116,24 @@ hr::before {
     <div class="ls-logo">
       <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Gold gradient: highlight → vàng chủ đạo -->
-          <radialGradient id="lsGoldBody" cx="32%" cy="28%" r="80%">
-            <stop offset="0%"   stop-color="#FFF7C2"/>
-            <stop offset="40%"  stop-color="#FFE55C"/>
-            <stop offset="100%" stop-color="#FFDA1A"/>
-          </radialGradient>
-          <!-- Mask: ring gap + sparkle cutout ở giữa -->
-          <mask id="lsCoinMask">
-            <rect x="0" y="0" width="200" height="200" fill="black"/>
-            <circle cx="100" cy="100" r="94" fill="white"/>
-            <circle cx="100" cy="100" r="87" fill="black"/>
-            <circle cx="100" cy="100" r="81" fill="white"/>
-            <path d="
-              M 100,52
-              C 106,86 114,94 148,100
-              C 114,106 106,114 100,148
-              C 94,114 86,106 52,100
-              C 86,94 94,86 100,52 Z"
-              fill="black"/>
-          </mask>
+          <linearGradient id="lsGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#60A5FA"/>
+            <stop offset="100%" stop-color="#1D4ED8"/>
+          </linearGradient>
+          <linearGradient id="lsGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#FFDA1A"/>
+            <stop offset="100%" stop-color="#F59E0B"/>
+          </linearGradient>
         </defs>
-        <!-- Xu gold -->
-        <circle cx="100" cy="100" r="96"
-                fill="url(#lsGoldBody)"
-                mask="url(#lsCoinMask)"/>
-        <!-- Highlight gloss -->
-        <ellipse cx="68" cy="62" rx="30" ry="20"
-                 fill="rgba(255,255,255,0.4)"
-                 transform="rotate(-25 68 62)"
-                 mask="url(#lsCoinMask)"/>
+        <rect x="20" y="20" width="160" height="160" rx="36" fill="url(#lsGrad1)"/>
+        <path d="M70,130 L100,60 L130,130" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="100" cy="56" r="8" fill="url(#lsGrad2)"/>
+        <rect x="78" y="118" width="44" height="8" rx="4" fill="url(#lsGrad2)"/>
       </svg>
     </div>
-    <div class="ls-brand">VICO<span>MART</span></div>
-    <div class="ls-tagline">SAVE MONEY · LIVE BETTER</div>
-    <div class="ls-desc">Nền tảng nhập hàng thông minh dành cho chuỗi cửa hàng — Tự động hóa toàn bộ quy trình từ đặt hàng đến công nợ.</div>
+    <div class="ls-brand">AIPOS<span>-PRO</span></div>
+    <div class="ls-tagline">SMART RETAIL · SMART SUPPLY</div>
+    <div class="ls-desc">Nền tảng quản lý nhập hàng & NCC thông minh — Tự động hóa toàn bộ quy trình từ đặt hàng đến công nợ.</div>
     <div class="ls-features">
       <div class="ls-feat">
         <div class="ls-feat-icon">🤖</div>
@@ -4203,7 +4186,7 @@ hr::before {
       <!-- Hidden branch selector (giữ cho doLogin compat) -->
       <select id="li-cn" style="display:none;"><option value="all">Tất cả chi nhánh</option></select>
 
-      <button id="li-btn" class="btn-submit" type="button" onclick="doLogin()">SIGN IN</button>
+      <button id="li-btn" class="btn-submit" type="button" onclick="doLogin()">🔐 ĐĂNG NHẬP</button>
 
       <div class="ls-divider">HỖ TRỢ</div>
       <div class="ls-trust">
@@ -37370,7 +37353,7 @@ function _aoRenderSimpleCards(lst, branchFilter, isHutHang) {
   // Nav bar
   html += '<div class="aocv7-nav">'
     + '<div class="logo"><span class="spark">✦</span>AIPOS-PRO</div>'
-    + '<div class="info">Save Money. Live Better. · Hiển thị <b>' + rows.length + ' trong ' + totalNccCount + '</b> NCC · Sắp xếp: <b>Khẩn cấp ↓</b></div>'
+    + '<div class="info">AIPOS-PRO · Hiển thị <b>' + rows.length + ' trong ' + totalNccCount + '</b> NCC · Sắp xếp: <b>Khẩn cấp ↓</b></div>'
     + '<button class="cfg-btn" onclick="abOpenSubTab()" title="Mở tab Cấu Hình → NS Hàng Loạt — chọn công thức ALDI (Vốn × 1.15) hoặc Sweet Spot (Bán × 70%)">⚙️ Cấu hình NS hàng loạt</button>'
     + '<div class="pickup">📍 Giao đến ' + brLabel + '</div>'
   + '</div>';
@@ -37526,7 +37509,7 @@ function _aoRenderSimpleCards(lst, branchFilter, isHutHang) {
     + '<div class="spark">✦</div>'
     + '<div style="flex:1;min-width:200px">'
       + '<h4>Tổng ngân sách tuần · ' + rows.length + ' NCC hiển thị</h4>'
-      + '<p>Save Money. Live Better. · ' + brLabel + '</p>'
+      + '<p>AIPOS-PRO · ' + brLabel + '</p>'
     + '</div>'
     + '<div style="display:flex;gap:20px;padding:0 20px;border-left:2px solid #FFC220;flex-wrap:wrap">'
       + '<div class="tot"><div class="k">NS Tổng</div><div class="v">' + fvM(totBudget) + '</div></div>'
