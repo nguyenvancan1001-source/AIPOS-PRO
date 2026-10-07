@@ -835,7 +835,7 @@ const APPS = [
 
 document.getElementById('loginBtn').onclick = doLogin;
 document.getElementById('pass').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
-document.getElementById('logoutBtn').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+document.getElementById('logoutBtn').onclick = async () => { try { ['aipos_profile_v2','aipos_tenant_v1'].forEach(k => localStorage.removeItem(k)); } catch (e) {} await sb.auth.signOut(); location.reload(); };
 
 // ===== QUÊN MẬT KHẨU (màn login) =====
 document.getElementById('forgotLink').onclick = async (e) => {
@@ -980,6 +980,8 @@ async function doLogin() {
 }
 
 async function enterHub(user) {
+  // quay lại app đang mở dở trước khi bị yêu cầu đăng nhập
+  try { const nx = sessionStorage.getItem('aipos_next'); if (nx && nx.charAt(0) === '/' && nx.charAt(1) !== '/') { sessionStorage.removeItem('aipos_next'); location.replace(nx); return; } } catch (e) {}
   showView('hub');
   document.getElementById('userEmail').textContent = user.email;
   // nạp tên công ty (trắng nhãn) qua RLS — chỉ ra tenant của user
