@@ -74,6 +74,25 @@ window.CAUHINH = {
   window.fetch = function (input, init) {
     try {
       var u = typeof input === 'string' ? input : (input && input.url) || '';
+      // a) Mã nhân sự cho POS: lấy thẳng từ dữ liệu Lương của doanh nghiệp (không cần hàm riêng trên máy chủ)
+      if (u.indexOf(URL_ + '/functions/v1/nhansu-id-map') === 0) {
+        return f0(URL_ + '/rest/v1/vc_state?select=nv&key=eq.main', { headers: { apikey: C.supabaseKey, Authorization: 'Bearer ' + C.jwt() } })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (rows) {
+            var nv = (rows && rows[0] && rows[0].nv) || [];
+            var staff = (Array.isArray(nv) ? nv : []).filter(function (x) { return x && x.ht; }).map(function (x) { return { name: x.ht, code: x.id || x.ma || '' }; });
+            return new Response(JSON.stringify({ staff: staff }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+          })
+          .catch(function () { return new Response('{"staff":[]}', { status: 200, headers: { 'Content-Type': 'application/json' } }); });
+      }
+      // b) Ghi "upsert": khoá trùng luôn tính trong phạm vi doanh nghiệp (tenant_id + khoá của app)
+      if (u.indexOf(URL_ + '/rest/v1/') === 0 && u.indexOf('on_conflict=') > 0) {
+        var u2 = u.replace(/([?&]on_conflict=)([^&]*)/, function (m, a, v) {
+          var ds = decodeURIComponent(v).split(',').map(function (x) { return x.trim(); });
+          return ds.indexOf('tenant_id') >= 0 ? m : a + encodeURIComponent(['tenant_id'].concat(ds).join(','));
+        });
+        if (u2 !== u) { if (typeof input === 'string') input = u2; else input = new Request(u2, input); u = u2; }
+      }
       if (u.indexOf(URL_) === 0 && u.indexOf('/auth/v1/') < 0) {
         init = Object.assign({}, init || {});
         var h = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
