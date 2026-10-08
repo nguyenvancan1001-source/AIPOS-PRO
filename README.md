@@ -19,8 +19,9 @@ App không có trong gói → tự chặn, mời nâng gói. Doanh nghiệp tạ
 | `supabase/aipos_*.sql` | Chuẩn bị máy chủ cho từng app |
 
 ## Cài đặt
-1. **Máy chủ** — Supabase project AIPOS-PRO → SQL Editor → chạy lần lượt:
-   `aipos_pos_v15.sql` → `aipos_kho_v569.sql` → `aipos_ncc_v45.sql` → `aipos_ketoan_v648.sql` → `aipos_luong.sql`
+1. **Máy chủ** — Supabase project AIPOS-PRO → SQL Editor (Supabase hỏi RLS → bấm "Run without RLS"):
+   - Chạy **`aipos_6_tao_bang_ham.sql` trước**: tạo bảng/view/hàm còn thiếu (đã gắn doanh nghiệp + RLS) và kho tệp. Chỉ tạo cái chưa có, không ghi đè. Cuối file hiện bảng kết quả + các dòng LỖI (nếu có).
+   - Rồi chạy lần lượt: `aipos_pos_v15.sql` → `aipos_kho_v569.sql` → `aipos_ncc_v45.sql` → `aipos_ketoan_v648.sql` → `aipos_luong.sql`
    - **Phần 1** báo bảng/hàm **còn thiếu** → tạo từ cấu trúc gốc rồi chạy lại file.
    - **Phần 2–3** gắn `tenant_id` + RLS, đổi các khoá (SĐT khách, SKU, số PO, kỳ lương…) theo doanh nghiệp.
    - **Phần 4** liệt kê việc PHẢI sửa tay trước khi mở bán: hàm quyền cao chưa lọc doanh nghiệp, chính sách mở cửa, khoá duy nhất chưa kèm doanh nghiệp.
@@ -28,6 +29,9 @@ App không có trong gói → tự chặn, mời nâng gói. Doanh nghiệp tạ
 3. **Kiểm tra tách dữ liệu** — đăng ký 2 tài khoản thử, mỗi bên bán vài đơn, thêm khách cùng SĐT, tạo PO, chấm công: bên này không được thấy dữ liệu bên kia.
 
 ## Giới hạn hiện tại
+- Tệp đính kèm (chứng từ thu chi, ảnh hủy hàng, hồ sơ thành viên) tự lưu vào thư mục riêng của doanh nghiệp; ảnh hủy hàng và hồ sơ thành viên mở bằng đường link công khai (khó đoán) như bản gốc.
+- "Đơn online" ở POS chỉ hiện đơn khi doanh nghiệp có app đặt hàng riêng ghi vào `don_ban_le`; các quy tắc điểm/số dư/tồn tiệm của hệ SALEME không mang sang.
+- Trợ lý AI kế toán không tự chạy câu lệnh SQL (để không đọc chéo dữ liệu doanh nghiệp khác).
 - App Lương quản lý tối đa 3 chi nhánh (theo thứ tự chi nhánh của doanh nghiệp) + Văn phòng.
 - Hệ thống tài khoản TT200 (`acc_chart_of_accounts`) và danh sách nhà cung cấp HĐĐT dùng chung cho mọi doanh nghiệp.
 - Edge function (gửi phiếu lương, HĐĐT, AI, ngân hàng…) phải tự kiểm tra doanh nghiệp của người gọi.

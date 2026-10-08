@@ -30,10 +30,40 @@ window.CAUHINH = {
         var o = Object.assign({}, opt || {});
         o.auth = { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: SKEY };
         _one = goc(URL_, C.supabaseKey, o);
+        bocKho(_one);
       }
       return _one;
     };
     lib.__aiposBoc = true; return lib;
+  }
+  // 3) Tệp (chứng từ, ảnh hủy hàng, hồ sơ thành viên) luôn nằm trong thư mục riêng của doanh nghiệp:
+  //    <mã doanh nghiệp>/<đường dẫn app>. Máy chủ chặn đọc/ghi thư mục của doanh nghiệp khác.
+  function bocKho(cl) {
+    if (!cl || !cl.storage || cl.storage.__aipos) return;
+    var from0 = cl.storage.from.bind(cl.storage);
+    function tien(p) {
+      var t = C.TENANT_ID; p = String(p || '').replace(/^\/+/, '');
+      if (!t) throw new Error('Chưa xác định doanh nghiệp — đăng nhập lại rồi thử.');
+      return p.indexOf(t + '/') === 0 ? p : t + '/' + p;
+    }
+    cl.storage.from = function (bucket) {
+      var b = from0(bucket);
+      ['upload', 'update', 'download', 'getPublicUrl', 'createSignedUrl', 'move', 'copy'].forEach(function (m) {
+        if (typeof b[m] !== 'function') return;
+        var g = b[m].bind(b);
+        b[m] = function (p) {
+          var a = Array.prototype.slice.call(arguments);
+          try { a[0] = tien(p); if ((m === 'move' || m === 'copy') && a[1]) a[1] = tien(a[1]); }
+          catch (e) { return m === 'getPublicUrl' ? { data: { publicUrl: '' }, error: e } : Promise.resolve({ data: null, error: e }); }
+          return g.apply(null, a);
+        };
+      });
+      if (typeof b.remove === 'function') { var r0 = b.remove.bind(b); b.remove = function (ds) { try { return r0((ds || []).map(tien)); } catch (e) { return Promise.resolve({ data: null, error: e }); } }; }
+      if (typeof b.createSignedUrls === 'function') { var s0 = b.createSignedUrls.bind(b); b.createSignedUrls = function (ds, h, o) { try { return s0((ds || []).map(tien), h, o); } catch (e) { return Promise.resolve({ data: null, error: e }); } }; }
+      if (typeof b.list === 'function') { var l0 = b.list.bind(b); b.list = function (p, o, x) { var t = C.TENANT_ID; return l0(t ? (t + '/' + String(p || '').replace(/^\/+/, '')).replace(/\/$/, '') : '__khong_co__', o, x); }; }
+      return b;
+    };
+    cl.storage.__aipos = true;
   }
   try {
     Object.defineProperty(window, 'supabase', { configurable: true, enumerable: true,
@@ -59,6 +89,7 @@ window.CAUHINH = {
   var MA = ['PB', 'VT', 'TA'];
   function dat(t, ds) {
     t = t || {}; ds = ds || [];
+    C.TENANT_ID = t.id || C.TENANT_ID || '';
     C.TEN = t.store_name || t.company_name || 'Cửa hàng';
     C.TEN_HOA = hoa(C.TEN); C.CHU_DAU = C.TEN_HOA.charAt(0);
     C.PN = t.company_name || C.TEN; C.PN_HOA = hoa(C.PN);
