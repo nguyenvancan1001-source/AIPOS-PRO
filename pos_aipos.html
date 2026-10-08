@@ -2600,8 +2600,15 @@ async function syncProductsFromNcc() {
             if (from > 200000)
                 break;
         }
-        if (rows.length === 0)
-            throw new Error('Bảng products (KHO) rỗng — kiểm tra web KHO');
+        if (rows.length === 0) {
+            // Doanh nghiệp mới: chưa có hàng — không phải lỗi kết nối
+            state.products = [];
+            state.nccStatus = 'online';
+            state.nccLastError = null;
+            updateNccStatusBadge();
+            setupNccRealtimeSubscription();
+            return { success: true, count: 0, trong: true };
+        }
         const mapped = rows.map(r => mapKhoProductRow(r));
         state.products = mapped;
         await overlayStockFromKho();
@@ -30938,7 +30945,10 @@ function showPosScreen() {
         syncProductsFromNcc().then((r) => {
             updateNccStatusBadge();
             renderCart();
-            if (r && r.success) {
+            if (r && r.success && r.trong) {
+                toast('Chưa có sản phẩm nào — vào app KHO (danh mục hàng) để thêm sản phẩm, POS sẽ tự cập nhật.', 'info', 7000);
+            }
+            else if (r && r.success) {
                 toast(`✓ Đã tải ${r.count.toLocaleString('vi-VN')} mặt hàng từ KHO`, 'success', 2500);
             }
             else {
