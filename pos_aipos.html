@@ -2044,6 +2044,8 @@ function getBranchesInSameProvince(branchCode) {
 function getStockAtBranch(product, branchCode) {
     if (!product)
         return 0;
+    if (product._branchStocks && branchCode in product._branchStocks)
+        return parseInt(product._branchStocks[branchCode]) || 0;
     if (branchCode === 'PB')
         return parseInt(product.stockPB) || 0;
     if (branchCode === 'VT')
@@ -7057,6 +7059,8 @@ function closeShift() {
 }
 function curBranchStock(p) {
     const b = state.shift?.branch || state.selectedBranch || 'PB';
+    if (p && p._branchStocks && b in p._branchStocks)
+        return Number(p._branchStocks[b]) || 0;
     if (b === 'VT')
         return Number(p.stockVT) || 0;
     if (b === 'TA')
@@ -23995,7 +23999,8 @@ window._st = window._st || { items: [], note: '', editId: null, editNo: null };
 function moneyVN(n) { return (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ'; }
 function woBranch() { return (state.shift && state.shift.branch) || 'PB'; }
 function woBranchName() { return (state.branchConfig && state.branchConfig[woBranch()] && state.branchConfig[woBranch()].name) || (BRANCHES[woBranch()] && BRANCHES[woBranch()].name) || woBranch(); }
-function sysQtyOf(p) { const b = woBranch(); if (b === 'VT')
+function sysQtyOf(p) { const b = woBranch(); if (p && p._branchStocks && b in p._branchStocks)
+    return Number(p._branchStocks[b]) || 0; if (b === 'VT')
     return Number(p.stockVT) || 0; if (b === 'PB')
     return Number(p.stockPB) || 0; return Number(p.stock) || 0; }
 function findProd(sku) { return state.products.find(p => p.sku === sku); }
