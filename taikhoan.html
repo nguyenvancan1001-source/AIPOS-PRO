@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tài khoản & Phân quyền · AIPOS·PRO</title>
+<script src="/aipos-tenant.js"></script>
+<script src="/aipos-guard.js"></script>
+<script src="/aipos-supabase.js"></script>
+<style>
+  :root{--navy:#0d2b5e;--navy2:#153d7d;--yellow:#FFC220;--ink:#15212e;--muted:#6b7783;--line:#e3e6ea;--bg:#f4f6f9;--red:#c0392b;--green:#1e8e4e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,Tahoma,sans-serif;font-size:14px}
+  header{background:var(--navy);color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  header h1{font-size:18px;margin:0;display:flex;align-items:center;gap:8px}
+  header .who{font-size:12.5px;opacity:.9} header .who b{color:var(--yellow)} header a{color:var(--yellow);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:18px 16px 70px}
+  .btn{border:none;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--navy);color:#fff}.btn.primary:hover{background:var(--navy2)}
+  .btn.y{background:var(--yellow);color:var(--navy)}.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.sm{padding:5px 10px;font-size:12px}.btn.danger{background:#fdeeec;color:var(--red);border:1px solid #f3c9c3}
+  .btn:disabled{opacity:.5;cursor:default}
+  input,select{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;width:100%;background:#fff}
+  label.fld{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:600}
+  .msg{font-size:12.5px;margin-top:8px}.msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+  .tabs{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+  .tab{padding:8px 16px;border-radius:9px 9px 0 0;cursor:pointer;font-weight:600;font-size:13.5px;background:#e9edf2;color:var(--muted)}
+  .tab.on{background:#fff;color:var(--navy);box-shadow:0 -2px 0 var(--yellow) inset}
+  .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}
+  .toolbar input[type=search]{max-width:280px}
+  .quota{font-size:12.5px;color:var(--muted)} .quota b{color:var(--navy)}
+  .brsec{margin-bottom:18px}
+  .brsec>.brhd{display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;background:var(--navy);color:#fff;border-radius:10px;font-weight:700;font-size:14px;user-select:none}
+  .brsec>.brhd .cnt{background:rgba(255,255,255,.18);padding:1px 9px;border-radius:20px;font-size:12px;font-weight:700}
+  .brsec>.brhd .arr{margin-left:auto;transition:transform .15s}
+  .brsec.closed>.brhd .arr{transform:rotate(-90deg)} .brsec.closed>.brbody{display:none}
+  .brbody{padding-top:10px}
+  .ucard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(20,33,46,.04)}
+  .ucard.locked{opacity:.62}
+  .ucard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .ucard .email{font-weight:700;font-size:14.5px}.ucard .uid{font-size:11px;color:var(--muted)}
+  .pill{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:#eef1f5;color:var(--navy)}.pill.off{background:#fdeeec;color:var(--red)}.pill.wait{background:#fff7e0;color:#9a6b00}
+  .rolepill{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:#fff7e0;color:#9a6b00;border:1px solid #f3e2b0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:inline-flex;align-items:center;font-size:12px;padding:3px 9px;border:1px solid var(--line);border-radius:18px;cursor:pointer;user-select:none;background:#fff}
+  .chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .preset-box{background:#f3f7ff;border:1px solid #d4e2fb;border-radius:10px;padding:10px 12px;margin-top:10px}
+  .preset-box .pl{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+  .preset-box .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .approw{display:grid;grid-template-columns:84px 1fr minmax(140px,auto) auto;gap:8px;align-items:center;padding:8px 0;border-top:1px dashed var(--line)}
+  .approw .appname{font-weight:700;color:var(--navy);font-size:13px}
+  .sect-h{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin:12px 0 4px}
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  table.mx{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  table.mx th,table.mx td{border:1px solid var(--line);padding:7px 9px;font-size:12.5px;text-align:center}
+  table.mx th{background:#f3f5f8;color:var(--navy)} table.mx td.permname{text-align:left;font-weight:600}
+  table.mx select{padding:5px 3px;font-size:12px;min-width:96px} .mxwrap{overflow-x:auto}
+  .roletbl{font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:16px;line-height:1.6}.roletbl b{color:var(--navy)}
+  table.presets{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px;background:#fff}
+  table.presets th,table.presets td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+  table.presets th{background:#f3f5f8;color:var(--navy)}
+  .modal-bg{position:fixed;inset:0;background:rgba(20,33,46,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal{background:#fff;border-radius:14px;max-width:480px;width:100%;padding:22px;max-height:90vh;overflow:auto}.modal h3{margin:0 0 14px;color:var(--navy)}
+  .modal .fg{margin-bottom:12px}.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+  #deny{max-width:440px;margin:14vh auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:34px 28px;text-align:center;display:none}
+  @media(max-width:640px){.approw{grid-template-columns:1fr}}
+</style></head><body>
+
+<div id="deny"><div style="font-size:40px">🔒</div><h2 style="color:var(--navy)">Chỉ chủ doanh nghiệp</h2>
+  <p style="color:var(--muted)">Trang này dành cho tài khoản chủ doanh nghiệp để quản lý thành viên và phân quyền.</p>
+  <a class="btn primary" href="/" style="text-decoration:none;display:inline-block">← Về trang chủ</a></div>
+
+<div id="app" style="display:none">
+  <header>
+    <h1>🔑 Tài khoản & Phân quyền <span id="tenName" style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:8px"></span></h1>
+    <div class="who"><a href="/">← Trang chủ</a> · <b id="meName">—</b> · Chủ doanh nghiệp</div>
+  </header>
+  <div class="wrap">
+    <div class="tabs">
+      <div class="tab on" id="tab_acc" onclick="switchTab('acc')">👥 Tài khoản</div>
+      <div class="tab" id="tab_roles" onclick="switchTab('roles')">🏷️ Vị trí & bộ app</div>
+      <div class="tab" id="tab_mx" onclick="switchTab('mx')">🔐 Ma trận quyền</div>
+    </div>
+
+    <div id="pane_acc">
+      <div class="toolbar">
+        <input type="search" id="search" placeholder="Tìm email / tên..." oninput="renderAccounts()">
+        <span class="quota" id="quota"></span>
+        <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="loadAll()">↻ Tải lại</button>
+          <button class="btn y" onclick="openCreate()">➕ Thêm tài khoản</button></div>
+      </div>
+      <div id="list"></div>
+    </div>
+
+    <div id="pane_roles" style="display:none">
+      <div class="toolbar"><div style="font-size:12.5px;color:var(--muted);max-width:760px">🔒 <b>Danh mục vị trí chuẩn</b> — mỗi vị trí có sẵn bộ app. Chọn vị trí cho thành viên ở tab Tài khoản rồi bấm “Áp mẫu”; vẫn có thể thêm/bớt từng app riêng.</div></div>
+      <div id="rolesList"></div>
+    </div>
+
+    <div id="pane_mx" style="display:none">
+      <div class="toolbar">
+        <div><label class="fld">Chọn app</label><select id="mxApp" onchange="renderMatrix()" style="min-width:180px"></select></div>
+        <div style="font-size:12px;color:var(--muted);max-width:440px"><b>Mặc định</b> = theo cài sẵn của app · <b class="allow" style="color:var(--green)">Cho phép</b> · <b style="color:#b8860b">Cần duyệt</b> · <b style="color:var(--red)">Cấm</b>. Lưu ngay khi chọn.</div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <button class="btn ghost sm" onclick="resetPerms(true)">♻️ Về mặc định app này</button>
+          <button class="btn ghost sm" style="color:#c0392b;border-color:#c0392b" onclick="resetPerms(false)">♻️ Về mặc định tất cả</button>
+        </div>
+      </div>
+      <div class="mxwrap" id="matrix"></div>
+    </div>
+
+    <div class="roletbl"><b>Vai trò theo từng app:</b> một người có thể là Giám đốc cửa hàng ở POS nhưng chỉ Thủ kho ở app Kho.
+      <b>Truy cập app:</b> không có dòng app → không vào được app đó. <b>Chi nhánh:</b> “*” = mọi chi nhánh.
+      <b>Khoá tài khoản:</b> người đó bị đăng xuất khỏi mọi máy và không đăng nhập lại được.</div>
+  </div>
+</div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalBox"></div></div>
+
+<script>
+const APPS = ['pos', 'kho', 'ncc', 'ketoan', 'luong'];
+const APP_VI = { pos: 'Bán hàng (POS)', kho: 'Kho', ncc: 'Nhà cung cấp', ketoan: 'Kế toán', luong: 'Lương & Nhân sự' };
+const GOC_VI = { owner: 'Chủ doanh nghiệp', manager: 'Quản lý', accountant: 'Kế toán', cashier: 'Thu ngân', staff: 'Thành viên' };
+// quyền mà từng app kiểm tra (khoá trong code app)
+const PERMS = {
+  pos: [['settings', 'Cài đặt POS'], ['management', 'Chức năng quản lý'], ['discount', 'Giảm giá'], ['void', 'Huỷ đơn'], ['return', 'Trả hàng'],
+        ['price_edit', 'Sửa giá bán'], ['einvoice_manage', 'Quản lý hoá đơn điện tử'], ['shift', 'Mở / kết ca'], ['all_branches', 'Xem mọi chi nhánh'], ['file_io', 'Nhập / xuất file']],
+  kho: [['nhan_hang', 'Nhận hàng / duyệt nhập kho'], ['duyet_po', 'Đặt / gửi PO'], ['chuyen_kho', 'Tạo phiếu chuyển kho'], ['kiem_ke', 'Chốt kiểm kê'], ['xoa_phieu', 'Huỷ PO / phiếu']],
+  ncc: [['tao_po', 'Lưu PO'], ['duyet_po', 'Duyệt / gửi PO'], ['sua_ncc', 'Thêm / sửa NCC, giá NCC'], ['xoa', 'Huỷ đơn / xoá NCC']],
+  ketoan: [['ghi_so', 'Ghi sổ / hạch toán'], ['duyet', 'Duyệt chứng từ'], ['huy_chung_tu', 'Huỷ chứng từ'], ['khoa_so', 'Khoá sổ kỳ']],
+  luong: [['tinh_luong', 'Tính lương / thưởng'], ['sua_luong_san', 'Cập nhật lương sàn']],
+};
+const MUC = [['', '— Mặc định'], ['allow', '✓ Được'], ['approval', '⏳ Duyệt'], ['deny', '✗ Cấm']];
+const C = window.CAUHINH || {};
+let sb, D = { users: [], uar: [], perms: [], branches: [], vi_tri: {} }, BR_OPEN = {};
+function $(id) { return document.getElementById(id); }
+function esc(s) { return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function viTriTen(k) { return (D.vi_tri[k] && D.vi_tri[k].ten) || k || '—'; }
+const VT_THU_TU = ['founder', 'pho_tgd', 'ketoan_truong', 'ketoan', 'nhan_su', 'quan_ly_cn', 'pho_gd', 'ql_kv', 'kho', 'dieu_chuyen', 'pos_nv', 'readonly'];
+function viTriKeys() { return Object.keys(D.vi_tri).sort((a, b) => (VT_THU_TU.indexOf(a) + 99 * (VT_THU_TU.indexOf(a) < 0)) - (VT_THU_TU.indexOf(b) + 99 * (VT_THU_TU.indexOf(b) < 0))); }
+function viTriOptions(sel) { return '<option value="">— chọn vị trí —</option>' + viTriKeys().map(k => `<option value="${k}" ${k === sel ? 'selected' : ''}>${esc(viTriTen(k))}</option>`).join(''); }
+function brCodes() { return D.branches.map(b => b.code); }
+function brName(c) { const b = D.branches.find(x => x.code === c); return b ? (b.name || c) : c; }
+async function rpc(fn, args) { const { data, error } = await sb.rpc(fn, args || {}); if (error) throw new Error(error.message); return data; }
+
+async function khoiDong() {
+  for (let i = 0; i < 50 && !window.supabase; i++) await new Promise(r => setTimeout(r, 100));
+  sb = window.supabase.createClient(C.supabaseUrl, C.supabaseKey);
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { location.replace('/'); return; }
+  let la = false; try { la = await rpc('aipos_la_chu'); } catch (e) { }
+  if (!la) { $('deny').style.display = 'block'; return; }
+  $('app').style.display = 'block';
+  $('tenName').textContent = C.TEN || '';
+  await loadAll();
+  const me = D.users.find(u => u.auth_uid === session.user.id);
+  $('meName').textContent = (me && me.full_name) || session.user.email;
+}
+async function loadAll() {
+  $('list').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Đang tải...</div>';
+  try {
+    D = await rpc('aipos_tk_ds');
+    D.users = D.users || []; D.uar = D.uar || []; D.perms = D.perms || []; D.branches = D.branches || []; D.vi_tri = D.vi_tri || {};
+    renderQuota(); renderAccounts(); renderRoles(); fillMx(); renderMatrix();
+  } catch (e) { $('list').innerHTML = '<div style="padding:24px;color:var(--red)">⚠ ' + esc(e.message) + '</div>'; }
+}
+function renderQuota() {
+  const n = D.users.filter(u => u.active !== false).length;
+  const plan = (window.VCM_USER && window.VCM_USER.plan) || '';
+  const max = ({ basic: 3, standard: 10, premium: 999 })[plan] || null;
+  $('quota').innerHTML = `Đang dùng <b>${n}</b>${max && max < 999 ? ' / <b>' + max + '</b>' : ''} tài khoản` + (max && n >= max && max < 999 ? ' · <span style="color:var(--red)">đã hết lượt — nâng gói để thêm</span>' : '');
+}
+function switchTab(t) { ['acc', 'roles', 'mx'].forEach(x => { $('tab_' + x).classList.toggle('on', t === x); $('pane_' + x).style.display = t === x ? 'block' : 'none'; }); }
+
+/* ===== TÀI KHOẢN ===== */
+function uarOf(u) { return u.auth_uid ? D.uar.filter(x => x.user_id === u.auth_uid) : []; }
+function effBranches(u) {
+  if (u.role === 'owner') return ['*'];
+  const b = (u.branches || []);
+  if (b.includes('*')) return ['*'];
+  const ok = b.filter(x => brCodes().includes(x));
+  return ok.length ? ok : ['—'];
+}
+function renderAccounts() {
+  const q = ($('search').value || '').toLowerCase();
+  const rows = D.users.filter(u => !q || (u.email || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q));
+  const groups = {}; const order = ['*'].concat(brCodes()).concat(['—']);
+  order.forEach(k => groups[k] = []);
+  rows.forEach(u => effBranches(u).forEach(b => (groups[b] || groups['—']).push(u)));
+  const lbl = k => k === '*' ? 'Toàn doanh nghiệp (mọi chi nhánh)' : k === '—' ? 'Chưa phân chi nhánh' : brName(k) + ' (' + k + ')';
+  let html = '';
+  order.forEach(b => {
+    const list = groups[b] || []; if (!list.length) return;
+    const open = BR_OPEN[b] !== false;
+    html += `<div class="brsec ${open ? '' : 'closed'}" id="brsec_${esc(b)}"><div class="brhd" onclick="toggleBr('${esc(b)}')"><span>${esc(lbl(b))}</span><span class="cnt">${list.length}</span><span class="arr">▾</span></div>
+      <div class="brbody">${list.map(card).join('')}</div></div>`;
+  });
+  $('list').innerHTML = html || '<div style="padding:24px;color:var(--muted)">Chưa có tài khoản nào.</div>';
+}
+function toggleBr(b) { BR_OPEN[b] = !(BR_OPEN[b] !== false); const el = $('brsec_' + b); if (el) el.classList.toggle('closed'); }
+function toggleAdv(id) { const el = $('adv_' + id), b = $('advbtn_' + id); const o = el.style.display === 'none'; el.style.display = o ? 'block' : 'none'; b.textContent = o ? '▲ Thu gọn' : '⚙ Tùy chỉnh từng app'; }
+function brChips(prefix, brs, withAll) {
+  const all = (brs || []).includes('*');
+  let h = withAll ? `<span class="chip ${all ? 'on' : ''}" data-all="1" onclick="chipAll(this)">* Tất cả</span>` : '';
+  return h + brCodes().map(c => `<span class="chip ${(!all && (brs || []).includes(c)) || (all && !withAll) ? 'on' : ''}" data-b="${esc(c)}" onclick="chipOne(this)" title="${esc(brName(c))}">${esc(c)}</span>`).join('');
+}
+function chipAll(el) { const w = el.parentNode; el.classList.toggle('on'); if (el.classList.contains('on')) w.querySelectorAll('.chip[data-b]').forEach(c => c.classList.remove('on')); }
+function chipOne(el) { const w = el.parentNode; const a = w.querySelector('.chip[data-all]'); if (a) a.classList.remove('on'); el.classList.toggle('on'); }
+function collect(wrapId) { const w = $(wrapId); const a = w.querySelector('.chip[data-all]'); if (a && a.classList.contains('on')) return ['*']; return [...w.querySelectorAll('.chip[data-b]')].filter(c => c.classList.contains('on')).map(c => c.getAttribute('data-b')); }
+function card(u) {
+  const id = u.id, mine = uarOf(u), chu = u.role === 'owner';
+  const trangThai = u.active === false ? '<span class="pill off">ĐÃ KHOÁ</span>' : !u.auth_uid ? '<span class="pill wait">Chờ nhận lời mời</span>' : '<span class="pill">Hoạt động</span>';
+  const appRows = mine.map(r => appRow(u, r)).join('') || `<div style="font-size:12px;color:var(--muted);padding:6px 0">${u.auth_uid ? 'Chưa gán app nào — người này chưa vào được app nào.' : 'Thành viên chưa nhận lời mời — chọn vị trí và bấm “Áp mẫu”, app sẽ tự gán khi họ đăng nhập lần đầu.'}</div>`;
+  const free = APPS.filter(a => !mine.some(r => r.app === a));
+  const addCtl = (u.auth_uid && free.length) ? `<div style="display:flex;gap:8px;align-items:center;margin-top:8px"><select id="addapp_${id}" style="max-width:200px">${free.map(a => `<option value="${a}">${esc(APP_VI[a])}</option>`).join('')}</select>
+      <button class="btn ghost sm" onclick="addApp('${id}')">➕ Gán app</button></div>` : '';
+  const vt = u.vi_tri || (mine[0] && mine[0].role) || '';
+  const pApps = vt && D.vi_tri[vt] ? D.vi_tri[vt].apps : [];
+  return `<div class="ucard ${u.active === false ? 'locked' : ''}" id="card_${id}">
+    <div class="top"><div><div class="email">${esc(u.full_name || '')} <span style="font-weight:400;color:var(--muted)">· ${esc(u.email || '(chưa có email)')}</span></div>
+      <div class="uid">Đăng nhập gần nhất: ${u.last_sign_in ? new Date(u.last_sign_in).toLocaleString('vi-VN') : 'chưa'}</div></div>
+      <div style="display:flex;gap:6px;align-items:center"><span class="rolepill">${esc(chu ? 'Chủ doanh nghiệp' : (vt ? viTriTen(vt) : GOC_VI[u.role] || u.role))}</span>${trangThai}</div></div>
+    <div class="grid3">
+      <div><label class="fld">Họ tên</label><input id="fn_${id}" value="${esc(u.full_name || '')}"></div>
+      <div><label class="fld">SĐT</label><input id="ph_${id}" value="${esc(u.phone || '')}"></div>
+      <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="btn primary sm" onclick="saveIdentity('${id}')">💾 Lưu hồ sơ</button>
+        ${u.email ? `<button class="btn ghost sm" onclick="resetPass('${esc(u.email)}')">🔑 Mật khẩu</button>` : ''}
+      </div>
+    </div>
+    <div class="sect-h">Chi nhánh phụ trách</div>
+    <div class="chips" id="ubr_${id}">${brChips('u', u.branches || [], true)}</div>
+    ${chu ? '' : `<div class="preset-box"><div class="pl">
+      <div style="flex:1;min-width:200px"><label class="fld">Vị trí</label><select id="vt_${id}" onchange="vtHint('${id}')">${viTriOptions(vt)}</select></div>
+      <button class="btn primary sm" onclick="applyPreset('${id}')">⚙ Áp mẫu</button></div>
+      <div class="hint" id="vth_${id}">${vt ? 'Bộ app: ' + esc(pApps.map(a => APP_VI[a]).join(', ')) + ' — bấm “Áp mẫu” sẽ đặt lại đúng bộ app này theo chi nhánh đã chọn.' : 'Chọn vị trí để xem bộ app.'}</div></div>`}
+    ${chu ? '<div class="sect-h">Truy cập app</div><div style="font-size:12px;color:var(--muted)">Chủ doanh nghiệp vào được mọi app trong gói.</div>' : `
+    <div class="sect-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>Truy cập app</span>
+      <button class="btn ghost sm" id="advbtn_${id}" style="font-weight:600;text-transform:none;letter-spacing:0" onclick="toggleAdv('${id}')">⚙ Tùy chỉnh từng app</button></div>
+    <div class="chips">${mine.length ? mine.map(r => `<span class="chip on" style="cursor:default">${esc(APP_VI[r.app] || r.app)}</span>`).join('') : '<span style="font-size:12px;color:var(--muted)">Chưa có app</span>'}</div>
+    <div id="adv_${id}" style="display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">Chỉ chỉnh khi cần vai trò khác nhau giữa các app, hoặc thêm/bớt 1 app lẻ ngoài mẫu.</div>
+      ${appRows}${addCtl}</div>
+    <div class="actions">${u.active === false ? `<button class="btn ghost sm" onclick="setActive('${id}',false)">🔓 Mở khoá tài khoản</button>` : `<button class="btn danger sm" onclick="setActive('${id}',true)">🔒 Khoá tài khoản</button>`}
+      <span id="msg_${id}" class="msg"></span></div>`}
+    ${chu ? `<div class="actions"><span id="msg_${id}" class="msg"></span></div>` : ''}
+  </div>`;
+}
+function appRow(u, r) {
+  const k = u.id + '__' + r.app;
+  return `<div class="approw"><div class="appname">${esc(APP_VI[r.app] || r.app)}</div>
+    <div><select id="role_${k}">${viTriKeys().map(v => `<option value="${v}" ${v === r.role ? 'selected' : ''}>${esc(viTriTen(v))}</option>`).join('')}</select></div>
+    <div class="chips" id="br_${k}">${brChips('a', r.branches || [], true)}</div>
+    <div style="display:flex;gap:6px"><button class="btn primary sm" onclick="saveApp('${u.id}','${r.app}')">Lưu</button><button class="btn danger sm" onclick="removeApp('${u.id}','${r.app}')">Bỏ</button></div></div>`;
+}
+function vtHint(id) { const v = $('vt_' + id).value; const a = v && D.vi_tri[v] ? D.vi_tri[v].apps : []; $('vth_' + id).textContent = v ? 'Bộ app: ' + a.map(x => APP_VI[x]).join(', ') + ' — bấm “Áp mẫu” để gán.' : 'Chọn vị trí để xem bộ app.'; }
+function say(id, t, ok) { const m = $('msg_' + id); if (!m) return; m.className = 'msg ' + (ok === true ? 'ok' : ok === false ? 'err' : ''); m.textContent = t; }
+async function saveIdentity(id) {
+  say(id, 'Đang lưu...');
+  try { await rpc('aipos_tk_luu', { p_id: id, p_full_name: $('fn_' + id).value, p_phone: $('ph_' + id).value, p_branches: collect('ubr_' + id) }); say(id, '✓ Đã lưu hồ sơ', true); await loadAll(); }
+  catch (e) { say(id, '⚠ ' + e.message, false); }
+}
+async function applyPreset(id) {
+  const v = $('vt_' + id).value; if (!v) { say(id, 'Chọn vị trí trước', false); return; }
+  const brs = collect('ubr_' + id);
+  if (!brs.length && !confirm('Chưa chọn chi nhánh nào — người này sẽ không làm việc được ở chi nhánh nào. Vẫn áp?')) return;
+  if (!confirm('Áp mẫu “' + viTriTen(v) + '”?\n\nSẽ ĐẶT LẠI toàn bộ app thành: ' + D.vi_tri[v].apps.map(a => APP_VI[a]).join(', ') + '\nChi nhánh: ' + (brs.join(', ') || '(trống)'))) return;
+  say(id, 'Đang áp mẫu...');
+  try { await rpc('aipos_tk_mau', { p_id: id, p_vi_tri: v, p_branches: brs }); await loadAll(); say(id, '✓ Đã áp mẫu', true); }
+  catch (e) { say(id, '⚠ ' + e.message, false); }
+}
+async function saveApp(id, app) {
+  const k = id + '__' + app; say(id, 'Đang lưu ' + APP_VI[app] + '...');
+  try { await rpc('aipos_tk_app', { p_id: id, p_app: app, p_role: $('role_' + k).value, p_branches: collect('br_' + k), p_bo: false }); say(id, '✓ Đã lưu ' + APP_VI[app], true); await loadAll(); }
+  catch (e) { say(id, '⚠ ' + e.message, false); }
+}
+async function removeApp(id, app) {
+  if (!confirm('Bỏ quyền vào app “' + APP_VI[app] + '” của người này?')) return;
+  try { await rpc('aipos_tk_app', { p_id: id, p_app: app, p_role: 'readonly', p_branches: [], p_bo: true }); await loadAll(); } catch (e) { alert(e.message); }
+}
+async function addApp(id) {
+  const app = $('addapp_' + id).value; const u = D.users.find(x => x.id === id);
+  const role = (u && u.vi_tri) || 'readonly';
+  try { await rpc('aipos_tk_app', { p_id: id, p_app: app, p_role: role, p_branches: (u && u.branches && u.branches.length) ? u.branches : ['*'], p_bo: false }); await loadAll(); }
+  catch (e) { alert(e.message); }
+}
+async function setActive(id, khoa) {
+  if (khoa && !confirm('Khoá tài khoản này?\n\nNgười này sẽ bị đăng xuất khỏi mọi máy và không vào được app nào.')) return;
+  try { await rpc('aipos_tk_khoa', { p_id: id, p_khoa: khoa }); await loadAll(); } catch (e) { alert(e.message); }
+}
+async function resetPass(email) {
+  if (!confirm('Gửi email đặt lại mật khẩu tới ' + email + '?\n\nNgười đó bấm đường link trong email để tự đặt mật khẩu mới.')) return;
+  try { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/' }); if (error) throw error; alert('✓ Đã gửi email đặt lại mật khẩu tới ' + email); }
+  catch (e) { alert('⚠ ' + (e.message || e)); }
+}
+function modal(h) { $('modalBox').innerHTML = h; $('modalBg').style.display = 'flex'; }
+function closeModal() { $('modalBg').style.display = 'none'; }
+function openCreate() {
+  modal(`<h3>➕ Thêm tài khoản</h3>
+    <div class="fg"><label class="fld">Email *</label><input id="cEmail" type="email" placeholder="ten@gmail.com"></div>
+    <div class="fg"><label class="fld">Họ tên *</label><input id="cName"></div>
+    <div class="fg"><label class="fld">Vị trí *</label><select id="cVt" onchange="cHint()">${viTriOptions('pos_nv')}</select></div>
+    <div class="fg"><label class="fld">Chi nhánh</label><div class="chips" id="cBr">${brChips('c', brCodes().slice(0, 1), true)}</div></div>
+    <div class="preset-box"><div class="hint" id="cHint"></div></div>
+    <p style="font-size:12px;color:var(--muted)">Hệ thống gửi email mời tới địa chỉ trên. Thành viên bấm link trong email để đặt mật khẩu, rồi đăng nhập ở trang chủ AIPOS.</p>
+    <div class="row"><button class="btn ghost" onclick="closeModal()">Huỷ</button><button class="btn primary" id="cBtn" onclick="doCreate()">Gửi lời mời</button></div><div id="cMsg" class="msg"></div>`);
+  cHint();
+}
+function cHint() { const v = $('cVt').value; $('cHint').innerHTML = v ? 'Bộ app của vị trí <b>' + esc(viTriTen(v)) + '</b>: ' + esc(D.vi_tri[v].apps.map(a => APP_VI[a]).join(', ')) : 'Chọn vị trí'; }
+async function doCreate() {
+  const email = $('cEmail').value.trim().toLowerCase(), name = $('cName').value.trim(), v = $('cVt').value, brs = collect('cBr'), m = $('cMsg');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.className = 'msg err'; m.textContent = 'Email không hợp lệ'; return; }
+  if (!name) { m.className = 'msg err'; m.textContent = 'Nhập họ tên'; return; }
+  if (!v) { m.className = 'msg err'; m.textContent = 'Chọn vị trí'; return; }
+  if (D.users.some(u => (u.email || '').toLowerCase() === email)) { m.className = 'msg err'; m.textContent = 'Email này đã có trong doanh nghiệp'; return; }
+  $('cBtn').disabled = true; m.className = 'msg'; m.textContent = 'Đang gửi lời mời...';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(String(C.supabaseUrl).replace(/\/$/, '') + '/functions/v1/invite-employee', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token, apikey: C.supabaseKey },
+      body: JSON.stringify({ email, full_name: name, role: D.vi_tri[v].goc })
+    });
+    let j = {}; try { j = await r.json(); } catch (e) { }
+    if (!r.ok || j.ok === false) throw new Error(j.error || j.message || ('Lỗi máy chủ ' + r.status));
+    await loadAll();
+    const u = D.users.find(x => (x.email || '').toLowerCase() === email);
+    if (u) await rpc('aipos_tk_mau', { p_id: u.id, p_vi_tri: v, p_branches: brs });
+    closeModal(); await loadAll();
+    alert('✓ Đã gửi lời mời tới ' + email + (u ? '' : '\n\n(Tài khoản sẽ hiện trong danh sách khi người đó nhận lời mời — khi đó chọn vị trí và bấm “Áp mẫu”.)'));
+  } catch (e) { m.className = 'msg err'; m.textContent = '⚠ ' + e.message; $('cBtn').disabled = false; }
+}
+
+/* ===== VỊ TRÍ ===== */
+function renderRoles() {
+  $('rolesList').innerHTML = `<table class="presets"><tr><th>Vị trí</th><th>Vai trò hệ thống</th><th>Bộ app mặc định</th><th>Số người</th></tr>` +
+    viTriKeys().map(k => `<tr><td><b>${esc(viTriTen(k))}</b></td><td>${esc(GOC_VI[D.vi_tri[k].goc] || D.vi_tri[k].goc)}</td>
+      <td>${esc(D.vi_tri[k].apps.map(a => APP_VI[a]).join(', '))}</td><td>${D.users.filter(u => u.vi_tri === k).length}</td></tr>`).join('') + '</table>';
+}
+
+/* ===== MA TRẬN QUYỀN ===== */
+function fillMx() { const s = $('mxApp'); const cur = s.value; s.innerHTML = APPS.map(a => `<option value="${a}">${esc(APP_VI[a])}</option>`).join(''); if (cur) s.value = cur; }
+function mxVal(app, role, perm) { const r = D.perms.find(x => x.app === app && x.role === role && x.perm === perm); return r ? r.allow : ''; }
+function renderMatrix() {
+  const app = $('mxApp').value || 'pos', roles = viTriKeys();
+  const ps = PERMS[app] || [];
+  $('matrix').innerHTML = `<table class="mx"><tr><th style="text-align:left">Quyền</th>${roles.map(r => `<th>${esc(viTriTen(r))}</th>`).join('')}</tr>` +
+    ps.map(([p, ten]) => `<tr><td class="permname">${esc(ten)}</td>${roles.map(r => {
+      const v = mxVal(app, r, p);
+      const mau = v === 'allow' ? 'var(--green)' : v === 'approval' ? '#b8860b' : v === 'deny' ? 'var(--red)' : 'inherit';
+      return `<td><select style="color:${mau}" onchange="savePerm('${app}','${r}','${p}',this)">${MUC.map(([k, t]) => `<option value="${k}" ${k === v ? 'selected' : ''}>${t}</option>`).join('')}</select></td>`;
+    }).join('')}</tr>`).join('') + '</table>';
+}
+async function savePerm(app, role, perm, el) {
+  try { await rpc('aipos_quyen_luu', { p_app: app, p_role: role, p_perm: perm, p_muc: el.value });
+    D.perms = D.perms.filter(x => !(x.app === app && x.role === role && x.perm === perm)); if (el.value) D.perms.push({ app, role, perm, allow: el.value }); renderMatrix(); }
+  catch (e) { alert(e.message); renderMatrix(); }
+}
+async function resetPerms(motApp) {
+  const app = $('mxApp').value;
+  if (!confirm(motApp ? 'Đưa quyền app “' + APP_VI[app] + '” về mặc định?' : 'Đưa quyền của TẤT CẢ app về mặc định?')) return;
+  try { await rpc('aipos_quyen_reset', { p_app: motApp ? app : null }); await loadAll(); } catch (e) { alert(e.message); }
+}
+khoiDong();
+</script>
+</body></html>

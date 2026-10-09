@@ -627,7 +627,7 @@
     <button class="logout" id="branchMgrBtn" style="background:rgba(59,130,246,.25);display:none;" onclick="openBranchMgr()">⚙️ Cửa hàng</button>
     <button class="logout" id="backupBtn" style="background:rgba(11,122,59,.3);display:none;">💾 Sao lưu</button>
     <button class="logout" id="restoreBtn" style="background:rgba(181,69,63,.25);display:none;">♻️ Khôi phục</button>
-    <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Mời NV</button>
+    <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Tài khoản</button>
     <button class="logout" id="changePwBtn" style="background:rgba(255,255,255,.1);">🔑 Đổi MK</button>
     <button class="logout" id="resetBtn" style="background:rgba(200,146,42,.25);">🧹 Dọn demo</button>
     <button class="logout" id="logoutBtn">Đăng xuất</button>
@@ -924,24 +924,7 @@ document.getElementById('restoreBtn').onclick = async () => {
   };
   inp.click();
 };
-document.getElementById('inviteBtn').onclick = async () => {
-  const email = prompt('Email nhân viên mới:');
-  if (!email) return;
-  const name = prompt('Họ tên nhân viên:');
-  if (!name) return;
-  const role = (prompt('Vai trò: accountant / cashier / manager / staff', 'staff')||'staff').trim();
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const r = await fetch(SUPABASE_URL.replace(/\/$/,'') + '/functions/v1/invite-employee', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-      body: JSON.stringify({ email, full_name: name, role }),
-    });
-    const j = await r.json();
-    if (j.ok) alert('✓ ' + j.message);
-    else alert('⚠️ ' + (j.error || 'Không mời được'));
-  } catch(e) { alert('Lỗi: ' + (e?.message||e)); }
-};
+document.getElementById('inviteBtn').onclick = () => { location.href = '/taikhoan.html'; };
 
 document.getElementById('resetBtn').onclick = async () => {
   const ok = confirm('🧹 DỌN DỮ LIỆU DEMO\n\nXóa toàn bộ giao dịch (đơn bán, bút toán, tồn, đơn NCC) để bắt đầu nhập liệu thật.\n\nGIỮ NGUYÊN: hệ thống tài khoản, quy tắc định khoản, sản phẩm, nhà cung cấp, nhân viên, chi nhánh.\n\nThao tác KHÔNG hoàn tác được. Tiếp tục?');
