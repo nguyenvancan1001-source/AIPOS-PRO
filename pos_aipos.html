@@ -2762,7 +2762,7 @@ async function overlayStockFromKho() {
             p._khoStock = true;
             matched++;
         }
-        console.log(`[KHO stock] phủ tồn từ web KHO: ${matched}/${state.products.length} SKU khớp (${rows.length} dòng tồn). PB có tồn=${state.products.filter(p => (Number(p.stockPB) || 0) > 0).length}, VT=${state.products.filter(p => (Number(p.stockVT) || 0) > 0).length}`);
+        console.log(`[KHO stock] phủ tồn từ web KHO: ${matched}/${state.products.length} SKU khớp (${rows.length} dòng tồn). ${branch} có tồn=${state.products.filter(p => (Number(p.stock) || 0) > 0).length}`);
         try {
             let prc = [], pf2 = 0;
             const PG2 = 1000;
@@ -3158,6 +3158,32 @@ function setupNccRealtimeSubscription() {
         }
         catch (err) {
             console.warn('[KHO] Realtime stock subscribe failed:', err);
+        }
+    }
+    if (state.supabase && !window._spChannel) {
+        try {
+            let _spTre = null;
+            const _chaySp = () => {
+                if (_dangBanDoDang()) { _spTre = setTimeout(_chaySp, 20000); return; }
+                syncProductsFromNcc().then(r => {
+                    renderCart();
+                    if (typeof rerenderSearchResults === 'function') rerenderSearchResults();
+                    if (r && r.success) console.log('[KHO] Danh mục hàng cập nhật realtime:', r.count, 'SKU');
+                });
+            };
+            window._spChannel = state.supabase
+                .channel('pos-products-watcher')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+                if (_spTre) clearTimeout(_spTre);
+                _spTre = setTimeout(_chaySp, 3000);
+            })
+                .subscribe((status) => {
+                if (status === 'SUBSCRIBED')
+                    console.log('[KHO] Realtime danh mục hàng active');
+            });
+        }
+        catch (err) {
+            console.warn('[KHO] Realtime products subscribe failed:', err);
         }
     }
     if (state.supabase && !_priceChannel) {
