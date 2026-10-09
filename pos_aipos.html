@@ -2033,6 +2033,33 @@ const BRANCHES = (function () {
     });
     return o;
 })();
+function _brTam(k) {
+    k = k == null ? '' : String(k);
+    const bc = (typeof state !== 'undefined' && state && state.branchConfig && state.branchConfig[k]) || {};
+    return { code: k, name: bc.name || k || '—', address: bc.address || '', province: '', provinceName: '', active: true };
+}
+function _brNapTuDoanhNghiep() {
+    const ds = (window.CAUHINH && window.CAUHINH.cuaHang) || [];
+    const that = ds.filter(c => c && c.code && !/^CH\d+$/.test(c.code));
+    if (!that.length) return false;
+    Object.keys(BRANCHES).forEach(k => { if (/^CH\d+$/.test(k) && !that.some(c => c.code === k)) delete BRANCHES[k]; });
+    that.forEach(c => {
+        BRANCHES[c.code] = { code: c.code, name: c.ten || c.code, address: c.diaChi || '', province: c.tinh || '', provinceName: c.tinh || '', active: c.dangHoatDong !== false };
+    });
+    return true;
+}
+document.addEventListener('aipos-tenant-ready', function () {
+    try {
+        if (!_brNapTuDoanhNghiep()) return;
+        if (typeof CB_BRANCHES !== 'undefined') { CB_BRANCHES.length = 0; _cbDsChiNhanh().forEach(x => CB_BRANCHES.push(x)); }
+        if (typeof state !== 'undefined' && state && state.shift && state.shift.branch && document.getElementById('screen-pos') && document.getElementById('screen-pos').style.display === 'flex') {
+            try { if (typeof renderBranchSwitcher === 'function') renderBranchSwitcher(); } catch (e) { }
+        }
+    } catch (e) { console.warn('[POS] cập nhật chi nhánh:', e && e.message); }
+});
+function _cbDsChiNhanh() {
+    return Object.keys(BRANCHES).map(k => ({ id: k.toLowerCase(), name: BRANCHES[k].name })).concat([{ id: 'office', name: 'Văn phòng' }]);
+}
 function getBranchesInSameProvince(branchCode) {
     const target = BRANCHES[branchCode];
     if (!target)
@@ -3593,7 +3620,7 @@ function canSwitchBranch() { return can('all_branches') && activeBranchList().le
 function _tenQuay(c) {
     return String(_brName(c) || '').replace(/^\s+/, '').trim() || c;
 }
-function _brName(c) { return (state.branchConfig && state.branchConfig[c] && state.branchConfig[c].name) || (BRANCHES[c] && BRANCHES[c].name) || c; }
+function _brName(c) { return (state.branchConfig && state.branchConfig[c] && state.branchConfig[c].name) || (BRANCHES[c] && (BRANCHES[c] || _brTam(c)).name) || c; }
 function renderBranchSwitcher() {
     const vEl = document.getElementById('hdrVersion');
     if (vEl)
@@ -3688,7 +3715,7 @@ async function switchActiveBranch(code) {
     {
         const t = document.getElementById('mgmtStoreTitle');
         if (t)
-            t.innerHTML = `🏪 Quản lý cửa hàng — ${(state.branchConfig?.[code]?.name) || BRANCHES[code].name} <span style="font-size:11px;color:var(--gray-400);font-weight:500;margin-left:6px">v2.90</span>`;
+            t.innerHTML = `🏪 Quản lý cửa hàng — ${(state.branchConfig?.[code]?.name) || (BRANCHES[code] || _brTam(code)).name} <span style="font-size:11px;color:var(--gray-400);font-weight:500;margin-left:6px">v2.90</span>`;
     }
     try {
         loadHeldFromCloud();
@@ -20296,7 +20323,7 @@ function openManagementPanel(tab) {
     }).join('');
     showModal(`
     <div class="modal-header">
-      <h2 id="mgmtStoreTitle">🏪 Quản lý cửa hàng — ${(state.branchConfig?.[state.shift.branch]?.name) || BRANCHES[state.shift.branch].name} <span style="font-size:11px;color:var(--gray-400);font-weight:500;margin-left:6px">v2.90</span></h2>
+      <h2 id="mgmtStoreTitle">🏪 Quản lý cửa hàng — ${(state.branchConfig?.[state.shift.branch]?.name) || (BRANCHES[state.shift.branch] || _brTam(state.shift.branch)).name} <span style="font-size:11px;color:var(--gray-400);font-weight:500;margin-left:6px">v2.90</span></h2>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="tab-nav" style="padding:0 18px">${tabsHtml}</div>
@@ -22967,7 +22994,7 @@ function todayTransactions() {
     return state.transactions.filter(t => t.createdAt >= today.getTime() && t.branch === state.shift.branch);
 }
 const CB_PT_OPTS = ['Tiền mặt', 'Chuyển khoản', 'Quẹt thẻ', 'Ví điện tử (Momo/ZaloPay)', 'Công nợ'];
-const CB_BRANCHES = [['pb', 'PB'], ['vt', 'VT'], ['ta', 'TA']].filter(x => BRANCHES[x[1]]).map(x => ({ id: x[0], name: BRANCHES[x[1]].name })).concat([{ id: 'office', name: 'Văn phòng' }]);
+const CB_BRANCHES = _cbDsChiNhanh();
 let _cbState = { cats: [], records: [], loaded: false, loading: false, fType: 'all', fBr: 'all', fFrom: '', fTo: '', fTim: '', fNguon: 'pos', addOpen: false, addLoai: 'chi', catMgmtOpen: false, catMgmtSaving: false, editId: null };
 const CB_TK_DEFAULT = {
     'bao bì & đóng gói': '6412', 'bao bì, khay xốp, bọc thực phẩm': '6412',
@@ -23025,7 +23052,7 @@ function cbQuyenSo(ng) {
 function cbNextSoPhieu(loai, br, ng) {
     const s = String(ng || cbToday());
     const [y, m] = s.split('-');
-    const prefix = (loai === 'thu' ? 'PT' : 'PC') + '-' + String(br || 'pb').toUpperCase() + '-' + y + '-' + m + '-';
+    const prefix = (loai === 'thu' ? 'PT' : 'PC') + '-' + String(br || cbCurBranch()).toUpperCase() + '-' + y + '-' + m + '-';
     let max = 0;
     (_cbState.records || []).forEach(r => {
         const sp = String(r.sophieu || '');
@@ -23038,8 +23065,7 @@ function cbNextSoPhieu(loai, br, ng) {
     return prefix + String(max + 1).padStart(4, '0');
 }
 function cbBrAddr(id) {
-    const map = { pb: 'PB', vt: 'VT', ta: 'TA' };
-    const b = BRANCHES[map[id] || ''];
+    const b = BRANCHES[Object.keys(BRANCHES).find(k => k.toLowerCase() === String(id || '').toLowerCase()) || ''];
     if (b)
         return b.address || '';
     if (id === 'office') {
@@ -23058,7 +23084,7 @@ function cbStoreInfo() {
 }
 function cbUserName() { return ((state.user && (state.user.name || state.user.email)) || '').toString(); }
 function cbToday() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-function cbCurBranch() { const b = ((state.shift && state.shift.branch) || 'pb').toString().toLowerCase(); return (b === 'pb' || b === 'vt' || b === 'ta') ? b : 'pb'; }
+function cbCurBranch() { const ks = Object.keys(BRANCHES).map(k => k.toLowerCase()); const b = ((state.shift && state.shift.branch) || ks[0] || 'pb').toString().toLowerCase(); return ks.indexOf(b) > -1 ? b : (ks[0] || b); }
 function cbLaPhieuPos(r) {
     return /\(POS\)/i.test(String((r && (r.createdBy || r.nguoiLap)) || '')) || !!(r && r.shiftId);
 }
@@ -23998,7 +24024,7 @@ window._wo = window._wo || { items: [], cat: 'expired', reason: '', note: '' };
 window._st = window._st || { items: [], note: '', editId: null, editNo: null };
 function moneyVN(n) { return (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ'; }
 function woBranch() { return (state.shift && state.shift.branch) || 'PB'; }
-function woBranchName() { return (state.branchConfig && state.branchConfig[woBranch()] && state.branchConfig[woBranch()].name) || (BRANCHES[woBranch()] && BRANCHES[woBranch()].name) || woBranch(); }
+function woBranchName() { return (state.branchConfig && state.branchConfig[woBranch()] && state.branchConfig[woBranch()].name) || (BRANCHES[woBranch()] && (BRANCHES[woBranch()] || _brTam(woBranch())).name) || woBranch(); }
 function sysQtyOf(p) { const b = woBranch(); if (p && p._branchStocks && b in p._branchStocks)
     return Number(p._branchStocks[b]) || 0; if (b === 'VT')
     return Number(p.stockVT) || 0; if (b === 'PB')
@@ -26166,7 +26192,7 @@ function renderEinvoiceTab() {
     const ef = state.eiStatusFilter || '';
     const branches = Object.keys(BRANCHES || {});
     const branchOpts = ['<option value="">Tất cả CN</option>']
-        .concat(branches.map(b => `<option value="${b}" ${bf === b ? 'selected' : ''}>${escapeHtml((state.branchConfig?.[b]?.name) || BRANCHES[b].name)}</option>`)).join('');
+        .concat(branches.map(b => `<option value="${b}" ${bf === b ? 'selected' : ''}>${escapeHtml((state.branchConfig?.[b]?.name) || (BRANCHES[b] || _brTam(b)).name)}</option>`)).join('');
     return `
     <div class="date-quick-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">${rangeBtns}${customRange}</div>
     <div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center;">
@@ -27977,8 +28003,8 @@ function requestStockTransfer(sku, fromBranch, toBranch) {
     const product = state.products.find(p => p.sku === sku);
     if (!product)
         return;
-    const fromBranchObj = BRANCHES[fromBranch];
-    const toBranchObj = BRANCHES[toBranch];
+    const fromBranchObj = BRANCHES[fromBranch] || _brTam(fromBranch);
+    const toBranchObj = BRANCHES[toBranch] || _brTam(toBranch);
     if (!fromBranchObj || !toBranchObj)
         return;
     if (fromBranchObj.province !== toBranchObj.province) {
@@ -28696,7 +28722,7 @@ function renderReturnsTab() {
   ` : '';
     const bf = state.retBranchFilter || '';
     const branchOpts = ['<option value="">Tất cả CN</option>']
-        .concat(Object.keys(BRANCHES || {}).map(b => `<option value="${b}" ${bf === b ? 'selected' : ''}>${escapeHtml((state.branchConfig?.[b]?.name) || BRANCHES[b].name)}</option>`)).join('');
+        .concat(Object.keys(BRANCHES || {}).map(b => `<option value="${b}" ${bf === b ? 'selected' : ''}>${escapeHtml((state.branchConfig?.[b]?.name) || (BRANCHES[b] || _brTam(b)).name)}</option>`)).join('');
     setTimeout(() => { try {
         loadReturnRows();
     }
@@ -29805,7 +29831,7 @@ function buildReturnSlip(tx, paperSize) {
     </div>`;
 }
 function buildBillThermal(tx, paperSize, tpl) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const branchName = bo.name || branch.name;
     const branchAddress = bo.address || branch.address;
@@ -29884,7 +29910,7 @@ function buildBillThermal(tx, paperSize, tpl) {
     </div>`;
 }
 function buildBillMinimal(tx, paperSize) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const store = state.storeConfig || CONFIG.defaults.store;
     const t = billTax(tx);
@@ -29911,7 +29937,7 @@ function buildBillMinimal(tx, paperSize) {
     </div>`;
 }
 function buildBillRetail(tx, paperSize, withPts) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const store = state.storeConfig || CONFIG.defaults.store;
     const t = billTax(tx);
@@ -29956,7 +29982,7 @@ function buildBillRetail(tx, paperSize, withPts) {
     </div>`;
 }
 function buildBillBoarding(tx, paperSize) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const store = state.storeConfig || CONFIG.defaults.store;
     const t = billTax(tx);
@@ -29987,7 +30013,7 @@ function buildBillBoarding(tx, paperSize) {
     </div>`;
 }
 function buildBillNordic(tx, paperSize) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const store = state.storeConfig || CONFIG.defaults.store;
     const t = billTax(tx);
@@ -30016,7 +30042,7 @@ function buildBillNordic(tx, paperSize) {
     </div>`;
 }
 function buildBillPremium(tx, paperSize) {
-    const branch = BRANCHES[tx.branch];
+    const branch = BRANCHES[tx.branch] || _brTam(tx.branch);
     const bo = state.branchConfig?.[tx.branch] || {};
     const store = state.storeConfig || CONFIG.defaults.store;
     const t = billTax(tx);
@@ -30476,7 +30502,7 @@ function doPrintBrowser() {
     window.print();
 }
 function printZReport(s) {
-    const branch = BRANCHES[s.branch];
+    const branch = BRANCHES[s.branch] || _brTam(s.branch);
     const expectedCash = (typeof s.expectedCash === 'number') ? s.expectedCash : (s.openingCash + s.totalCash + (s.cashThu || 0) - (s.cashChi || 0));
     const bankExpected = (typeof s.bankExpected === 'number') ? s.bankExpected : ((s.totalTransfer || 0) + (s.totalCard || 0) + (s.bankThu || 0) - (s.bankChi || 0));
     const html = `
@@ -30719,8 +30745,8 @@ function applyChosenStoreToShift() {
         if (group) {
             group.innerHTML = `<label>Cửa hàng</label>
         <div style="padding:14px 16px;border:2px solid var(--navy);border-radius:10px;background:var(--navy-light)">
-          <div style="font-size:18px;font-weight:700;color:var(--navy-dark)">${BRANCHES[code].name}</div>
-          <div style="font-size:11px;color:var(--gray-600);margin-top:2px">${BRANCHES[code].provinceName || ''}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--navy-dark)">${(BRANCHES[code] || _brTam(code)).name}</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px">${(BRANCHES[code] || _brTam(code)).provinceName || ''}</div>
         </div>`;
         }
     }
@@ -30783,7 +30809,7 @@ function showShiftScreen() {
         const _sh = window._caChoTiepTuc;
         if (_box) {
             if (_sh) {
-                const _br = (BRANCHES[_sh.branch] && BRANCHES[_sh.branch].name) || _sh.branch || '';
+                const _br = (BRANCHES[_sh.branch] && (BRANCHES[_sh.branch] || _brTam(_sh.branch)).name) || _sh.branch || '';
                 _box.innerHTML = `<div style="border:2px solid #16a34a;background:#f0fdf4;border-radius:11px;
           padding:12px 14px;margin-bottom:16px">
           <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:3px">🔄 Bạn còn ca đang mở</div>
@@ -30829,7 +30855,7 @@ function showPosScreen() {
     $('#hdrCashierName').textContent = state.user.name || '';
     applyRoleUI();
     const branchOverride = state.branchConfig?.[state.shift.branch];
-    const branchName = (branchOverride?.name || BRANCHES[state.shift.branch].name);
+    const branchName = (branchOverride?.name || (BRANCHES[state.shift.branch] || _brTam(state.shift.branch)).name);
     renderBranchSwitcher();
     $('#hdrRegister').textContent = _tenQuay(state.shift.branch) + (state.shift.maySo ? ' · Máy ' + state.shift.maySo : '');
     try {
@@ -31729,7 +31755,7 @@ function init() {
     }
     else {
         const savedStore = Storage.get(STORE_KEY);
-        if (savedStore && BRANCHES[savedStore] && BRANCHES[savedStore].active !== false) {
+        if (savedStore && BRANCHES[savedStore] && (BRANCHES[savedStore] || _brTam(savedStore)).active !== false) {
             state.selectedStore = savedStore;
             state.selectedBranch = savedStore;
             loadBranchesForSelect().then(() => showLoginScreen());
