@@ -2228,6 +2228,11 @@ const Storage = {
         }
     },
     set(key, value) {
+        if (key === 'vcm_pos_customers') {
+            try { localStorage.removeItem(key); } catch (e) { }
+            try { _henGhiKhIdb(); } catch (e) { }
+            return true;
+        }
         try {
             localStorage.setItem(key, JSON.stringify(value));
         }
@@ -12816,6 +12821,62 @@ function subscribePromosRealtime(attempt) {
         console.warn('[promos realtime]', e.message);
     }
 }
+
+let _khIdbHen = null;
+function _henGhiKhIdb() { if (_khIdbHen) clearTimeout(_khIdbHen); _khIdbHen = setTimeout(_idbGhiKh, 3000); }
+async function _idbGhiKh() {
+    const t = (window.CAUHINH && window.CAUHINH.TENANT_ID) || '';
+    if (!t || !state.customers) return;
+    try {
+        const db = await _moIdb();
+        await new Promise((ok, loi) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put({ ts: Date.now(), customers: state.customers }, 'kh_' + t); tx.oncomplete = ok; tx.onerror = () => loi(tx.error); });
+        db.close();
+    } catch (e) { console.warn('[POS] lưu đệm khách:', e && e.message); }
+}
+async function _idbDocKh() {
+    const t = (window.CAUHINH && window.CAUHINH.TENANT_ID) || '';
+    if (!t) return null;
+    try {
+        const db = await _moIdb();
+        const v = await new Promise((ok, loi) => { const rq = db.transaction('kv', 'readonly').objectStore('kv').get('kh_' + t); rq.onsuccess = () => ok(rq.result); rq.onerror = () => loi(rq.error); });
+        db.close();
+        return v && v.customers ? v.customers : null;
+    } catch (e) { return null; }
+}
+function _khTuDong(r, c) {
+    c = c || { phone: r.phone };
+    c.phone = r.phone;
+    c.name = r.name || c.name || '';
+    c.points = Number(r.points) || 0;
+    c.visits = Number(r.visits) || 0;
+    c.totalSpent = Number(r.total_spent) || 0;
+    if (r.dob) c.dob = r.dob;
+    if (r.gender) c.gender = r.gender;
+    if (r.email) c.email = r.email;
+    if (r.tax_code) c.taxCode = r.tax_code;
+    if (r.company_name) c.companyName = r.company_name;
+    if (r.address) c.address = r.address;
+    c.tags = Array.isArray(r.tags) ? r.tags : (c.tags || []);
+    c.firstVisit = c.firstVisit || (r.first_visit ? new Date(r.first_visit).getTime() : Date.now());
+    c.lastVisit = r.last_visit ? new Date(r.last_visit).getTime() : (c.lastVisit || Date.now());
+    return c;
+}
+function _apKhRealtime(payload) {
+    try {
+        const ev = payload && payload.eventType, nw = payload && payload.new, od = payload && payload.old;
+        const ph = (nw && nw.phone) || (od && od.phone);
+        if (!ph) return false;
+        state.customers = state.customers || {};
+        if (ev === 'DELETE') delete state.customers[ph];
+        else state.customers[ph] = _khTuDong(nw, state.customers[ph]);
+        _henGhiKhIdb();
+        if (state.customer && state.customer.phone === ph && state.customers[ph]) {
+            state.customer = Object.assign(state.customer, state.customers[ph]);
+            try { renderCart(); } catch (e) { }
+        }
+        return true;
+    } catch (e) { return false; }
+}
 let _custReloadTimer = null;
 function _reloadCustomersDebounced() { clearTimeout(_custReloadTimer); _custReloadTimer = setTimeout(() => { try {
     loadCustomersFromDb();
@@ -12845,7 +12906,7 @@ function subscribeSharedRealtime(attempt) {
         if (!window._custChannel) {
             window._custChannel = state.supabase
                 .channel('pos-customers-watch')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_customers' }, () => { _reloadCustomersDebounced(); })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_customers' }, (payload) => { if (!_apKhRealtime(payload)) _reloadCustomersDebounced(); })
                 .subscribe((st) => { if (st === 'SUBSCRIBED')
                 console.log('[Khách hàng] Realtime active'); });
         }
@@ -13204,23 +13265,11 @@ async function loadCustomersFromDb() {
     if (!state.supabase)
         return;
     try {
-        let data = [], from = 0;
-        const PAGE = 1000;
-        while (true) {
-            const { data: batch, error } = await state.supabase.from('pos_customers')
-                .select('*').order('last_visit', { ascending: false }).range(from, from + PAGE - 1);
-            if (error) {
-                console.warn('[cust list]', error.message);
-                break;
-            }
-            const b = batch || [];
-            data = data.concat(b);
-            if (b.length < PAGE)
-                break;
-            from += PAGE;
-            if (from > 500000)
-                break;
-        }
+        const _kqK = await _taiSongSong((a, b) => state.supabase.from('pos_customers')
+                .select('*').order('phone', { ascending: true }).range(a, b));
+        if (_kqK.error)
+            console.warn('[cust list]', _kqK.error.message);
+        const data = _kqK.data || [];
         _cloudSyncSuspend = true;
         (data || []).forEach(r => {
             const c = state.customers[r.phone] || { phone: r.phone };
@@ -31006,6 +31055,7 @@ function showPosScreen() {
     state.printConfig = Storage.get(CONFIG.storageKeys.printConfig) || { ...CONFIG.defaults.print };
     state.loyaltyConfig = Storage.get(CONFIG.storageKeys.loyaltyConfig) || { ...CONFIG.defaults.loyalty, tiers: [...CONFIG.defaults.loyalty.tiers] };
     state.customers = Storage.get(CONFIG.storageKeys.customers) || {};
+    _idbDocKh().then(v => { if (v) { state.customers = Object.assign({}, v, state.customers || {}); console.log('[POS] Khách từ bộ đệm máy:', Object.keys(v).length); } });
     state.promotions = Storage.get(CONFIG.storageKeys.promotions) || [];
     state.returns = Storage.get(CONFIG.storageKeys.returns) || [];
     state.taxConfig = Storage.get(CONFIG.storageKeys.taxConfig) || { ...CONFIG.defaults.tax };
