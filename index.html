@@ -629,7 +629,7 @@
     <button class="logout" id="restoreBtn" style="background:rgba(181,69,63,.25);display:none;">♻️ Khôi phục</button>
     <button class="logout" id="inviteBtn" style="background:rgba(21,101,192,.3);display:none;">👥 Tài khoản</button>
     <button class="logout" id="changePwBtn" style="background:rgba(255,255,255,.1);">🔑 Đổi MK</button>
-    <button class="logout" id="resetBtn" style="background:rgba(200,146,42,.25);">🧹 Dọn demo</button>
+    <button class="logout" id="resetBtn" style="background:rgba(200,146,42,.25);display:none">🧹 Dọn demo</button>
     <button class="logout" id="logoutBtn">Đăng xuất</button>
   </div>
   <div class="hub-body">
@@ -993,8 +993,11 @@ async function enterHub(user) {
       document.getElementById('restoreBtn').style.display = 'inline-block';
       document.getElementById('branchMgrBtn').style.display = 'inline-block';
       document.getElementById('planMgrBtn').style.display = 'inline-block';
+      document.getElementById('resetBtn').style.display = 'inline-block';
     }
   } catch(e) {}
+  // App được phép theo vai trò của tài khoản (chủ thấy tất cả)
+  window._appsDuocPhep = await layAppDuocPhep(user);
   // Check chi nhánh — chưa có thì onboard, có rồi thì hiện apps
   await checkBranchesAndRender(features);
   // Demo banner nếu đang ở chế độ demo
@@ -1384,7 +1387,7 @@ function renderBranchChips() {
   const maxDefault = { basic: 1, standard: 2, premium: 10 };
   let maxBr = maxDefault[plan] || 1;
   if (_hubFeatures && _hubFeatures.max_branches) maxBr = _hubFeatures.max_branches;
-  const canAdd = _brData.length < maxBr;
+  const canAdd = _brData.length < maxBr && window._appsDuocPhep === null;   // chỉ chủ được thêm chi nhánh
 
   container.innerHTML = _brData.map(b =>
     `<span class="br-chip${b.active ? '' : ' inactive'}" title="${b.active ? 'Đang hoạt động' : 'Tạm đóng'}">`
@@ -1613,6 +1616,27 @@ async function toggleBranch(id, currentActive) {
   } catch(e) { alert('Lỗi: ' + (e?.message || e)); }
 }
 
+// Bộ app mặc định theo vị trí (giống trang Tài khoản)
+const VI_TRI_APPS = {
+  founder: ['pos','kho','ncc','ketoan','luong'], pho_tgd: ['pos','kho','ncc','ketoan','luong'],
+  ketoan_truong: ['ketoan','kho','ncc','luong'], ketoan: ['ketoan','kho','ncc'], nhan_su: ['luong'],
+  quan_ly_cn: ['pos','kho','ncc','luong'], pho_gd: ['pos','kho','ncc'], ql_kv: ['pos','kho'],
+  kho: ['kho','ncc'], dieu_chuyen: ['kho'], pos_nv: ['pos'], readonly: ['pos','kho']
+};
+const GOC_APPS = { manager: ['pos','kho','ncc','ketoan','luong'], accountant: ['ketoan','kho','ncc'], cashier: ['pos'], staff: ['pos'] };
+async function layAppDuocPhep(user) {
+  try {
+    const { data: me } = await sb.from('app_users').select('role, vi_tri, active').eq('auth_uid', user.id).maybeSingle();
+    if (me && me.role === 'owner') return null;                       // chủ: thấy tất cả
+    if (me && me.active === false) return [];
+    const { data: ua, error } = await sb.from('user_app_roles').select('app, active').eq('user_id', user.id);
+    if (!error && ua && ua.length) return ua.filter(r => r.active !== false).map(r => r.app);
+    if (me && me.vi_tri && VI_TRI_APPS[me.vi_tri]) return VI_TRI_APPS[me.vi_tri];
+    if (me && GOC_APPS[me.role]) return GOC_APPS[me.role];
+    return [];
+  } catch (e) { return ['pos']; }
+}
+
 function renderApps(features) {
   // Giới hạn app theo gói — nếu DB chưa trả features, dùng default theo plan
   const planBadge = document.getElementById('planBadge');
@@ -1626,12 +1650,14 @@ function renderApps(features) {
   const grid = document.getElementById('appGrid'); grid.innerHTML='';
   APPS.forEach(a => {
     if (f[a.code] === false) return; // gói không có app này
+    if (Array.isArray(window._appsDuocPhep) && !window._appsDuocPhep.includes(a.code)) return; // vai trò không có app này
     const el = document.createElement('a');
     el.className='app'; el.href=a.url;
     el.innerHTML = `<div class="ic-wrap" style="color:${a.color}">${a.ic}</div><span class="nm">${a.nm}</span>
       <span class="ds">${a.ds}</span><span class="go">Mở ứng dụng <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></span>`;
     grid.appendChild(el);
   });
+  if (!grid.children.length) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:#64748b">Tài khoản chưa được cấp ứng dụng nào. Liên hệ chủ cửa hàng để được phân quyền.</div>';
 }
 
 /* ============================================================
